@@ -1,0 +1,79 @@
+# ================================
+# Parameter Definition File
+# ================================
+
+# ===============================
+# Project Title
+# ===============================
+project_title: "GMC_Banavati_CaCx_sim"
+
+# ===============================
+# Simulation Parameters
+# ===============================
+simulation:
+  name: "GMC_Banavati_CaCx_sim"
+  run_time: 1000 # in days = 3 years approx
+  experiment_no: 1
+  no_of_sims: 50
+  working_days: 25 # per month
+  working_hours: 3 # Decision on whether to use as an output or an input parameter?
+
+  # ===============================
+  # Hospital Parameters
+  # ===============================
+  #Workload
+  pap_per_day: 5
+  non_pap_per_day: 20
+  cervical_biopsies_per_day: 2
+  non_cervical_biopsies_per_day: 5
+
+# ==============================
+# Resources
+# ==============================
+Staff:
+  num_cytopathologists: 3
+  num_cytotechnicians: 2
+  num_histopathologists: 6
+  num_histotechnicians: 8
+
+Stuff:
+  num_histo_staining_stations: 1 #autostainer
+  num_cyto_staining_stations: 1 #manual staining station
+  num_grossing_stations: 2
+  num_histo_microscopes: 3
+  num_cyto_microscopes: 3
+
+# ==============================
+# Service Times
+# ==============================
+processing:
+  cyto_slides: 60 # minutes per slide # Constant time
+  histo_samples: 2880 # 48 * 60 minutes per slide # Constant time
+fixation:
+  small_biopsy: 60 # minutes
+  medium_biopsy: 90 # minutes
+  large_biopsy: 120 # minutes
+
+reporting:
+  cyto_slides: 30 # minutes per slide # Distribution Estimated by a bayesian distribution
+  cyto_slide_distribution:
+    type: "lognormal"
+    mean: 3.4
+    sd: 0.4
+  histo_samples: 120 # minutes per slide # Distribution Estimated by a bayesian distribution
+  histo_sample_distribution:
+    type: "lognormal"
+    mean: 4.8
+    sd: 0.5
+
+# ==============================
+# Epidemiological parameters
+# ==============================
+pap_positive_rate: 0.05
+cervical_biopsy_positive_rate: 0.15
+cin_prevalence_rate: 0.10
+cervical_cancer_prevalence_rate: 0.02
+# ==============================
+# END
+# ==============================
+

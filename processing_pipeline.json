@@ -1,0 +1,72 @@
+{
+  "cytology": [
+    {
+      "name": "fixation",
+      "resource": "cytotechnicians",
+      "batch_size": 1,
+      "duration_minutes": 30,
+      "duration_type": "constant"
+    },
+    {
+      "name": "staining",
+      "resource": "cyto_staining_stations",
+      "batch_size": 10,
+      "duration_minutes": 60,
+      "duration_type": "constant",
+      "wait_for_batch": true
+    },
+    {
+      "name": "mounting",
+      "resource": "cytotechnicians",
+      "batch_size": 1,
+      "duration_minutes": 15,
+      "duration_type": "constant"
+    },
+    {
+      "name": "reporting",
+      "resource": "cytopathologists",
+      "batch_size": 1,
+      "duration_minutes": 30,
+      "duration_type": "lognormal",
+      "distribution_params": {
+        "mean": 3.4,
+        "sd": 0.4
+      }
+    }
+  ],
+  "histology": [
+    {
+      "name": "grossing",
+      "resource": "grossing_stations",
+      "batch_size": 1,
+      "duration_minutes": 20,
+      "duration_type": "constant"
+    },
+    {
+      "name": "fixation",
+      "resource": null,
+      "batch_size": null,
+      "duration_minutes": 1440,
+      "duration_type": "constant"
+    },
+    {
+      "name": "processing",
+      "resource": "histo_staining_stations",
+      "batch_size": 20,
+      "duration_minutes": 2880,
+      "duration_type": "constant",
+      "wait_for_batch": false
+    },
+    {
+      "name": "reporting",
+      "resource": "histopathologists",
+      "batch_size": 1,
+      "duration_minutes": 120,
+      "duration_type": "lognormal",
+      "distribution_params": {
+        "mean": 4.8,
+        "sd": 0.5
+      }
+    }
+  ]
+}
