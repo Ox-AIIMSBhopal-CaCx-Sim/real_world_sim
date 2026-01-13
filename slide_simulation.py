@@ -143,6 +143,16 @@ def cyto_sample_generator(env, params, cyto_processing_queue):
         # Arrivals happen once per day
         yield env.timeout(1)  # 1 day
 
+
+def decision_to_process_slide(slide, params):
+    """
+    Decide whether to process a slide based on its type and parameters.
+    For simplicity, we assume all slides are processed in this simulation.
+    """
+    return True
+
+
+
 def cyto_sample_processor(env, params, cyto_processing_queue, cyto_reporting_queue, cytotechnicians):
     """
     Process cytology slides from the processing queue.
