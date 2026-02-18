@@ -203,6 +203,8 @@ def run_cyto_simulation(params):
     # Create processing stages
     print("Setting up processing pipeline...\n")
     
+    
+    #Later on these will be imported from the processing_pipeline.json file from the UI
     # Stage 1: Fixation (15 mins, batch=1)
     fixation = Lab_Process(
         env=env,
@@ -217,7 +219,7 @@ def run_cyto_simulation(params):
     staining = Lab_Process(
         env=env,
         name='staining',
-        resource=staining_stations,
+        resource=[staining_stations,cytotechnicians],
         batch_size=10,
         duration_minutes=20,
         duration_type='constant',
@@ -231,6 +233,8 @@ def run_cyto_simulation(params):
         resource=cytopathologists,
         batch_size=1,
         duration_minutes=5,
+        
+        #Assumed parameters
         duration_type='exponential',
         distribution_params={'rate': 1.0/5.0},  # Mean = 5 minutes
         previous_stage=staining
@@ -251,6 +255,8 @@ def run_cyto_simulation(params):
         working_days=[0, 1, 2, 3, 4, 5],  # Mon-Sat
         working_hours=(9, 16),  # 9 AM - 4 PM
         arrival_rate_per_day=params['simulation']['pap_per_day'],
+        
+        #Assumed parameters
         arrival_distribution='poisson',
         entity_properties=lambda: {
             'is_pap': True,
@@ -267,6 +273,8 @@ def run_cyto_simulation(params):
         working_days=[0, 1, 2, 3, 4, 5],  # Mon-Sat
         working_hours=(9, 16),  # 9 AM - 4 PM
         arrival_rate_per_day=params['simulation']['non_pap_per_day'],
+        
+        #Assumed parameters
         arrival_distribution='poisson',
         entity_properties={'is_pap': False, 'is_positive': None}
     )
