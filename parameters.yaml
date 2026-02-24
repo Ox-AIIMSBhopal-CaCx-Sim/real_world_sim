@@ -36,12 +36,18 @@ Staff:
   num_histopathologists: 6
   num_histotechnicians: 8
 
-Stuff:
+Infrastructure:
   num_histo_staining_stations: 1 #autostainer
   num_cyto_staining_stations: 1 #manual staining station
   num_grossing_stations: 2
   num_histo_microscopes: 3
   num_cyto_microscopes: 3
+
+Consumables:
+  pap_stain_reagents_per_slide: 1
+  giemsa_stain_reagents_per_slide: 1
+  h&e_stain_reagents_per_slide: 1
+  fixation_reagents_per_slide: 1
 
 # ==============================
 # Service Times
