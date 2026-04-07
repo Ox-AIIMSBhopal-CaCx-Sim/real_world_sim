@@ -146,7 +146,7 @@ class Schedule:
         return f"Schedule('{self.name}')\n  {slots_str}"
 
 
-class ScheduledResource:
+class ScheduledResource():
     """
     A SimPy resource that is only available during specified time slots.
     This wraps a standard SimPy Resource and adds schedule-based availability.
@@ -176,8 +176,9 @@ class ScheduledResource:
         self.simulation_start_datetime = simulation_start_datetime
         self.name = name
         
-        # Create the underlying SimPy resource
-        self._resource = simpy.Resource(env, capacity=capacity)
+        # We use a PriorityResource so the shift-monitor can 'jump the line'
+        # during off-hours to block items from processing.
+        self._resource = simpy.PriorityResource(env, capacity=capacity)
         
         # Track original capacity for restore
         self._original_capacity = capacity
@@ -198,29 +199,38 @@ class ScheduledResource:
         --------
         datetime : Corresponding real-world datetime
         """
-        return self.simulation_start_datetime + timedelta(days=sim_time)
+        return self.simulation_start_datetime + timedelta(minutes=sim_time)
     
     def _monitor_availability(self):
         """
         Background process that monitors and enforces schedule availability.
-        This runs continuously throughout the simulation.
+        Uses a 'Blocking Request' to prevent usage during off-hours.
         """
+        blocker_requests = []
+        
         while True:
             current_dt = self._sim_time_to_datetime(self.env.now)
+            is_open = self.schedule.is_available_at(current_dt)
             
-            if self.schedule.is_available_at(current_dt):
-                # Resource should be available - ensure capacity is set
-                if self._resource.capacity != self._original_capacity:
-                    self._resource._capacity = self._original_capacity
-            else:
-                # Resource should be unavailable - set capacity to 0
-                if self._resource.capacity != 0:
-                    self._resource._capacity = 0
+            if not is_open and not blocker_requests:
+                # Shift just CLOSED: Request all units to block the resource
+                # Priority -1 is higher than the default (0 or 1)
+                for _ in range(self._original_capacity):
+                    req = self._resource.request(priority=-1)
+                    blocker_requests.append(req)
+                # Wait for all units to be captured (drains the resource)
+                # Note: this might take time if items are currently processing
+                
+            elif is_open and blocker_requests:
+                # Shift just OPENED: Release all blocking units
+                for req in blocker_requests:
+                    self._resource.release(req)
+                blocker_requests = []
             
-            # Check availability status every minute (1/1440 days)
-            yield self.env.timeout(1/1440)
+            # Check for shift changes every minute
+            yield self.env.timeout(1)
     
-    def request(self, priority: Optional[int] = None):
+    def request(self, priority: int = 0):
         """
         Request access to the resource. This will automatically wait
         if the resource is not currently available according to its schedule.
@@ -228,13 +238,13 @@ class ScheduledResource:
         Parameters:
         -----------
         priority : int, optional
-            Priority for the request (not used with standard Resource)
+            Priority for the request (lower number = higher priority)
         
         Returns:
         --------
         simpy.Request : Request object
         """
-        return self._resource.request()
+        return self._resource.request(priority=priority)
     
     def release(self, request):
         """
@@ -440,38 +450,63 @@ if __name__ == "__main__":
     print()
     
     # Example 4: Test with SimPy
-    print("Running SimPy simulation example...")
-    env = simpy.Environment()
-    sim_start = datetime(2025, 5, 1, 9, 0)
-    
-    # Create a scheduled resource
-    scheduled_staff = ScheduledResource(
-        env=env,
-        capacity=2,
-        schedule=weekday_schedule,
-        simulation_start_datetime=sim_start,
-        name="Cytotechnicians"
-    )
-    
-    def process_item(env, item_id, resource):
-        arrival_time = env.now
-        print(f"Item {item_id} arrives at sim time {arrival_time:.2f}")
+    def run_example():
+        """
+        Integrates manual_generic_process with ScheduledResource to test
+        shift-aware batch processing.
+        """
+        import simpy
+        from datetime import datetime, timedelta
+        from manual_generic_process import manual_generic_process
         
-        with resource.request() as req:
-            yield req
-            start_time = env.now
-            wait_time = start_time - arrival_time
-            print(f"  Item {item_id} starts processing at {start_time:.2f} (waited {wait_time:.2f} days)")
+        # 1. Define a 9:00-17:00 weekday schedule (Mon-Fri)
+        weekday_schedule = Schedule("Standard Weekday")
+        from datetime import time
+        weekday_schedule.add_time_slot(time(9, 0), time(17, 0), days_of_week=[0, 1, 2, 3, 4])
+        
+        # 2. Simulation starts at 2:00 AM on a Monday
+        base_date = datetime(2024, 1, 1, 2, 0)
+        
+        def to_date_str(sim_time_mins):
+            dt = base_date + timedelta(minutes=sim_time_mins)
+            return dt.strftime("%d/%m/%y %H:%M")
+
+        env = simpy.Environment()
+        
+        # 3. Create a Scheduled Resource (2 Technicians)
+        technicians = ScheduledResource(
+            env=env,
+            capacity=2,
+            schedule=weekday_schedule,
+            simulation_start_datetime=base_date,
+            name="Technicians"
+        )
+        
+        # 4. Create the Cutting Process Stage (Batched in pairs)
+        cutting_stage = manual_generic_process(
+            env=env,
+            process_name="cutting",
+            resources_requested=[technicians],
+            service_time=30,
+            service_time_dist="constant",
+            service_time_dist_params={},
+            is_batched=True,
+            batch_size=2
+        )
+        
+        class MockMesh:
+            def __init__(self, name):
+                self.id = name
+
+        # 5. Meshes arrive outside shift hours (02:00 AM)
+        print("\n--- Starting Integrated Shift + Batch Test ---")
+        for i in range(4):
+            mesh = MockMesh(f"WM-B{i+1}")
+            print(f"[{to_date_str(env.now)}] {mesh.id} arrived (Facility Closed).")
+            # Items wait for (1) Batch to fill and (2) Shift to open
+            env.process(cutting_stage.run_batch(mesh))
             
-            # Process for 30 minutes (0.0208 days)
-            yield env.timeout(30/1440)
-            
-            print(f"  Item {item_id} completes at {env.now:.2f}")
+        env.run(until=1440) # Run for 1 day
+        print("\nIntegrated Test Complete!")
     
-    # Generate some test items
-    for i in range(5):
-        env.process(process_item(env, i, scheduled_staff))
-    
-    # Run simulation for 2 days
-    env.run(until=2)
-    print("\nSimulation complete!")
+    run_example()

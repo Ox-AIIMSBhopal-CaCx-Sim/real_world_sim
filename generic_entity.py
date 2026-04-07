@@ -6,7 +6,7 @@ These classes represent different entities that flow through the hospital system
 from datetime import datetime
 
 
-class Hospital_Entity:
+class Generic_Entity(object):
     """
     A base class representing any entity in the hospital simulation system.
     This can be a slide, sample, patient, or any other object that moves through processes.
@@ -49,7 +49,7 @@ class Hospital_Entity:
         Parameters:
         -----------
         stage_name : str
-            Name of the stage (e.g., 'fixation', 'staining', 'reporting')
+            Name o the stage (e.g., 'fixation', 'staining', 'reporting')
         time : float
             Simulation time when the stage started
         """
@@ -128,7 +128,7 @@ class Hospital_Entity:
         return f"Hospital_Entity(id={self.id}, type={self.entity_type})"
 
 
-class CytoSlide(Hospital_Entity):
+class CytoSlide(Generic_Entity):
     """
     Represents a cytology slide.
     """
@@ -166,7 +166,7 @@ class CytoSlide(Hospital_Entity):
         return f"CytoSlide(id={self.id}, Non-Pap)"
 
 
-class HistoSample(Hospital_Entity):
+class HistoSample(Generic_Entity):
     """
     Represents a histology sample/biopsy.
     """
@@ -207,7 +207,7 @@ class HistoSample(Hospital_Entity):
         return f"HistoSample(id={self.id}, {tissue}, {self.size}, {status})"
 
 
-class Patient(Hospital_Entity):
+class Patient(Generic_Entity):
     """
     Represents a patient in the hospital system.
     """
@@ -301,7 +301,7 @@ if __name__ == "__main__":
     print(f"Arrival time: {patient.arrival_time}\n")
     
     # Example 4: Create a custom entity with arbitrary properties
-    custom_entity = Hospital_Entity(
+    custom_entity = Generic_Entity(
         id='CUSTOM-1',
         entity_type='blood_sample',
         arrival_time=2.5,

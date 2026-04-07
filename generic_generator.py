@@ -12,8 +12,8 @@ class Entity_Generator:
     
     def __init__(self, env, name, entity_class, first_stage=None,
                  working_days=None, working_hours=None,
-                 arrival_rate_per_day=1, arrival_distribution='constant',
-                 arrival_params=None, entity_properties=None):
+                 arrival_params=None, entity_properties=None,
+                 simulation_start_datetime=None):
         """
         Initialize an entity generator.
         
@@ -71,10 +71,15 @@ class Entity_Generator:
         self.working_days = working_days if working_days is not None else [0, 1, 2, 3, 4, 5]
         self.working_hours = working_hours if working_hours is not None else (9, 16)
         
-        # Arrival parameters
-        self.arrival_rate_per_day = arrival_rate_per_day
-        self.arrival_distribution = arrival_distribution
-        self.arrival_params = arrival_params or {}
+        # Simulation start time for alignment
+        self.simulation_start_datetime = simulation_start_datetime
+        if self.simulation_start_datetime:
+            self.start_minutes_offset = self.simulation_start_datetime.hour * 60 + self.simulation_start_datetime.minute
+        else:
+            self.start_minutes_offset = 540  # Default to 9 AM
+            
+        # Arrival parameters (expected: {'distribution': '...', 'params': {...}})
+        self.arrival_params = arrival_params or {'distribution': 'constant', 'params': {'rate': 1}}
         
         # Entity properties
         self.entity_properties = entity_properties
@@ -94,12 +99,12 @@ class Entity_Generator:
         bool : True if within working schedule
         """
         # Calculate current day of week (0 = Monday, 6 = Sunday)
-        # Add 0.375 (9 hours) to align simulation time 0 with 9 AM on Monday
-        adjusted_time = self.env.now + (9/24)
-        current_day = int(adjusted_time) % 7
+        # Apply offset to align simulation time 0 with start datetime
+        adjusted_time_minutes = self.env.now + self.start_minutes_offset
+        current_day = (int(adjusted_time_minutes) // 1440) % 7
         
         # Calculate current hour of day (0-24)
-        current_hour = (adjusted_time % 1) * 24
+        current_hour = (adjusted_time_minutes % 1440) / 60
         
         # Check if it's a working day
         is_working_day = current_day in self.working_days
@@ -118,10 +123,10 @@ class Entity_Generator:
         --------
         float : Time to wait in days
         """
-        # Add offset to align with 9 AM start
-        adjusted_time = self.env.now + (9/24)
-        current_day = int(adjusted_time) % 7
-        current_hour = (adjusted_time % 1) * 24
+        # Apply offset to align simulation time 0
+        adjusted_time_minutes = self.env.now + self.start_minutes_offset
+        current_day = (int(adjusted_time_minutes) // 1440) % 7
+        current_hour = (adjusted_time_minutes % 1440) / 60
         
         start_hour, end_hour = self.working_hours
         
@@ -134,12 +139,12 @@ class Entity_Generator:
                 days_ahead += 1
                 next_day = (current_day + days_ahead) % 7
             
-            hours_until_next = (24 - current_hour) + (days_ahead - 1) * 24 + start_hour
-            return hours_until_next / 24
+            minutes_until_next = (24 - current_hour) * 60 + (days_ahead - 1) * 1440 + start_hour * 60
+            return minutes_until_next
         
         # If we're in a working day but before hours, wait until start_hour today
         if current_day in self.working_days and current_hour < start_hour:
-            return (start_hour - current_hour) / 24
+            return (start_hour - current_hour) * 60
         
         # If we're on a non-working day, find the next working day
         if current_day not in self.working_days:
@@ -149,8 +154,8 @@ class Entity_Generator:
                 days_ahead += 1
                 next_day = (current_day + days_ahead) % 7
             
-            hours_until_next = (24 - current_hour) + (days_ahead - 1) * 24 + start_hour
-            return hours_until_next / 24
+            minutes_until_next = (24 - current_hour) * 60 + (days_ahead - 1) * 1440 + start_hour * 60
+            return minutes_until_next
         
         return 0
     
@@ -160,36 +165,48 @@ class Entity_Generator:
         
         Returns:
         --------
-        float : Inter-arrival time in days
+        float : Inter-arrival time in minutes
         """
-        if self.arrival_distribution == 'constant':
-            # Evenly spaced arrivals throughout the day
-            working_hours_per_day = self.working_hours[1] - self.working_hours[0]
-            inter_arrival_hours = working_hours_per_day / self.arrival_rate_per_day
-            return inter_arrival_hours / 24
+        distribution = self.arrival_params.get('distribution', 'constant')
+        params = self.arrival_params.get('params', {})
         
-        elif self.arrival_distribution == 'poisson':
+        if distribution == 'constant':
+            # Evenly spaced arrivals throughout working hours
+            working_hours_per_day = self.working_hours[1] - self.working_hours[0]
+            rate = params.get('rate', 1) # arrivals per day
+            inter_arrival_minutes = (working_hours_per_day * 60) / rate
+            return inter_arrival_minutes
+        
+        elif distribution == 'poisson':
             # Exponential inter-arrival times (Poisson process)
             working_hours_per_day = self.working_hours[1] - self.working_hours[0]
-            rate = self.arrival_rate_per_day / (working_hours_per_day / 24)
-            inter_arrival_days = np.random.exponential(1.0 / rate)
-            return inter_arrival_days
+            # rate = arrivals per day / working minutes per day
+            if isinstance(params, list):
+                rate_per_day = params[0]
+            elif isinstance(params, (int, float)):
+                rate_per_day = params
+            else:
+                rate_per_day = params.get('lambda', params.get('rate', 1))
+            
+            rate_per_minute = rate_per_day / (working_hours_per_day * 60)
+            inter_arrival_minutes = np.random.exponential(1.0 / rate_per_minute)
+            return inter_arrival_minutes
         
-        elif self.arrival_distribution == 'uniform':
+        elif distribution == 'uniform':
             # Uniform distribution
-            min_time = self.arrival_params.get('min', 0.5 / 24)  # 30 minutes default
-            max_time = self.arrival_params.get('max', 2 / 24)  # 2 hours default
+            min_time = params.get('min', 30)  # minutes
+            max_time = params.get('max', 120)  # minutes
             return np.random.uniform(min_time, max_time)
         
-        elif self.arrival_distribution == 'exponential':
-            # Exponential with custom rate
-            rate = self.arrival_params.get('rate', self.arrival_rate_per_day)
+        elif distribution == 'exponential':
+            # Exponential with custom rate (arrivals per minute)
+            rate = params.get('rate', 1/60)
             return np.random.exponential(1.0 / rate)
         
         else:
             # Default to constant
             working_hours_per_day = self.working_hours[1] - self.working_hours[0]
-            return (working_hours_per_day / self.arrival_rate_per_day) / 24
+            return (working_hours_per_day * 60) / params.get('rate', 1)
     
     def get_entity_properties(self):
         """
@@ -246,18 +263,18 @@ class Entity_Generator:
             inter_arrival_time = self.get_inter_arrival_time()
             
             # Make sure we don't go past working hours
-            adjusted_time = self.env.now + (9/24)
-            current_hour = (adjusted_time % 1) * 24
+            adjusted_time_minutes = self.env.now + self.start_minutes_offset
+            current_hour = (adjusted_time_minutes % 1440) / 60
             end_hour = self.working_hours[1]
             hours_remaining = end_hour - current_hour
             
             if hours_remaining <= 0:
                 # We're at or past end of working hours, stop generating for today
                 # The next loop will handle waiting until next working time
-                yield self.env.timeout(0.01)
-            elif inter_arrival_time > (hours_remaining / 24):
+                yield self.env.timeout(1)
+            elif inter_arrival_time > (hours_remaining * 60):
                 # Next arrival would be past working hours, stop generating for today
-                yield self.env.timeout(hours_remaining / 24 + 0.01)
+                yield self.env.timeout(hours_remaining * 60 + 1)
             else:
                 yield self.env.timeout(inter_arrival_time)
 
@@ -305,9 +322,9 @@ if __name__ == "__main__":
         entity_properties={'is_pap': False, 'is_positive': False}
     )
     
-    # Run simulation for 3 days
+    # Run simulation for 3 days (3 * 24 * 60 minutes)
     print("Starting simulation...\n")
-    env.run(until=3)
+    env.run(until=3 * 1440)
     print(f"\nSimulation complete!")
     print(f"Pap slides generated: {pap_generator.entity_count}")
     print(f"Non-Pap slides generated: {non_pap_generator.entity_count}")
