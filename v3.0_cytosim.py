@@ -236,10 +236,7 @@ non_pap_patient_generator = Entity_Generator(
 )
 
 
-# Defining fixation (moved because it's now referenced by accessioning_gate)
-# Note: In the final script, make sure all dependent objects are defined before use.
-# Actually, fixation was defined before generator in the original code, but I moved it into the previous chunk.
-# Wait, I should ensure fixation is defined BEFORE accessioning_gate or at least before it's used.
+
 
 # Run the Simulation
 SIM_DURATION = 5 * 1440 # 5 days in minutes

@@ -1,0 +1,114 @@
+# ================================
+# Parameter Definition File
+# ================================
+
+# ===============================
+# Project Title
+# ===============================
+project_title: "GMC_Banavati_CaCx_sim"
+
+# ===============================
+# Simulation Parameters
+# ===============================
+simulation:
+  name: "GMC_Banavati_Histopath_Sim"
+  run_time: 1000 # in days = 3 years approx
+  experiment_no: 1
+  no_of_sims: 50
+
+# ===============================
+# Histopathology
+# ===============================
+#Workload or arrival rates
+#Cytology
+cervical_biopsies_per_day:
+  distribution: "poisson" #Distribution of the arrival rate
+  params: [1] # This is the lambda or number of Cervical Biopsy patients per day
+other_biopsies_per_day:
+  distribution: "poisson" #Patients arrive from a poission process - This will be multiplied by the slide to patient ratio
+  params: [50]
+
+slide_pt_ratio: 20 # Every patient generates 20 slides - The number is quite high for histopathology
+
+# ===============================
+# Service Times
+# ===============================
+histo_fixation_time:
+  distribution: "uniform"
+  params: [360, 4320] # hours per sample # Constant time
+
+histo_grossing_time:
+  distribution: "uniform"
+  params: [10, 100] # minutes per sample # Constant time
+
+histo_tissue_processing_time:
+  distribution: "constant"
+  params: 1320 # minutes per batch # Constant time
+
+histo_embedding_time:
+  distribution: "constant"
+  params: 1 # minute per sample # Constant time
+
+histo_sectioning_time:
+  distribution: "constant"
+  params: 1 # minute per sample # Constant time
+
+histo_staining_time: #This is cumulative of staining, drying, labelling and mounting,
+  distribution: "constant"
+  params: 35 # minutes per batch # Constant time
+
+histo_reporting_time: #This is inclusive of screening the slides, writing down preliminary findings and finally typing the final findings and releasing the report
+  distribution: "triangular"
+  params: [2, 10, 100] # minimum, mode, maximum in minutes per patient
+
+# ===============================
+# Cyto Resources
+# ===============================
+#Number of Technicians and Pathologists
+histo_technicians:
+  num_cytotech: 11
+  histotech_schedule:
+    Timeslot_1:
+      days: [0, 1, 2, 3, 4, 5] #Monday to Friday
+      hours: [9, 17] # 9 am to 5 pm
+    Timeslot_2:
+      days: [6]
+      hours: [9, 13] # 9 am to 1 pm
+
+histo_pathologists:
+  num_cytopath: 3 # These are the number of faculties that are posted in cyto I'm not including the residents as they're not licensed to sign off on the report yet
+  histopath_schedule:
+    Timeslot_1:
+      days: [0, 1, 2, 3, 4, 5] #Monday to Friday
+      hours: [10, 14] # 10 am to 2 pm
+    Timeslot_2:
+      days: [6]
+      hours: [10, 12] # 10 am to 12 pm
+
+#Infrastructure
+histo_grossing_station:
+  num_stations: 1 #manual staining station
+  batch_size: 2 # samples per batch for grossing
+
+histo_tissue_processor:
+  num_stations: 1 #manual staining station
+  batch_size: 90 # samples per batch for tissue processing
+
+histo_embedding_station:
+  num_stations: 1 #manual staining station
+  batch_size: 1 # samples per batch for embedding
+
+histo_sectioning_station:
+  num_stations: 1 #manual staining station
+  batch_size: 1 # samples per batch for sectioning
+
+histo_staining_station:
+  num_stations: 1 #manual staining station
+  batch_size: 25 # samples per batch for staining
+
+#Consumables
+histo_staining_kits:
+  num_kits: 10 #Stain per ml calculated by 100 ml stain per kit and a total of 5 kits #Number of staining kits they have
+  stain_per_kit: 100 #ml per kit
+  reagent_per_slide: 0.1 #ml per slide Calculated from 50 mL kit pach staining 500 slides
+
