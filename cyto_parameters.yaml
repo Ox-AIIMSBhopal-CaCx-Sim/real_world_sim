@@ -78,7 +78,7 @@ cyto_manual_staining_station:
 
 #Consumables
 cyto_staining_kits:
-  num_kits: 5 #Stain per ml calculated by 100 ml stain per kit and a total of 5 kits #Number of staining kits they have
+  num_kits: 5000 #Stain per ml calculated by 100 ml stain per kit and a total of 5 kits #Number of staining kits they have
   stain_per_kit: 100 #ml per kit
   reagent_per_slide: 0.1 #ml per slide Calculated from 50 mL kit pach staining 500 slides
 

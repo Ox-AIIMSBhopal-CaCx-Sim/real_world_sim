@@ -11,11 +11,21 @@ from typing import Any, Dict, List, Optional
 from pathlib import Path
 import yaml
 import csv
+import calendar
 
 # Configuration
 SIMULATION_START_DATETIME = datetime(2026, 5, 1, 8, 0, 0)  # Simulation starts on May 1st 2026 at 8am
 np.random.seed(42)  # To make the responses deterministic for testing
 sim_env = simpy.Environment()
+
+
+def add_months(dt: datetime, months: int) -> datetime:
+    """Return a datetime advanced by a given number of calendar months."""
+    month = dt.month - 1 + months
+    year = dt.year + month // 12
+    month = month % 12 + 1
+    day = min(dt.day, calendar.monthrange(year, month)[1])
+    return dt.replace(year=year, month=month, day=day)
 
 # Helper Functions
 def read_parameters(parameter_path: Path) -> Dict[str, Any]:
@@ -239,8 +249,17 @@ non_pap_patient_generator = Entity_Generator(
 
 
 # Run the Simulation
-SIM_DURATION = 5 * 1440 # 5 days in minutes
-print(f"--- Starting Cytopathology Simulation ({SIM_DURATION} minutes / 5 days) ---")
+SIMULATION_END_DATETIME = add_months(SIMULATION_START_DATETIME, 12)
+WARMUP_END_DATETIME = add_months(SIMULATION_START_DATETIME, 1)
+SIM_DURATION = int((SIMULATION_END_DATETIME - SIMULATION_START_DATETIME).total_seconds() / 60)
+WARMUP_DURATION_MINUTES = int((WARMUP_END_DATETIME - SIMULATION_START_DATETIME).total_seconds() / 60)
+
+print(
+    f"--- Starting Cytopathology Simulation ({SIM_DURATION} minutes / 12 months) ---"
+)
+print(
+    f"--- Warm-up Period: first month until {WARMUP_END_DATETIME.strftime('%Y-%m-%d %H:%M')} (slides not recorded) ---"
+)
 sim_env.run(until=SIM_DURATION)
 print("--- Simulation Complete ---\n")
 
@@ -276,6 +295,9 @@ for p in all_patients:
 
 slide_results = []
 for s in all_slides:
+    if s.arrival_time < WARMUP_DURATION_MINUTES:
+        continue
+
     # Safely get timestamp dictionaries
     queue_times = getattr(s, 'queue_entry_time', {})
     start_times = getattr(s, 'process_start_time', {})
@@ -298,6 +320,7 @@ print(df_patients.head(20).to_string(index=False))
 
 print("\n--- Slide Timestamps (First 20) ---")
 print(df_slides.head(20).to_string(index=False))
+print(f"\nRecorded slides after warm-up: {len(df_slides)}")
 
 # Saving to CSV for further analysis
 df_patients.to_csv("simulation_patient_timestamps.csv", index=False)
