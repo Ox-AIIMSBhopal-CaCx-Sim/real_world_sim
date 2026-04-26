@@ -279,7 +279,7 @@ grossing = manual_generic_process(
     resources_requested=[histo_grossing_station],
     service_time_params={
         'distribution': params_dict.get('histo_grossing_time', {}).get('distribution', 'continuous'),
-        'params': params_dict.get('histo_grossing_time', {}).get('params', [360, 4320])
+        'params': params_dict.get('histo_grossing_time', {}).get('params', [10, 100])
     },
     is_batched=False,
     next_process=block_generation_gate,
