@@ -4,6 +4,10 @@ These classes represent different entities that flow through the hospital system
 """
 
 from datetime import datetime
+from typing import Literal
+
+CaseComplexity = Literal["low", "high"]
+_VALID_CASE_COMPLEXITY = frozenset({"low", "high"})
 
 
 class Generic_Entity(object):
@@ -12,7 +16,14 @@ class Generic_Entity(object):
     This can be a slide, sample, patient, or any other object that moves through processes.
     """
     
-    def __init__(self, id, entity_type, arrival_time=None, **properties):
+    def __init__(
+        self,
+        id,
+        entity_type,
+        arrival_time=None,
+        case_complexity: CaseComplexity = "low",
+        **properties,
+    ):
         """
         Initialize a hospital entity.
         
@@ -24,12 +35,20 @@ class Generic_Entity(object):
             Type of entity (e.g., 'cyto_slide', 'histo_sample', 'patient')
         arrival_time : float, optional
             Simulation time when entity arrived in the system
+        case_complexity : {'low', 'high'}, optional
+            Case complexity (default 'low').
         **properties : dict
             Additional properties specific to the entity type
         """
         self.id = id
         self.entity_type = entity_type
         self.arrival_time = arrival_time
+
+        if case_complexity not in _VALID_CASE_COMPLEXITY:
+            raise ValueError(
+                f"case_complexity must be one of {sorted(_VALID_CASE_COMPLEXITY)}, got {case_complexity!r}"
+            )
+        self.case_complexity = case_complexity
         
         # Store all additional properties
         for key, value in properties.items():
@@ -125,7 +144,10 @@ class Generic_Entity(object):
     
     def __repr__(self):
         """String representation of the entity."""
-        return f"Hospital_Entity(id={self.id}, type={self.entity_type})"
+        return (
+            f"Hospital_Entity(id={self.id}, type={self.entity_type}, "
+            f"case_complexity={self.case_complexity!r})"
+        )
 
 
 class CytoSlide(Generic_Entity):
@@ -133,7 +155,15 @@ class CytoSlide(Generic_Entity):
     Represents a cytology slide.
     """
     
-    def __init__(self, id, arrival_time=None, is_pap=False, is_positive=False, **kwargs):
+    def __init__(
+        self,
+        id,
+        arrival_time=None,
+        is_pap=False,
+        is_positive=False,
+        case_complexity: CaseComplexity = "low",
+        **kwargs,
+    ):
         """
         Initialize a cytology slide.
         
@@ -147,6 +177,7 @@ class CytoSlide(Generic_Entity):
             Whether this is a Pap smear slide
         is_positive : bool
             Whether the slide is positive (only relevant for Pap smears)
+        case_complexity : {'low', 'high'}, optional
         **kwargs : dict
             Additional properties
         """
@@ -154,6 +185,7 @@ class CytoSlide(Generic_Entity):
             id=id,
             entity_type='cyto_slide',
             arrival_time=arrival_time,
+            case_complexity=case_complexity,
             is_pap=is_pap,
             is_positive=is_positive if is_pap else None,
             **kwargs
@@ -162,8 +194,10 @@ class CytoSlide(Generic_Entity):
     def __repr__(self):
         if self.is_pap:
             status = 'Positive' if self.is_positive else 'Negative'
-            return f"CytoSlide(id={self.id}, Pap={status})"
-        return f"CytoSlide(id={self.id}, Non-Pap)"
+            return (
+                f"CytoSlide(id={self.id}, Pap={status}, case_complexity={self.case_complexity!r})"
+            )
+        return f"CytoSlide(id={self.id}, Non-Pap, case_complexity={self.case_complexity!r})"
 
 
 class HistoSample(Generic_Entity):
@@ -171,8 +205,16 @@ class HistoSample(Generic_Entity):
     Represents a histology sample/biopsy.
     """
     
-    def __init__(self, id, arrival_time=None, size='small', is_cervical=False, 
-                 is_positive=False, **kwargs):
+    def __init__(
+        self,
+        id,
+        arrival_time=None,
+        size="small",
+        is_cervical=False,
+        is_positive=False,
+        case_complexity: CaseComplexity = "low",
+        **kwargs,
+    ):
         """
         Initialize a histology sample.
         
@@ -183,11 +225,12 @@ class HistoSample(Generic_Entity):
         arrival_time : float, optional
             Simulation time of arrival
         size : str
-            Size of the biopsy ('small', 'medium', 'large')
+            Biopsy size: 'small', 'medium', or 'large' (histo samples only)
         is_cervical : bool
             Whether this is a cervical biopsy
         is_positive : bool
             Whether the sample is positive for disease
+        case_complexity : {'low', 'high'}, optional
         **kwargs : dict
             Additional properties
         """
@@ -195,6 +238,7 @@ class HistoSample(Generic_Entity):
             id=id,
             entity_type='histo_sample',
             arrival_time=arrival_time,
+            case_complexity=case_complexity,
             size=size,
             is_cervical=is_cervical,
             is_positive=is_positive,
@@ -204,7 +248,10 @@ class HistoSample(Generic_Entity):
     def __repr__(self):
         tissue = 'Cervical' if self.is_cervical else 'Non-Cervical'
         status = 'Positive' if self.is_positive else 'Negative'
-        return f"HistoSample(id={self.id}, {tissue}, {self.size}, {status})"
+        return (
+            f"HistoSample(id={self.id}, {tissue}, size={self.size}, {status}, "
+            f"case_complexity={self.case_complexity!r})"
+        )
 
 
 class Patient(Generic_Entity):
@@ -212,7 +259,15 @@ class Patient(Generic_Entity):
     Represents a patient in the hospital system.
     """
     
-    def __init__(self, id, arrival_time=None, age=None, diagnosis=None, **kwargs):
+    def __init__(
+        self,
+        id,
+        arrival_time=None,
+        age=None,
+        diagnosis=None,
+        case_complexity: CaseComplexity = "low",
+        **kwargs,
+    ):
         """
         Initialize a patient entity.
         
@@ -226,6 +281,7 @@ class Patient(Generic_Entity):
             Patient age
         diagnosis : str, optional
             Initial diagnosis or reason for visit
+        case_complexity : {'low', 'high'}, optional
         **kwargs : dict
             Additional properties
         """
@@ -233,13 +289,17 @@ class Patient(Generic_Entity):
             id=id,
             entity_type='patient',
             arrival_time=arrival_time,
+            case_complexity=case_complexity,
             age=age,
             diagnosis=diagnosis,
             **kwargs
         )
     
     def __repr__(self):
-        return f"Patient(id={self.id}, age={self.age}, diagnosis={self.diagnosis})"
+        return (
+            f"Patient(id={self.id}, age={self.age}, diagnosis={self.diagnosis}, "
+            f"case_complexity={self.case_complexity!r})"
+        )
 
 
 # Example usage and testing
@@ -305,6 +365,7 @@ if __name__ == "__main__":
         id='CUSTOM-1',
         entity_type='blood_sample',
         arrival_time=2.5,
+        case_complexity='high',
         test_type='CBC',
         priority='urgent',
         collection_site='ER'

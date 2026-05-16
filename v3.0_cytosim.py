@@ -45,7 +45,24 @@ params_dict = get_parameters()
 
 # Derive default slide ratios from parameters
 PAP_SLIDE_RATIO = params_dict.get('pap_per_day', {}).get('slide_pt_ratio', 1)
-NON_PAP_SLIDE_RATIO = params_dict.get('non_pap_per_day', {}).get('slide_pt_ratio', 3)
+SLIDE_PT_RATIO_BY_CC = params_dict.get('slide_pt_ratio_by_case_complexity', {'high': 4, 'low': 1})
+NON_PAP_SLIDE_RATIO_DEFAULT = SLIDE_PT_RATIO_BY_CC.get('low', 1)
+CASE_COMPLEXITY_P_HIGH = params_dict.get('case_complexity', {}).get('p_high', 0.2)
+
+
+def sample_case_complexity() -> str:
+    """Return 'high' or 'low' using case_complexity.p_high from parameters."""
+    return 'high' if np.random.random() < CASE_COMPLEXITY_P_HIGH else 'low'
+
+
+def pap_patient_properties() -> Dict[str, Any]:
+    cc = sample_case_complexity()
+    return {'case_complexity': cc, 'num_slides': PAP_SLIDE_RATIO}
+
+
+def non_pap_patient_properties() -> Dict[str, Any]:
+    cc = sample_case_complexity()
+    return {'case_complexity': cc, 'num_slides': int(SLIDE_PT_RATIO_BY_CC.get(cc, NON_PAP_SLIDE_RATIO_DEFAULT))}
 
 # Defining pap smear and non pap smear patient Entities
 class PapSmearPatient(Generic_Entity):
@@ -70,7 +87,7 @@ class PapSmearPatient(Generic_Entity):
 class notPapSmearPatient(Generic_Entity):
     all_non_pap_smears = []
     
-    def __init__(self, id: int, arrival_time: float, num_slides: int = NON_PAP_SLIDE_RATIO, **properties: Any) -> None:
+    def __init__(self, id: int, arrival_time: float, num_slides: int = NON_PAP_SLIDE_RATIO_DEFAULT, **properties: Any) -> None:
         non_pap_id = f"NonPap-{id:06d}"
         super().__init__(
             id=non_pap_id,
@@ -170,10 +187,15 @@ reporting = manual_generic_process(
     env=sim_env,
     process_name='Reporting',
     resources_requested=[cytopathologist],
-    service_time_params={
-        'distribution': 'triangular',
-        'params': params_dict.get('cyto_reporting_time', {}).get('params', [2, 10, 100])
-    },
+    service_time_params=params_dict.get(
+        'cyto_reporting_time',
+        {
+            'by_case_complexity': {
+                'high': {'distribution': 'triangular', 'params': [10, 15, 30]},
+                'low': {'distribution': 'triangular', 'params': [2, 5, 10]},
+            }
+        },
+    ),
     is_batched = False,
     next_process = None,
 )
@@ -228,7 +250,8 @@ pap_patient_generator = Entity_Generator(
     arrival_params={
         'distribution':params_dict.get('pap_per_day', {}).get('distribution', 'poisson'),
         'params':params_dict.get('pap_per_day', {}).get('params', [5])
-    }
+    },
+    entity_properties=pap_patient_properties,
 )
 
 non_pap_patient_generator = Entity_Generator(
@@ -242,7 +265,8 @@ non_pap_patient_generator = Entity_Generator(
     arrival_params={
         'distribution':params_dict.get('non_pap_per_day', {}).get('distribution', 'poisson'),
         'params':params_dict.get('non_pap_per_day', {}).get('params', [20])
-    }
+    },
+    entity_properties=non_pap_patient_properties,
 )
 
 

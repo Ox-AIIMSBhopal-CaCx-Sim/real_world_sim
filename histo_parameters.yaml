@@ -25,21 +25,54 @@ cervical_biopsies_per_day:
   distribution: "poisson" #Distribution of the arrival rate
   params: [1] # This is the lambda or number of Cervical Biopsy patients per day
 other_biopsies_per_day:
-  distribution: "poisson" #Patients arrive from a poission process - This will be multiplied by the slide to patient ratio
-  params: [50]
+  distribution: "poisson" #Patients arrive from a poisson process (slide count follows biopsy size)
+  params: [40]
 
-slide_pt_ratio: 20 # Every patient generates 20 slides - The number is quite high for histopathology
+# Probability each new biopsy patient is high complexity; otherwise low (cervical and non-cervical use the same rule).
+case_complexity:
+  p_high: 0.05
+
+# Slides (blocks) per patient by sampled biopsy size (same map for cervical and non-cervical).
+slide_pt_ratio_by_biopsy_size:
+  small: 1
+  medium: 5
+  large: 20
+
+# Optional weights for biopsy physical size (small / medium / large). If omitted, sizes are sampled uniformly.
+biopsy_size:
+  weights:
+    small: 0.9
+    medium: 0.09
+    large: 0.01
 
 # ===============================
 # Service Times
 # ===============================
+# Fixation duration (minutes) by biopsy size: small 6h, medium 12h, large 48h
 histo_fixation_time:
-  distribution: "uniform"
-  params: [360, 4320] # hours per sample # Constant time
+  by_size:
+    small:
+      distribution: "constant"
+      params: 360 # 6 hours
+    medium:
+      distribution: "constant"
+      params: 720 # 12 hours
+    large:
+      distribution: "constant"
+      params: 2880 # 48 hours
 
+# Grossing duration (minutes) by biopsy size: small 10 min; medium 30 min; large 2 h
 histo_grossing_time:
-  distribution: "uniform"
-  params: [10, 100] # minutes per sample # Constant time
+  by_size:
+    small:
+      distribution: "constant"
+      params: 10
+    medium:
+      distribution: "constant"
+      params: 30 # interpreted as 30 minutes (not 30 hours)
+    large:
+      distribution: "constant"
+      params: 120 # 2 hours
 
 histo_tissue_processing_time:
   distribution: "constant"
@@ -57,9 +90,15 @@ histo_staining_time: #This is cumulative of staining, drying, labelling and moun
   distribution: "constant"
   params: 35 # minutes per batch # Constant time
 
-histo_reporting_time: #This is inclusive of screening the slides, writing down preliminary findings and finally typing the final findings and releasing the report
-  distribution: "triangular"
-  params: [2, 10, 100] # minimum, mode, maximum in minutes per patient
+# Triangular(min, mode, max) in minutes per patient, by case complexity
+histo_reporting_time:
+  by_case_complexity:
+    high:
+      distribution: "triangular"
+      params: [20, 30, 100]
+    low:
+      distribution: "triangular"
+      params: [5, 10, 20]
 
 # ===============================
 # Cyto Resources
@@ -75,6 +114,14 @@ histo_technicians:
       days: [6]
       hours: [9, 13] # 9 am to 1 pm
 
+# Pathology residents (grossing); same working hours as histo_technicians.histotech_schedule in code.
+path_resident:
+  num: 5
+  resident_schedule:
+    Timeslot_1:
+      days: [0, 1, 2, 3, 4, 5, 6] #Monday to Sunday
+      hours: [9, 19] # 9 am to 7 pm
+
 histo_pathologists:
   num_cytopath: 3 # These are the number of faculties that are posted in cyto I'm not including the residents as they're not licensed to sign off on the report yet
   histopath_schedule:
@@ -87,8 +134,8 @@ histo_pathologists:
 
 #Infrastructure
 histo_grossing_station:
-  num_stations: 1 #manual staining station
-  batch_size: 2 # samples per batch for grossing
+  num_stations: 2 #manual staining station
+  batch_size: 1 # samples per batch for grossing
 
 histo_tissue_processor:
   num_stations: 1 #manual staining station

@@ -28,9 +28,17 @@ pap_per_day:
   params: [5] # This is the lambda or number of pap smear patients per day - For pap smears - the slide to patient ratio is 1 for most of the cases (in case of LBC it can be higher)
   slide_pt_ratio: 1 # Every patient generates 1 slide
 non_pap_per_day:
-  distribution: "poisson" #Patients arrive from a poission process - This will be multiplied by the slide to patient ratio
+  distribution: "poisson" #Patients arrive from a poission process - slide count follows case_complexity (see slide_pt_ratio_by_case_complexity)
   params: [20]
-  slide_pt_ratio: 3 # Every patient generates 3 slides
+
+# Probability each new patient (Pap and non-Pap) is high complexity; otherwise low.
+case_complexity:
+  p_high: 0.2 # 20% high complexity, 80% low complexity
+
+# Slides per non-Pap patient only (Pap uses pap_per_day.slide_pt_ratio).
+slide_pt_ratio_by_case_complexity:
+  high: 4
+  low: 1
 
 # ===============================
 # Service Times
@@ -43,9 +51,14 @@ cyto_staining_time: #This is cumulative of staining, drying, labelling and mount
   distribution: "constant"
   params: 35 # minutes per batch # Constant time
 
-cyto_reporting_time: #This is inclusive of screening the slides, writing down preliminary findings and finally typing the final findings and releasing the report
-  distribution: "triangular"
-  params: [2, 10, 100] # minimum, mode, maximum in minutes per patient
+cyto_reporting_time: # minutes per patient; triangular(min, mode, max), chosen by patient case_complexity
+  by_case_complexity:
+    high:
+      distribution: "triangular"
+      params: [10, 15, 30] # minimum, mode, maximum
+    low:
+      distribution: "triangular"
+      params: [2, 5, 10]
 
 # ===============================
 # Cyto Resources

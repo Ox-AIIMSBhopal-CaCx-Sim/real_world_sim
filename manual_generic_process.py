@@ -24,6 +24,35 @@ class manual_generic_process(simpy.events.Process):
         self.batch_size = batch_size # Integer
         self.batch = []
         self.next_process = next_process # Assign the passed parameter
+
+    def _resolve_service_time_params(self, entity):
+        """
+        Resolve optional keyed layouts:
+        - by_size: branch on entity.size (e.g. histo fixation).
+        - by_case_complexity: branch on entity.case_complexity (e.g. reporting).
+        """
+        stp = self.service_time_params
+        if not isinstance(stp, dict):
+            return stp
+        if "by_size" in stp:
+            by_sz = stp["by_size"]
+            sz = getattr(entity, "size", "small")
+            branch = by_sz.get(sz) or by_sz.get("small")
+            if branch is None:
+                raise KeyError(
+                    f"No service_time branch for size={sz!r} and no 'small' fallback in by_size"
+                )
+            return branch
+        if "by_case_complexity" in stp:
+            by_cc = stp["by_case_complexity"]
+            cc = getattr(entity, "case_complexity", "low")
+            branch = by_cc.get(cc) or by_cc.get("low")
+            if branch is None:
+                raise KeyError(
+                    f"No service_time branch for case_complexity={cc!r} and no 'low' fallback in by_case_complexity"
+                )
+            return branch
+        return stp
         
     def _request_all(self, entity_count):
         """Helper to request all resources, handling both Resources and Containers."""
@@ -125,7 +154,7 @@ class manual_generic_process(simpy.events.Process):
         entity.process_start_time[self.process_name] = self.env.now
         
         # Work
-        service_time = self.get_service_time(self.service_time_params)
+        service_time = self.get_service_time(self._resolve_service_time_params(entity))
         yield self.env.timeout(service_time)
         
         # End of process
@@ -166,7 +195,9 @@ class manual_generic_process(simpy.events.Process):
             for ent in ready_batch:
                 ent.process_start_time[self.process_name] = self.env.now
                 
-            process_service_time = self.get_service_time(self.service_time_params)
+            process_service_time = self.get_service_time(
+                self._resolve_service_time_params(ready_batch[0])
+            )
             yield self.env.timeout(process_service_time)
             
             #Note the timestamp for all the entities in the batch at the time that they exit the process

@@ -1,7 +1,7 @@
 import simpy
 import numpy as np
 import generic_generator
-from generic_entity import Generic_Entity
+from generic_entity import Generic_Entity, HistoSample
 from generic_generator import Entity_Generator
 from manual_generic_process import manual_generic_process
 from resource_availability import ScheduledResource, TimeSlot, Schedule
@@ -43,22 +43,71 @@ def get_parameters(parameter_path: Path = Path("histo_parameters.yaml")) -> Dict
 # Load Parameters
 params_dict = get_parameters()
 
-# Derive default slide ratios from parameters
-CERVICAL_SLIDE_RATIO = params_dict.get('cervical_biopsies_per_day', {}).get('slide_pt_ratio', params_dict.get('slide_pt_ratio', 20))
-NON_CERVICAL_SLIDE_RATIO = params_dict.get('other_biopsies_per_day', {}).get('slide_pt_ratio', params_dict.get('slide_pt_ratio', 20))
+# Slides per patient by biopsy size (small / medium / large); same for cervical and non-cervical.
+_DEFAULT_SLIDE_PT_RATIO_BY_SIZE: Dict[str, int] = {"small": 1, "medium": 5, "large": 20}
+if "slide_pt_ratio_by_biopsy_size" in params_dict:
+    SLIDE_PT_RATIO_BY_SIZE: Dict[str, int] = {
+        k: int(v) for k, v in params_dict["slide_pt_ratio_by_biopsy_size"].items()
+    }
+else:
+    SLIDE_PT_RATIO_BY_SIZE = dict(_DEFAULT_SLIDE_PT_RATIO_BY_SIZE)
 
-# Defining cervical biopsy and non cervical biopsy patient Entities
-class CervicalBiopsyPatient(Generic_Entity):
-    all_cervical_biopsies = []
-    
-    def __init__(self, id: int, arrival_time: float, num_slides: int = CERVICAL_SLIDE_RATIO, **properties: Any) -> None:
+CASE_COMPLEXITY_P_HIGH = float(params_dict.get("case_complexity", {}).get("p_high", 0.2))
+NUM_SLIDES_DEFAULT = int(SLIDE_PT_RATIO_BY_SIZE.get("small", 1))
+
+
+def sample_case_complexity() -> str:
+    return "high" if np.random.random() < CASE_COMPLEXITY_P_HIGH else "low"
+
+
+def sample_biopsy_size() -> str:
+    weights_cfg = params_dict.get("biopsy_size", {}).get("weights", {})
+    sizes = ["small", "medium", "large"]
+    if weights_cfg:
+        p = np.array([float(weights_cfg.get(s, 0)) for s in sizes], dtype=float)
+        if p.sum() <= 0:
+            p = np.ones(3) / 3.0
+        else:
+            p = p / p.sum()
+        return str(np.random.choice(sizes, p=p))
+    return str(np.random.choice(sizes))
+
+
+def _biopsy_patient_properties() -> Dict[str, Any]:
+    size = sample_biopsy_size()
+    cc = sample_case_complexity()
+    return {
+        "case_complexity": cc,
+        "size": size,
+        "num_slides": int(SLIDE_PT_RATIO_BY_SIZE.get(size, NUM_SLIDES_DEFAULT)),
+    }
+
+
+# Biopsy patients are HistoSample instances (size, case_complexity) plus simulation-specific fields.
+class CervicalBiopsyPatient(HistoSample):
+    all_cervical_biopsies: List["CervicalBiopsyPatient"] = []
+
+    def __init__(
+        self,
+        id: int,
+        arrival_time: float,
+        num_slides: int = NUM_SLIDES_DEFAULT,
+        size: str = "small",
+        case_complexity: str = "low",
+        is_positive: bool = False,
+        **properties: Any,
+    ) -> None:
         cerv_id = f"Cerv-{id:06d}"
         super().__init__(
             id=cerv_id,
-            entity_type="cervical_biopsy",
             arrival_time=arrival_time,
+            size=size,
+            is_cervical=True,
+            is_positive=is_positive,
+            case_complexity=case_complexity,
             **properties,
         )
+        self.entity_type = "cervical_biopsy"
         self.num_slides = num_slides
         self.slides_completed = 0
         self.entry_timestamp = SIMULATION_START_DATETIME + timedelta(minutes=arrival_time)
@@ -67,17 +116,31 @@ class CervicalBiopsyPatient(Generic_Entity):
         self.entry_timestamp_minutes = arrival_time
         CervicalBiopsyPatient.all_cervical_biopsies.append(self)
 
-class NonCervicalBiopsyPatient(Generic_Entity):
-    all_non_cervical_biopsies = []
-    
-    def __init__(self, id: int, arrival_time: float, num_slides: int = NON_CERVICAL_SLIDE_RATIO, **properties: Any) -> None:
+
+class NonCervicalBiopsyPatient(HistoSample):
+    all_non_cervical_biopsies: List["NonCervicalBiopsyPatient"] = []
+
+    def __init__(
+        self,
+        id: int,
+        arrival_time: float,
+        num_slides: int = NUM_SLIDES_DEFAULT,
+        size: str = "small",
+        case_complexity: str = "low",
+        is_positive: bool = False,
+        **properties: Any,
+    ) -> None:
         non_cerv_id = f"NonCerv-{id:06d}"
         super().__init__(
             id=non_cerv_id,
-            entity_type="non_cervical_biopsy",
             arrival_time=arrival_time,
+            size=size,
+            is_cervical=False,
+            is_positive=is_positive,
+            case_complexity=case_complexity,
             **properties,
         )
+        self.entity_type = "non_cervical_biopsy"
         self.num_slides = num_slides
         self.slides_completed = 0
         self.entry_timestamp = SIMULATION_START_DATETIME + timedelta(minutes=arrival_time)
@@ -121,6 +184,18 @@ histotech_schedule = create_schedule_from_params("Histotech Schedule", histotech
 histopath_params = params_dict.get('histo_pathologists', {}).get('histopath_schedule', {})
 histopath_schedule = create_schedule_from_params("Histopath Schedule", histopath_params)
 
+# Path residents: YAML key is path_resident (singular). Fall back to technician hours if no schedule.
+_path_resident_cfg = params_dict.get("path_resident") or params_dict.get("path_residents") or {}
+_resident_sched_params = _path_resident_cfg.get("resident_schedule") or _path_resident_cfg.get(
+    "histotech_schedule"
+)
+if _resident_sched_params:
+    path_resident_schedule = create_schedule_from_params(
+        "Resident Schedule", _resident_sched_params
+    )
+else:
+    path_resident_schedule = histotech_schedule
+
 # Defining Resources
 num_histotech = params_dict.get('histo_technicians', {}).get('num_cytotech', 1)
 histotechnician = ScheduledResource(
@@ -138,6 +213,15 @@ histopathologist = ScheduledResource(
     schedule=histopath_schedule,
     simulation_start_datetime=SIMULATION_START_DATETIME,
     name="Histopathologists"
+)
+
+num_path_resident = int(params_dict.get("path_resident", {}).get("num", 5))
+path_resident = ScheduledResource(
+    env=sim_env,
+    capacity=num_path_resident,
+    schedule=path_resident_schedule,
+    simulation_start_datetime=SIMULATION_START_DATETIME,
+    name="PathResidents",
 )
 
 # Non-scheduled Resources
@@ -173,6 +257,14 @@ histo_staining_reagents = simpy.Container(env=sim_env, capacity=total_reagent_ca
 # Reagent consumption amount per slide
 reagent_per_slide = reagent_config.get('reagent_per_slide', 0.1)
 
+# Batch sizes for batched stations (from YAML infrastructure sections)
+TISSUE_PROCESSOR_BATCH_SIZE = int(
+    params_dict.get("histo_tissue_processor", {}).get("batch_size", 90)
+)
+STAINING_BATCH_SIZE = int(
+    params_dict.get("histo_staining_station", {}).get("batch_size", 30)
+)
+
 # Sync Point: Aggregating slides back to patient
 def slide_to_patient_aggregation(slide):
     """Callback to sync slides. Once all slides for a patient are done, start reporting."""
@@ -186,23 +278,44 @@ def slide_to_patient_aggregation(slide):
     return None # Slide entity ends its lifecycle here
 
 
-#Defining the different processes
-
 # 6) Reporting
+
+_DEFAULT_HISTO_REPORTING_TIME = {
+    "by_case_complexity": {
+        "high": {"distribution": "triangular", "params": [20, 30, 100]},
+        "low": {"distribution": "triangular", "params": [5, 10, 20]},
+    }
+}
+
+_DEFAULT_HISTO_FIXATION_TIME = {
+    "by_size": {
+        "small": {"distribution": "constant", "params": 360},
+        "medium": {"distribution": "constant", "params": 720},
+        "large": {"distribution": "constant", "params": 2880},
+    }
+}
+
+_DEFAULT_HISTO_GROSSING_TIME = {
+    "by_size": {
+        "small": {"distribution": "constant", "params": 10},
+        "medium": {"distribution": "constant", "params": 30},
+        "large": {"distribution": "constant", "params": 120},
+    }
+}
 
 reporting = manual_generic_process(
     env=sim_env,
     process_name="Reporting",
     resources_requested=[histopathologist],
-    service_time_params={
-        'distribution': params_dict.get('histo_reporting_time', {}).get('distribution', 'triangular'),
-        'params': params_dict.get('histo_reporting_time', {}).get('params', [2,10,100])
-    },
+    service_time_params=params_dict.get(
+        "histo_reporting_time", _DEFAULT_HISTO_REPORTING_TIME
+    ),
     is_batched=False,
     next_process=None,
 )
 
-# 5) Staining
+
+# 5) Staining and Slide Preparation
 staining = manual_generic_process(
     env=sim_env,
     process_name="Staining",
@@ -212,7 +325,7 @@ staining = manual_generic_process(
         'params': params_dict.get('histo_staining_time', {}).get('params', [35])
     },
     is_batched=True,
-    batch_size=30,
+    batch_size=STAINING_BATCH_SIZE,
     next_process=slide_to_patient_aggregation,
 )
 
@@ -252,7 +365,7 @@ tissue_processing = manual_generic_process(
         'params': params_dict.get('histo_tissue_processing_time', {}).get('params', [1320])
     },
     is_batched=True,
-    batch_size=90,
+    batch_size=TISSUE_PROCESSOR_BATCH_SIZE,
     next_process=embedding,
 )
 
@@ -276,11 +389,10 @@ block_generation_gate = BlockGenerationGate()
 grossing = manual_generic_process(
     env=sim_env,
     process_name="Grossing",
-    resources_requested=[histo_grossing_station],
-    service_time_params={
-        'distribution': params_dict.get('histo_grossing_time', {}).get('distribution', 'continuous'),
-        'params': params_dict.get('histo_grossing_time', {}).get('params', [10, 100])
-    },
+    resources_requested=[histo_grossing_station, path_resident],
+    service_time_params=params_dict.get(
+        "histo_grossing_time", _DEFAULT_HISTO_GROSSING_TIME
+    ),
     is_batched=False,
     next_process=block_generation_gate,
 )
@@ -290,10 +402,9 @@ fixation = manual_generic_process(
     env=sim_env,
     process_name="Fixation",
     resources_requested=[],
-    service_time_params={
-        'distribution': params_dict.get('histo_fixation_time', {}).get('distribution', 'continuous'),
-        'params': params_dict.get('histo_fixation_time', {}).get('params', [360, 4320])
-    },
+    service_time_params=params_dict.get(
+        "histo_fixation_time", _DEFAULT_HISTO_FIXATION_TIME
+    ),
     is_batched=False,
     next_process=grossing,
 )
@@ -310,7 +421,8 @@ cervical_patient_generator = Entity_Generator(
     arrival_params={
         'distribution': params_dict.get('cervical_biopsies_per_day', {}).get('distribution', 'poisson'),
         'params': params_dict.get('cervical_biopsies_per_day', {}).get('params', [1])
-    }
+    },
+    entity_properties=_biopsy_patient_properties,
 )
 
 non_cervical_patient_generator = Entity_Generator(
@@ -324,8 +436,14 @@ non_cervical_patient_generator = Entity_Generator(
     arrival_params={
         'distribution': params_dict.get('other_biopsies_per_day', {}).get('distribution', 'poisson'),
         'params': params_dict.get('other_biopsies_per_day', {}).get('params', [50])
-    }
+    },
+    entity_properties=_biopsy_patient_properties,
 )
+
+""" #NOTES
+1) MUST ADD SIZE OF TISSUE SIZE (SMALL, MEDIUM LARGE and Case Complexity also is dependent on that)
+2) FIXATION TIME WILL DEPEND AND NUMBER OF BLOCKS GENERATED ALSO DEPEND. 
+3) Service time for reporting is also dependent on slide size """
 
 # --- Print Summary of Parameters Used ---
 print("=========================================")
@@ -373,6 +491,9 @@ for p in all_patients:
         'Patient ID': p.id,
         'Type': p.entity_type,
         'Arrival': f"{p.entry_timestamp_datetime.strftime('%Y-%m-%d %H:%M')}",
+        'Num slides': getattr(p, 'num_slides', 'N/A'),
+        'Biopsy size': getattr(p, 'size', 'N/A'),
+        'Case complexity': getattr(p, 'case_complexity', 'N/A'),
         'Reporting Queue': to_datetime_str(queue_times.get('Reporting', 'N/A')),
         'Reporting Start': to_datetime_str(start_times.get('Reporting', 'N/A')),
         'Reporting End': to_datetime_str(end_times.get('Reporting', 'N/A')),
@@ -424,3 +545,26 @@ print(f"\nRecorded slides after warm-up: {len(df_slides)}")
 df_patients.to_csv("histo_simulation_patient_timestamps.csv", index=False)
 df_slides.to_csv("histo_simulation_slide_timestamps.csv", index=False)
 print("\nResults saved to 'histo_simulation_patient_timestamps.csv' and 'histo_simulation_slide_timestamps.csv'")
+
+
+# MAchine resource utilisation percentage
+# HR utilisation percentage
+# Additional processes which can be bottlenecks
+# Model limitations are adverse events - Strikes, machine not working, 
+# Model should also need to identify when the machine needs to be serviced because if the machine is not 
+# Incident register - which machine breaks down by what frequency
+# Contingency plans cannot run forever
+# After how many days after breakdown does the queues explode
+# TAT will increase expoenntially, we will stop the billing after 8th day. 
+# Can also work on Sundays
+# Nice implementations of the model. 
+# Predictive Daily modelling - how do I distribute resources today
+# 
+
+# What features about UI
+# Tell me all the assumptions - tweak all the parameters
+# All the Graphs/numbers and Tables
+# Details of a report - Input parameters
+# KPI Graph and Table 
+# KPI that we are measuring 
+
