@@ -1,0 +1,161 @@
+# ================================
+# Parameter Definition File
+# ================================
+
+# ===============================
+# Project Title
+# ===============================
+project_title: "GMC_Banavati_CaCx_sim"
+
+# ===============================
+# Simulation Parameters
+# ===============================
+simulation:
+  name: "GMC_Banavati_Histopath_Sim"
+  run_time: 1000 # in days = 3 years approx
+  experiment_no: 1
+  no_of_sims: 50
+
+# ===============================
+# Histopathology
+# ===============================
+#Workload or arrival rates
+#Cytology
+cervical_biopsies_per_day:
+  distribution: "poisson" #Distribution of the arrival rate
+  params: [1] # This is the lambda or number of Cervical Biopsy patients per day
+other_biopsies_per_day:
+  distribution: "poisson" #Patients arrive from a poisson process (slide count follows biopsy size)
+  params: [40]
+
+# Probability each new biopsy patient is high complexity; otherwise low (cervical and non-cervical use the same rule).
+case_complexity:
+  p_high: 0.05
+
+# Slides (blocks) per patient by sampled biopsy size (same map for cervical and non-cervical).
+slide_pt_ratio_by_biopsy_size:
+  small: 1
+  medium: 5
+  large: 20
+
+# Optional weights for biopsy physical size (small / medium / large). If omitted, sizes are sampled uniformly.
+biopsy_size:
+  weights:
+    small: 0.9
+    medium: 0.09
+    large: 0.01
+
+# ===============================
+# Service Times
+# ===============================
+# Fixation duration (minutes) by biopsy size: small 6h, medium 12h, large 48h
+histo_fixation_time:
+  by_size:
+    small:
+      distribution: "constant"
+      params: 360 # 6 hours
+    medium:
+      distribution: "constant"
+      params: 720 # 12 hours
+    large:
+      distribution: "constant"
+      params: 2880 # 48 hours
+
+# Grossing duration (minutes) by biopsy size: small 10 min; medium 30 min; large 2 h
+histo_grossing_time:
+  by_size:
+    small:
+      distribution: "constant"
+      params: 10
+    medium:
+      distribution: "constant"
+      params: 30 # interpreted as 30 minutes (not 30 hours)
+    large:
+      distribution: "constant"
+      params: 120 # 2 hours
+
+histo_tissue_processing_time:
+  distribution: "constant"
+  params: 1320 # minutes per batch # Constant time
+
+histo_embedding_time:
+  distribution: "constant"
+  params: 1 # minute per sample # Constant time
+
+histo_sectioning_time:
+  distribution: "constant"
+  params: 1 # minute per sample # Constant time
+
+histo_staining_time: #This is cumulative of staining, drying, labelling and mounting,
+  distribution: "constant"
+  params: 35 # minutes per batch # Constant time
+
+# Triangular(min, mode, max) in minutes per patient, by case complexity
+histo_reporting_time:
+  by_case_complexity:
+    high:
+      distribution: "triangular"
+      params: [20, 30, 100]
+    low:
+      distribution: "triangular"
+      params: [5, 10, 20]
+
+# ===============================
+# Cyto Resources
+# ===============================
+#Number of Technicians and Pathologists
+histo_technicians:
+  num_cytotech: 11
+  histotech_schedule:
+    Timeslot_1:
+      days: [0, 1, 2, 3, 4, 5] #Monday to Friday
+      hours: [9, 17] # 9 am to 5 pm
+    Timeslot_2:
+      days: [6]
+      hours: [9, 13] # 9 am to 1 pm
+
+# Pathology residents (grossing); same working hours as histo_technicians.histotech_schedule in code.
+path_resident:
+  num: 5
+  resident_schedule:
+    Timeslot_1:
+      days: [0, 1, 2, 3, 4, 5, 6] #Monday to Sunday
+      hours: [9, 19] # 9 am to 7 pm
+
+histo_pathologists:
+  num_cytopath: 3 # These are the number of faculties that are posted in cyto I'm not including the residents as they're not licensed to sign off on the report yet
+  histopath_schedule:
+    Timeslot_1:
+      days: [0, 1, 2, 3, 4, 5] #Monday to Friday
+      hours: [10, 14] # 10 am to 2 pm
+    Timeslot_2:
+      days: [6]
+      hours: [10, 12] # 10 am to 12 pm
+
+#Infrastructure
+histo_grossing_station:
+  num_stations: 2 #manual staining station
+  batch_size: 1 # samples per batch for grossing
+
+histo_tissue_processor:
+  num_stations: 1 #manual staining station
+  batch_size: 90 # samples per batch for tissue processing
+
+histo_embedding_station:
+  num_stations: 1 #manual staining station
+  batch_size: 1 # samples per batch for embedding
+
+histo_sectioning_station:
+  num_stations: 1 #manual staining station
+  batch_size: 1 # samples per batch for sectioning
+
+histo_staining_station:
+  num_stations: 1 #manual staining station
+  batch_size: 25 # samples per batch for staining
+
+#Consumables
+histo_staining_kits:
+  num_kits: 100000 #Stain per ml calculated by 100 ml stain per kit and a total of 5 kits #Number of staining kits they have
+  stain_per_kit: 100 #ml per kit
+  reagent_per_slide: 0.1 #ml per slide Calculated from 50 mL kit pach staining 500 slides
+

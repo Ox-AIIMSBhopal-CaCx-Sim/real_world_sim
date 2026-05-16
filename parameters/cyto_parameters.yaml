@@ -1,0 +1,97 @@
+# ================================
+# Parameter Definition File
+# ================================
+
+# ===============================
+# Project Title
+# ===============================
+project_title: "GMC_Banavati_CaCx_sim"
+
+# ===============================
+# Simulation Parameters
+# ===============================
+simulation:
+  name: "GMC_Banavati_CaCx_sim"
+  run_time: 1000 # in days = 3 years approx
+  experiment_no: 1
+  no_of_sims: 50
+  working_days: 25 # per month
+  working_hours: 3 # Decision on whether to use as an output or an input parameter?
+
+# ===============================
+# Cytopathology
+# ===============================
+#Workload or arrival rates
+#Cytology
+pap_per_day:
+  distribution: "poisson" #Distribution of the arrival rate
+  params: [5] # This is the lambda or number of pap smear patients per day - For pap smears - the slide to patient ratio is 1 for most of the cases (in case of LBC it can be higher)
+  slide_pt_ratio: 1 # Every patient generates 1 slide
+non_pap_per_day:
+  distribution: "poisson" #Patients arrive from a poission process - slide count follows case_complexity (see slide_pt_ratio_by_case_complexity)
+  params: [20]
+
+# Probability each new patient (Pap and non-Pap) is high complexity; otherwise low.
+case_complexity:
+  p_high: 0.2 # 20% high complexity, 80% low complexity
+
+# Slides per non-Pap patient only (Pap uses pap_per_day.slide_pt_ratio).
+slide_pt_ratio_by_case_complexity:
+  high: 4
+  low: 1
+
+# ===============================
+# Service Times
+# ===============================
+cyto_fixation_time:
+  distribution: "constant"
+  params: 20 # minutes per batch # Constant time
+
+cyto_staining_time: #This is cumulative of staining, drying, labelling and mounting,
+  distribution: "constant"
+  params: 35 # minutes per batch # Constant time
+
+cyto_reporting_time: # minutes per patient; triangular(min, mode, max), chosen by patient case_complexity
+  by_case_complexity:
+    high:
+      distribution: "triangular"
+      params: [10, 15, 30] # minimum, mode, maximum
+    low:
+      distribution: "triangular"
+      params: [2, 5, 10]
+
+# ===============================
+# Cyto Resources
+# ===============================
+#Number of Technicians and Pathologists
+cyto_technicians:
+  num_cytotech: 3
+  cytotech_schedule:
+    Timeslot_1:
+      days: [0, 1, 2, 3, 4, 5] #Monday to Friday
+      hours: [9, 17] # 9 am to 5 pm
+    Timeslot_2:
+      days: [6]
+      hours: [9, 13] # 9 am to 1 pm
+
+cyto_pathologists:
+  num_cytopath: 3 # These are the number of faculties that are posted in cyto I'm not including the residents as they're not licensed to sign off on the report yet
+  cytopath_schedule:
+    Timeslot_1:
+      days: [0, 1, 2, 3, 4, 5] #Monday to Friday
+      hours: [10, 14] # 10 am to 2 pm
+    Timeslot_2:
+      days: [6]
+      hours: [10, 12] # 10 am to 12 pm
+
+#Infrastructure
+cyto_manual_staining_station:
+  num_stations: 1 #manual staining station
+  batch_size: 5 # slides per batch for staining
+
+#Consumables
+cyto_staining_kits:
+  num_kits: 5000 #Stain per ml calculated by 100 ml stain per kit and a total of 5 kits #Number of staining kits they have
+  stain_per_kit: 100 #ml per kit
+  reagent_per_slide: 0.1 #ml per slide Calculated from 50 mL kit pach staining 500 slides
+
