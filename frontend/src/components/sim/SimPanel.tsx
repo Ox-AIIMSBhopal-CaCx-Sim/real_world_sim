@@ -1,17 +1,28 @@
-import type { CytoParameters } from '../../types/simulation';
+import type {
+  CytoParameters,
+  HistoParameters,
+  SimulationKind,
+  SimulationParameters,
+} from '../../types/simulation';
+import { HistoParameterEditor } from './HistoParameterEditor';
+import { ModalityToggle } from './ModalityToggle';
 import { ParameterEditor } from './ParameterEditor';
 import { PipelineDiagram } from './PipelineDiagram';
 
 interface SimPanelProps {
-  parameters: CytoParameters;
-  onParametersChange: (p: CytoParameters) => void;
+  kind: SimulationKind;
+  parameters: SimulationParameters;
+  onKindChange: (kind: SimulationKind) => void;
+  onParametersChange: (p: SimulationParameters) => void;
   onRun: () => void;
   isRunning: boolean;
   error: string | null;
 }
 
 export function SimPanel({
+  kind,
   parameters,
+  onKindChange,
   onParametersChange,
   onRun,
   isRunning,
@@ -34,17 +45,31 @@ export function SimPanel({
         </button>
       </header>
 
-      <PipelineDiagram />
+      <ModalityToggle kind={kind} onChange={onKindChange} disabled={isRunning} />
 
-      {error && <p className="sim-panel__error" role="alert">{error}</p>}
+      <PipelineDiagram kind={kind} />
+
+      {error && (
+        <p className="sim-panel__error" role="alert">
+          {error}
+        </p>
+      )}
 
       <div className="sim-panel__params">
         <h2 className="sim-panel__params-title">Parameters</h2>
-        <ParameterEditor
-          parameters={parameters}
-          onChange={onParametersChange}
-          disabled={isRunning}
-        />
+        {kind === 'cyto' ? (
+          <ParameterEditor
+            parameters={parameters as CytoParameters}
+            onChange={onParametersChange}
+            disabled={isRunning}
+          />
+        ) : (
+          <HistoParameterEditor
+            parameters={parameters as HistoParameters}
+            onChange={onParametersChange}
+            disabled={isRunning}
+          />
+        )}
       </div>
     </div>
   );

@@ -17,19 +17,14 @@ _store = ArtifactStore()
 
 @router.post("/run", response_model=SimulationRunResult)
 def run_simulation(request: SimulationRunRequest) -> SimulationRunResult:
-    """Run a single cytopathology replication and return aggregated KPIs."""
-    if request.kind != "cyto":
-        raise HTTPException(
-            status_code=400,
-            detail="Only cytopathology (kind='cyto') is implemented.",
-        )
+    """Run a single simulation replication and return aggregated KPIs."""
+    try:
+        parsed = request.parse_parameters()
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
     try:
-        output = _runner.run(
-            request.kind,
-            request.parameters,
-            seed=request.seed,
-        )
+        output = _runner.run(request.kind, parsed, seed=request.seed)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
@@ -42,12 +37,18 @@ def run_simulation(request: SimulationRunRequest) -> SimulationRunResult:
         ),
     }
 
+    project_title = (
+        parsed.project_title if hasattr(parsed, "project_title") else "Simulation"
+    )
+    run_time_days = parsed.simulation.run_time
+
     return _kpi.build_result(
         output.run_id,
         output.patient_df,
         output.slide_df,
-        project_title=request.parameters.project_title,
-        run_time_days=request.parameters.simulation.run_time,
+        kind=output.kind,
+        project_title=project_title,
+        run_time_days=run_time_days,
         artifact_urls=artifact_urls,
     )
 

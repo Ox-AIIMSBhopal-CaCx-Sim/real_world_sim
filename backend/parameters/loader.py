@@ -7,15 +7,25 @@ from pathlib import Path
 from typing import Any
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
-SHARED_DEFAULT_JSON = _REPO_ROOT / "shared" / "cyto_parameters.default.json"
+CYTO_DEFAULT_JSON = _REPO_ROOT / "shared" / "cyto_parameters.default.json"
+HISTO_DEFAULT_JSON = _REPO_ROOT / "shared" / "histo_parameters.default.json"
+
+
+def _load_json(path: Path) -> dict[str, Any]:
+    if not path.is_file():
+        raise FileNotFoundError(f"Default parameters not found: {path}")
+    with path.open(encoding="utf-8") as f:
+        return json.load(f)
 
 
 def load_default_cyto_parameters() -> dict[str, Any]:
-    """Load the canonical default parameter JSON."""
-    if not SHARED_DEFAULT_JSON.is_file():
-        raise FileNotFoundError(f"Default parameters not found: {SHARED_DEFAULT_JSON}")
-    with SHARED_DEFAULT_JSON.open(encoding="utf-8") as f:
-        return json.load(f)
+    """Load the canonical default cytopathology parameter JSON."""
+    return _load_json(CYTO_DEFAULT_JSON)
+
+
+def load_default_histo_parameters() -> dict[str, Any]:
+    """Load the canonical default histopathology parameter JSON."""
+    return _load_json(HISTO_DEFAULT_JSON)
 
 
 def merge_parameters(overrides: dict[str, Any] | None) -> dict[str, Any]:

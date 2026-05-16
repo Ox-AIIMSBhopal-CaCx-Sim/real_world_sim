@@ -95,7 +95,69 @@ class CytoParameters(BaseModel):
     cyto_staining_kits: CytoStainingKits
 
     def to_sim_dict(self) -> dict[str, Any]:
-        """Dict passed to models.cyto.run_cyto_simulation."""
+        return self.model_dump(mode="python")
+
+
+class SlideRatioByBiopsySize(BaseModel):
+    small: int
+    medium: int
+    large: int
+
+
+class BiopsySizeWeights(BaseModel):
+    weights: dict[str, float]
+
+
+class HistoTechnicians(BaseModel):
+    num_cytotech: int
+    histotech_schedule: dict[str, ScheduleSlot]
+
+
+class HistoPathologists(BaseModel):
+    num_cytopath: int
+    histopath_schedule: dict[str, ScheduleSlot]
+
+
+class PathResident(BaseModel):
+    num: int
+    resident_schedule: dict[str, ScheduleSlot]
+
+
+class StationConfig(BaseModel):
+    num_stations: int
+    batch_size: int = 1
+
+
+class HistoParameters(BaseModel):
+    """Full histopathology parameter set (JSON ground truth)."""
+
+    project_title: str
+    simulation: SimulationMeta
+    cervical_biopsies_per_day: DistributionParams
+    other_biopsies_per_day: DistributionParams
+    case_complexity: CaseComplexity
+    slide_pt_ratio_by_biopsy_size: SlideRatioByBiopsySize
+    biopsy_size: BiopsySizeWeights
+    histo_fixation_time: dict[str, Any]
+    histo_grossing_time: dict[str, Any]
+    histo_tissue_processing_time: DistributionParams
+    histo_embedding_time: DistributionParams
+    histo_sectioning_time: DistributionParams
+    histo_staining_time: DistributionParams
+    histo_reporting_time: CytoReportingTime
+    histo_technicians: HistoTechnicians
+    path_resident: PathResident
+    histo_pathologists: HistoPathologists
+    histo_grossing_station: StationConfig
+    histo_tissue_processor: StationConfig
+    histo_embedding_station: StationConfig
+    histo_sectioning_station: StationConfig
+    histo_staining_station: StationConfig
+    histo_staining_kits: CytoStainingKits
+
+    model_config = {"extra": "allow"}
+
+    def to_sim_dict(self) -> dict[str, Any]:
         return self.model_dump(mode="python")
 
 
@@ -104,5 +166,10 @@ SimulationKind = Literal["cyto", "histo"]
 
 class SimulationRunRequest(BaseModel):
     kind: SimulationKind
-    parameters: CytoParameters
+    parameters: dict[str, Any]
     seed: int | None = Field(default=None, description="Optional RNG seed")
+
+    def parse_parameters(self) -> CytoParameters | HistoParameters:
+        if self.kind == "cyto":
+            return CytoParameters.model_validate(self.parameters)
+        return HistoParameters.model_validate(self.parameters)

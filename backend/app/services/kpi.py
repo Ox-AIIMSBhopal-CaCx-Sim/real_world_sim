@@ -65,6 +65,17 @@ def _process_metrics_from_columns(
     return metrics
 
 
+_HISTO_TYPE_LABELS = {
+    "cervical_biopsy": "Cervical biopsy",
+    "non_cervical_biopsy": "Non-cervical biopsy",
+}
+
+_CYTO_TYPE_LABELS = {
+    "pap_smear": "Pap smear",
+    "non_pap_smear": "Non-Pap",
+}
+
+
 class KPIAggregator:
     """Compute dashboard metrics from patient/slide timestamp tables."""
 
@@ -74,6 +85,7 @@ class KPIAggregator:
         patient_df: pd.DataFrame,
         slide_df: pd.DataFrame,
         *,
+        kind: str = "cyto",
         project_title: str,
         run_time_days: int,
         artifact_urls: dict[str, str],
@@ -86,10 +98,7 @@ class KPIAggregator:
         median_tat = float(tat.median()) if not tat.empty else 0.0
         p90_tat = float(tat.quantile(0.9)) if not tat.empty else 0.0
 
-        type_labels = {
-            "pap_smear": "Pap smear",
-            "non_pap_smear": "Non-Pap",
-        }
+        type_labels = _HISTO_TYPE_LABELS if kind == "histo" else _CYTO_TYPE_LABELS
         breakdown: list[PatientTypeBreakdown] = []
         for entity_type, label in type_labels.items():
             subset = patient_df[patient_df["Type"] == entity_type]

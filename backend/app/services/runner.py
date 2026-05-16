@@ -2,13 +2,15 @@
 
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 from uuid import uuid4
 
 import pandas as pd
 
-from app.schemas.parameters import CytoParameters, SimulationKind
+from app.schemas.parameters import CytoParameters, HistoParameters, SimulationKind
 from app.storage.artifacts import ArtifactStore
 from models.cyto import run_cyto_simulation
+from models.histo import run_histo_simulation
 
 
 @dataclass
@@ -29,19 +31,25 @@ class SimulationRunner:
     def run(
         self,
         kind: SimulationKind,
-        parameters: CytoParameters,
+        parameters: CytoParameters | HistoParameters | dict[str, Any],
         *,
         seed: int | None = None,
     ) -> SimulationRunOutput:
         """Execute one replication and persist trace CSVs."""
-        if kind != "cyto":
-            raise ValueError(f"Only cyto is supported; got {kind!r}")
+        if isinstance(parameters, (CytoParameters, HistoParameters)):
+            params_dict = parameters.to_sim_dict()
+        else:
+            params_dict = parameters
 
         run_id = str(uuid4())
         artifact_dir = self._store.ensure_run_dir(run_id)
-        params_dict = parameters.to_sim_dict()
 
-        patient_df, slide_df = run_cyto_simulation(params_dict, seed=seed)
+        if kind == "cyto":
+            patient_df, slide_df = run_cyto_simulation(params_dict, seed=seed)
+        elif kind == "histo":
+            patient_df, slide_df = run_histo_simulation(params_dict, seed=seed)
+        else:
+            raise ValueError(f"Unknown simulation kind: {kind}")
 
         self._store.write_csv(artifact_dir, "patient_timestamps.csv", patient_df)
         self._store.write_csv(artifact_dir, "slide_timestamps.csv", slide_df)

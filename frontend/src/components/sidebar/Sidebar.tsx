@@ -64,10 +64,14 @@ export function Sidebar({
         </section>
       )}
 
-      <section className="sidebar__section sidebar__section--muted">
-        <h2 className="sidebar__section-title">Simulation type</h2>
-        <p className="sidebar__badge">Cytopathology</p>
-      </section>
+      {active && (
+        <section className="sidebar__section sidebar__section--muted">
+          <h2 className="sidebar__section-title">Active modality</h2>
+          <p className="sidebar__badge">
+            {active.kind === 'histo' ? 'Histopathology' : 'Cytopathology'}
+          </p>
+        </section>
+      )}
 
       <footer className="sidebar__footer">
         <p>Double-click or use ✎ to rename a simulation. Tabs restore parameters and results.</p>

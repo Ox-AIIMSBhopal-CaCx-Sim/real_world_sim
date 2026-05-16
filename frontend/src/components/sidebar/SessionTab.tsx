@@ -81,6 +81,12 @@ export function SessionTab({
         }}
       >
         <span className="session-tab__label">{session.label}</span>
+        <span
+          className="session-tab__kind"
+          title={session.kind === 'histo' ? 'Histopathology' : 'Cytopathology'}
+        >
+          {session.kind === 'histo' ? 'H' : 'C'}
+        </span>
         {session.results && (
           <span className="session-tab__badge" aria-label="Has results">
             ●

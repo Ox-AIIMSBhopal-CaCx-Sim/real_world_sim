@@ -340,12 +340,65 @@ body.is-resizing * {
   padding: 1.25rem 1.5rem 2rem;
 }
 
+.modality-toggle {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1.25rem;
+  padding: 3px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: fit-content;
+}
+
+.modality-toggle__btn {
+  padding: 0.45rem 1rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.modality-toggle__btn:hover:not(:disabled) {
+  color: var(--text-h);
+}
+
+.modality-toggle__btn--active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.modality-toggle__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.session-tab__kind {
+  flex-shrink: 0;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 0.1rem 0.25rem;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+}
+
+.session-tab--active .session-tab__kind {
+  background: rgba(0, 0, 0, 0.15);
+  color: var(--accent);
+}
+
 .sim-panel__header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 }
 
 .sim-panel__title {

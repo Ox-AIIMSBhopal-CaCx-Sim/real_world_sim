@@ -12,6 +12,7 @@ function App() {
     startNewSimulation,
     selectSession,
     renameSession,
+    setKind,
     updateParameters,
     executeRun,
     isRunning,
@@ -32,7 +33,9 @@ function App() {
       }
       center={
         <SimPanel
+          kind={activeSession.kind}
           parameters={activeSession.parameters}
+          onKindChange={setKind}
           onParametersChange={updateParameters}
           onRun={executeRun}
           isRunning={isRunning}
