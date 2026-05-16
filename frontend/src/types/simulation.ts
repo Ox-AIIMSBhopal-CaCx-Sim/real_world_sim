@@ -15,6 +15,9 @@ export interface SimulationMeta {
   run_time: number;
   experiment_no: number;
   no_of_sims: number;
+  warmup_days?: number;
+  working_days?: number[];
+  working_hours?: number[];
 }
 
 export interface CaseComplexity {
@@ -63,6 +66,7 @@ export interface CytoParameters {
 export interface SimulationRunRequest {
   kind: SimulationKind;
   parameters: CytoParameters;
+  seed?: number;
 }
 
 export interface SummaryMetric {
@@ -82,6 +86,18 @@ export interface PatientTypeBreakdown {
   medianTatDays: number;
 }
 
+export interface ProcessMetric {
+  process: string;
+  median_wait_min: number;
+  p90_wait_min: number;
+  n: number;
+}
+
+export interface RunArtifacts {
+  patientCsv: string;
+  slideCsv: string;
+}
+
 export interface SimulationRunResult {
   runId: string;
   completedAt: string;
@@ -89,13 +105,27 @@ export interface SimulationRunResult {
   metrics: SummaryMetric[];
   turnaroundHistogram: TurnaroundBucket[];
   patientBreakdown: PatientTypeBreakdown[];
+  processMetrics?: ProcessMetric[];
+  artifacts?: RunArtifacts;
   notes: string[];
 }
 
-export interface SimulationState {
+/** A saved simulation workspace tab (parameters + optional results). */
+export interface SimulationSession {
+  id: string;
+  label: string;
+  /** When true, label is not overwritten by auto-generated names on run/param changes. */
+  labelIsCustom?: boolean;
   kind: SimulationKind;
   parameters: CytoParameters;
   results: SimulationRunResult | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SimulationWorkspace {
+  sessions: SimulationSession[];
+  activeSessionId: string;
   isRunning: boolean;
   error: string | null;
 }

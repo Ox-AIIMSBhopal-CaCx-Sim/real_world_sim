@@ -353,3 +353,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Per-run simulation artifacts (API writes here)
+backend/runs/*
+!backend/runs/.gitkeep

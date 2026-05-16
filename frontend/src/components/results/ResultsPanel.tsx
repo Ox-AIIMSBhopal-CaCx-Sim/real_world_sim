@@ -75,6 +75,46 @@ export function ResultsPanel({ results, isRunning }: ResultsPanelProps) {
         </div>
       </section>
 
+      {results.processMetrics && results.processMetrics.length > 0 && (
+        <section className="results-section">
+          <h3>Process waiting times</h3>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Process</th>
+                <th>Median wait (min)</th>
+                <th>90th %ile (min)</th>
+                <th>n</th>
+              </tr>
+            </thead>
+            <tbody>
+              {results.processMetrics.map((row) => (
+                <tr key={row.process}>
+                  <td>{row.process}</td>
+                  <td>{row.median_wait_min.toFixed(1)}</td>
+                  <td>{row.p90_wait_min.toFixed(1)}</td>
+                  <td>{row.n.toLocaleString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
+
+      {results.artifacts && (
+        <section className="results-section">
+          <h3>Trace data</h3>
+          <div className="results-downloads">
+            <a className="results-download" href={results.artifacts.patientCsv} download>
+              Patient timestamps (CSV)
+            </a>
+            <a className="results-download" href={results.artifacts.slideCsv} download>
+              Slide timestamps (CSV)
+            </a>
+          </div>
+        </section>
+      )}
+
       <section className="results-section">
         <h3>Patient type breakdown</h3>
         <table className="data-table">

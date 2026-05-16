@@ -6,28 +6,41 @@ import { useSimulation } from './hooks/useSimulation';
 import './App.css';
 
 function App() {
-  const { state, resetSimulation, updateParameters, executeRun } = useSimulation();
+  const {
+    workspace,
+    activeSession,
+    startNewSimulation,
+    selectSession,
+    renameSession,
+    updateParameters,
+    executeRun,
+    isRunning,
+    error,
+  } = useSimulation();
 
   return (
     <AppLayout
       sidebar={
         <Sidebar
-          onNewSim={resetSimulation}
-          projectTitle={state.parameters.project_title}
-          isRunning={state.isRunning}
+          sessions={workspace.sessions}
+          activeSessionId={workspace.activeSessionId}
+          onNewSim={startNewSimulation}
+          onSelectSession={selectSession}
+          onRenameSession={renameSession}
+          isRunning={isRunning}
         />
       }
       center={
         <SimPanel
-          parameters={state.parameters}
+          parameters={activeSession.parameters}
           onParametersChange={updateParameters}
           onRun={executeRun}
-          isRunning={state.isRunning}
-          error={state.error}
+          isRunning={isRunning}
+          error={error}
         />
       }
       results={
-        <ResultsPanel results={state.results} isRunning={state.isRunning} />
+        <ResultsPanel results={activeSession.results} isRunning={isRunning} />
       }
     />
   );

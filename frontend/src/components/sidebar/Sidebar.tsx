@@ -1,10 +1,26 @@
+import type { SimulationSession } from '../../types/simulation';
+import { SessionTab } from './SessionTab';
+
 interface SidebarProps {
+  sessions: SimulationSession[];
+  activeSessionId: string;
   onNewSim: () => void;
-  projectTitle: string;
+  onSelectSession: (sessionId: string) => void;
+  onRenameSession: (sessionId: string, label: string) => void;
   isRunning: boolean;
 }
 
-export function Sidebar({ onNewSim, projectTitle, isRunning }: SidebarProps) {
+export function Sidebar({
+  sessions,
+  activeSessionId,
+  onNewSim,
+  onSelectSession,
+  onRenameSession,
+  isRunning,
+}: SidebarProps) {
+  const active = sessions.find((s) => s.id === activeSessionId);
+  const history = [...sessions].reverse();
+
   return (
     <div className="sidebar">
       <header className="sidebar__brand">
@@ -24,19 +40,37 @@ export function Sidebar({ onNewSim, projectTitle, isRunning }: SidebarProps) {
         New Sim
       </button>
 
-      <section className="sidebar__section">
-        <h2 className="sidebar__section-title">Current project</h2>
-        <p className="sidebar__project-name">{projectTitle || 'Untitled'}</p>
+      <section className="sidebar__section sidebar__section--grow">
+        <h2 className="sidebar__section-title">Simulations</h2>
+        <ul className="session-list" role="tablist" aria-label="Saved simulations">
+          {history.map((session) => (
+            <li key={session.id}>
+              <SessionTab
+                session={session}
+                isActive={session.id === activeSessionId}
+                disabled={isRunning}
+                onSelect={() => onSelectSession(session.id)}
+                onRename={(label) => onRenameSession(session.id, label)}
+              />
+            </li>
+          ))}
+        </ul>
       </section>
+
+      {active && (
+        <section className="sidebar__section">
+          <h2 className="sidebar__section-title">Current project</h2>
+          <p className="sidebar__project-name">{active.parameters.project_title || 'Untitled'}</p>
+        </section>
+      )}
 
       <section className="sidebar__section sidebar__section--muted">
         <h2 className="sidebar__section-title">Simulation type</h2>
         <p className="sidebar__badge">Cytopathology</p>
-        <p className="sidebar__hint">Histopathology will be added when the backend supports it.</p>
       </section>
 
       <footer className="sidebar__footer">
-        <p>Configure parameters in the centre panel, then run to view results.</p>
+        <p>Double-click or use ✎ to rename a simulation. Tabs restore parameters and results.</p>
       </footer>
     </div>
   );

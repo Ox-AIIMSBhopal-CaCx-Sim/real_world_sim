@@ -1,73 +1,8 @@
 import type { CytoParameters } from '../types/simulation';
+import defaultCytoJson from '../../../shared/cyto_parameters.default.json';
 
-export const defaultCytoParameters: CytoParameters = {
-  project_title: 'GMC_Banavati_CaCx_sim',
-  simulation: {
-    name: 'GMC_Banavati_CaCx_sim',
-    run_time: 1000,
-    experiment_no: 1,
-    no_of_sims: 50,
-  },
-  pap_per_day: {
-    distribution: 'poisson',
-    params: [5],
-    slide_pt_ratio: 1,
-  },
-  non_pap_per_day: {
-    distribution: 'poisson',
-    params: [20],
-  },
-  case_complexity: {
-    p_high: 0.2,
-  },
-  slide_pt_ratio_by_case_complexity: {
-    high: 4,
-    low: 1,
-  },
-  cyto_fixation_time: {
-    distribution: 'constant',
-    params: [20],
-  },
-  cyto_staining_time: {
-    distribution: 'constant',
-    params: [35],
-  },
-  cyto_reporting_time: {
-    by_case_complexity: {
-      high: {
-        distribution: 'triangular',
-        params: [10, 15, 30],
-      },
-      low: {
-        distribution: 'triangular',
-        params: [2, 5, 10],
-      },
-    },
-  },
-  cyto_technicians: {
-    num_cytotech: 3,
-    cytotech_schedule: {
-      Timeslot_1: { days: [0, 1, 2, 3, 4, 5], hours: [9, 17] },
-      Timeslot_2: { days: [6], hours: [9, 13] },
-    },
-  },
-  cyto_pathologists: {
-    num_cytopath: 3,
-    cytopath_schedule: {
-      Timeslot_1: { days: [0, 1, 2, 3, 4, 5], hours: [10, 14] },
-      Timeslot_2: { days: [6], hours: [10, 12] },
-    },
-  },
-  cyto_manual_staining_station: {
-    num_stations: 1,
-    batch_size: 5,
-  },
-  cyto_staining_kits: {
-    num_kits: 5000,
-    stain_per_kit: 100,
-    reagent_per_slide: 0.1,
-  },
-};
+/** Canonical defaults — same file as backend/shared/cyto_parameters.default.json */
+export const defaultCytoParameters = defaultCytoJson as unknown as CytoParameters;
 
 export const CYTO_PIPELINE_STAGES = [
   { id: 'arrival', label: 'Patient arrival', detail: 'Pap & non-Pap (Poisson)' },
