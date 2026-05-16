@@ -1,14 +1,17 @@
 import simpy
 import numpy as np
-import generic_generator
-from generic_entity import Generic_Entity, HistoSample
-from generic_generator import Entity_Generator
-from manual_generic_process import manual_generic_process
-from resource_availability import ScheduledResource, TimeSlot, Schedule
+from utils.generic_entity import Generic_Entity, HistoSample
+from utils.generic_generator import Entity_Generator
+from utils.manual_generic_process import manual_generic_process
+from utils.resource_availability import ScheduledResource, TimeSlot, Schedule
 
 from datetime import datetime, time, timedelta
 from typing import Any, Dict, List, Optional
 from pathlib import Path
+
+_ROOT = Path(__file__).resolve().parent
+_PARAMETERS_DIR = _ROOT / "parameters"
+_SIM_RESULTS_DIR = _ROOT / "sim_results"
 import yaml
 import csv
 import calendar
@@ -33,12 +36,13 @@ def read_parameters(parameter_path: Path) -> Dict[str, Any]:
     with parameter_path.open('r', encoding='utf-8') as f:
         return yaml.safe_load(f) or {}
     
-def get_parameters(parameter_path: Path = Path("histo_parameters.yaml")) -> Dict[str, Any]:
+def get_parameters(parameter_path: Optional[Path] = None) -> Dict[str, Any]:
     """Get simulation parameters, reading from YAML file if provided."""
-    if parameter_path.exists():
-        return read_parameters(parameter_path)
+    path = parameter_path if parameter_path is not None else _PARAMETERS_DIR / "histo_parameters.yaml"
+    if path.exists():
+        return read_parameters(path)
     else:
-        raise FileNotFoundError(f"Parameters file not found: {parameter_path}")
+        raise FileNotFoundError(f"Parameters file not found: {path}")
 
 # Load Parameters
 params_dict = get_parameters()
@@ -542,9 +546,12 @@ print(df_slides.head(20).to_string(index=False))
 print(f"\nRecorded slides after warm-up: {len(df_slides)}")
 
 # Saving to CSV for further analysis
-df_patients.to_csv("histo_simulation_patient_timestamps.csv", index=False)
-df_slides.to_csv("histo_simulation_slide_timestamps.csv", index=False)
-print("\nResults saved to 'histo_simulation_patient_timestamps.csv' and 'histo_simulation_slide_timestamps.csv'")
+_SIM_RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+_patient_csv = _SIM_RESULTS_DIR / "histo_simulation_patient_timestamps.csv"
+_slide_csv = _SIM_RESULTS_DIR / "histo_simulation_slide_timestamps.csv"
+df_patients.to_csv(_patient_csv, index=False)
+df_slides.to_csv(_slide_csv, index=False)
+print(f"\nResults saved to '{_patient_csv}' and '{_slide_csv}'")
 
 
 # MAchine resource utilisation percentage
