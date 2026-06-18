@@ -4,10 +4,9 @@ import type {
   SimulationKind,
   SimulationParameters,
 } from '../../types/simulation';
-import { HistoParameterEditor } from './HistoParameterEditor';
+import { CytoInteractivePanel } from './cyto/CytoInteractivePanel';
+import { HistoInteractivePanel } from './histo/HistoInteractivePanel';
 import { ModalityToggle } from './ModalityToggle';
-import { ParameterEditor } from './ParameterEditor';
-import { PipelineDiagram } from './PipelineDiagram';
 
 interface SimPanelProps {
   kind: SimulationKind;
@@ -47,30 +46,25 @@ export function SimPanel({
 
       <ModalityToggle kind={kind} onChange={onKindChange} disabled={isRunning} />
 
-      <PipelineDiagram kind={kind} />
-
       {error && (
         <p className="sim-panel__error" role="alert">
           {error}
         </p>
       )}
 
-      <div className="sim-panel__params">
-        <h2 className="sim-panel__params-title">Parameters</h2>
-        {kind === 'cyto' ? (
-          <ParameterEditor
-            parameters={parameters as CytoParameters}
-            onChange={onParametersChange}
-            disabled={isRunning}
-          />
-        ) : (
-          <HistoParameterEditor
-            parameters={parameters as HistoParameters}
-            onChange={onParametersChange}
-            disabled={isRunning}
-          />
-        )}
-      </div>
+      {kind === 'cyto' ? (
+        <CytoInteractivePanel
+          parameters={parameters as CytoParameters}
+          onChange={onParametersChange}
+          disabled={isRunning}
+        />
+      ) : (
+        <HistoInteractivePanel
+          parameters={parameters as HistoParameters}
+          onChange={onParametersChange}
+          disabled={isRunning}
+        />
+      )}
     </div>
   );
 }

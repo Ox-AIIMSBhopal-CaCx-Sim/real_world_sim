@@ -58,15 +58,39 @@ export interface CytoParameters {
     num_cytopath: number;
     cytopath_schedule: Record<string, { days: number[]; hours: [number, number] }>;
   };
+  cyto_reception: {
+    num_staff: number;
+    accessioning_time: DistributionParams;
+  };
   cyto_manual_staining_station: {
     num_stations: number;
     batch_size: number;
+    error_rate: number;
+  };
+  cyto_reporting_station: {
+    num_stations: number;
+    batch_size: number;
+    error_rate: number;
   };
   cyto_staining_kits: {
     num_kits: number;
     stain_per_kit: number;
     reagent_per_slide: number;
   };
+}
+
+export interface HistoTimeBySize {
+  by_size: {
+    small: DistributionParams;
+    medium: DistributionParams;
+    large: DistributionParams;
+  };
+}
+
+export interface HistoStationConfig {
+  num_stations: number;
+  batch_size: number;
+  error_rate: number;
 }
 
 export interface HistoParameters {
@@ -77,8 +101,12 @@ export interface HistoParameters {
   case_complexity: CaseComplexity;
   slide_pt_ratio_by_biopsy_size: SlideRatioByBiopsySize;
   biopsy_size: { weights: Record<string, number> };
-  histo_fixation_time: Record<string, unknown>;
-  histo_grossing_time: Record<string, unknown>;
+  histo_reception: {
+    num_staff: number;
+    accessioning_time: DistributionParams;
+  };
+  histo_fixation_time: HistoTimeBySize;
+  histo_grossing_time: HistoTimeBySize;
   histo_tissue_processing_time: DistributionParams;
   histo_embedding_time: DistributionParams;
   histo_sectioning_time: DistributionParams;
@@ -101,11 +129,12 @@ export interface HistoParameters {
     num_cytopath: number;
     histopath_schedule: Record<string, { days: number[]; hours: [number, number] }>;
   };
-  histo_grossing_station: { num_stations: number; batch_size: number };
-  histo_tissue_processor: { num_stations: number; batch_size: number };
-  histo_embedding_station: { num_stations: number; batch_size: number };
-  histo_sectioning_station: { num_stations: number; batch_size: number };
-  histo_staining_station: { num_stations: number; batch_size: number };
+  histo_grossing_station: HistoStationConfig;
+  histo_tissue_processor: HistoStationConfig;
+  histo_embedding_station: HistoStationConfig;
+  histo_sectioning_station: HistoStationConfig;
+  histo_staining_station: HistoStationConfig;
+  histo_reporting_station: HistoStationConfig;
   histo_staining_kits: {
     num_kits: number;
     stain_per_kit: number;

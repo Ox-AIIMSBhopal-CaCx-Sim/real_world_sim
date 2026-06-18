@@ -59,9 +59,22 @@
       "Timeslot_2": { "days": [6], "hours": [10, 12] }
     }
   },
+  "cyto_reception": {
+    "num_staff": 2,
+    "accessioning_time": {
+      "distribution": "constant",
+      "params": [5]
+    }
+  },
   "cyto_manual_staining_station": {
     "num_stations": 1,
-    "batch_size": 5
+    "batch_size": 5,
+    "error_rate": 0.01
+  },
+  "cyto_reporting_station": {
+    "num_stations": 3,
+    "batch_size": 1,
+    "error_rate": 0.005
   },
   "cyto_staining_kits": {
     "num_kits": 5000,

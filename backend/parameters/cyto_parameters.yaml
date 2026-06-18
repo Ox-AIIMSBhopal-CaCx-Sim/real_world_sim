@@ -68,6 +68,14 @@ cyto_technicians:
   num_cytotech: 3
   cytotech_schedule:
     Timeslot_1:
+      days: [0, 1, 2, 3, 4, 5, 6] #Monday to Sunday
+      hours: [9, 19] # 9 am to 7 pm
+
+# Junior pathologist
+junior_pathologist:
+  num_junior_pathologist: 1
+  junior_pathologist_schedule:
+    Timeslot_1:
       days: [0, 1, 2, 3, 4, 5] #Monday to Friday
       hours: [9, 17] # 9 am to 5 pm
     Timeslot_2:
@@ -88,6 +96,7 @@ cyto_pathologists:
 cyto_manual_staining_station:
   num_stations: 1 #manual staining station
   batch_size: 5 # slides per batch for staining
+  error_rate: 0.01 # error rate per batch for staining
 
 #Consumables
 cyto_staining_kits:

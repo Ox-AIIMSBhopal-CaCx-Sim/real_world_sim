@@ -722,3 +722,365 @@ body.is-resizing * {
   line-height: 1.5;
 }
 
+/* Cytopathology interactive workflow */
+
+.cyto-interactive {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  min-height: 420px;
+}
+
+.cyto-interactive__main {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+}
+
+.cyto-interactive__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.cyto-interactive__title {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.cyto-interactive__subtitle {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  max-width: 36rem;
+}
+
+.cyto-interactive__settings {
+  flex-shrink: 0;
+  font-family: inherit;
+  font-size: 0.78rem;
+  padding: 0.45rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-stage);
+  color: var(--text-h);
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+}
+
+.cyto-interactive__settings:hover:not(:disabled) {
+  border-color: var(--accent-border);
+  background: var(--accent-bg);
+}
+
+.cyto-interactive__settings--active {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
+.cyto-interactive__settings:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cyto-interactive__track {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+.cyto-interactive__stage-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 1 1 220px;
+}
+
+.cyto-interactive__stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: var(--bg-stage);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  min-width: 200px;
+}
+
+.cyto-interactive__stage-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.cyto-interactive__stage-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  background: var(--accent-bg);
+  color: var(--accent);
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.cyto-interactive__stage-title {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.cyto-interactive__stage-detail {
+  margin: 0.15rem 0 0;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.cyto-interactive__figures {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.cyto-interactive__flow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0 0.15rem;
+  color: var(--text-muted);
+}
+
+.cyto-interactive__arrow {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.cyto-interactive__flow-label {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Cartoon click targets */
+
+.cyto-cartoon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.35rem;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, transform 0.15s;
+  font-family: inherit;
+}
+
+.cyto-cartoon:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: var(--accent-border);
+  transform: translateY(-2px);
+}
+
+.cyto-cartoon--selected {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+  box-shadow: 0 0 0 1px var(--accent-border);
+}
+
+.cyto-cartoon__svg {
+  width: 110px;
+  height: auto;
+  display: block;
+}
+
+.cyto-cartoon__label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.cyto-cartoon--selected .cyto-cartoon__label {
+  color: var(--accent);
+}
+
+/* Cartoon animations */
+
+@keyframes cyto-typing {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@keyframes cyto-pipette {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}
+
+@keyframes cyto-drop {
+  0% { opacity: 0; transform: translateY(-4px); }
+  30% { opacity: 0.9; }
+  100% { opacity: 0; transform: translateY(8px); }
+}
+
+@keyframes cyto-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes cyto-write {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(3px); }
+}
+
+@keyframes cyto-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@keyframes cyto-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.cyto-anim__typing-hand {
+  animation: cyto-typing 1.2s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.cyto-anim__pipette {
+  animation: cyto-pipette 2s ease-in-out infinite;
+  transform-origin: top center;
+}
+
+.cyto-anim__drop {
+  animation: cyto-drop 2s ease-in infinite;
+}
+
+.cyto-anim__centrifuge {
+  animation: cyto-spin 3s linear infinite;
+  transform-origin: 80px 92px;
+}
+
+.cyto-anim__writing-hand {
+  animation: cyto-write 1.4s ease-in-out infinite;
+}
+
+.cyto-anim__microscope-head {
+  animation: cyto-typing 2.5s ease-in-out infinite;
+}
+
+.cyto-anim__sample-blink {
+  animation: cyto-blink 1.8s ease-in-out infinite;
+}
+
+.cyto-anim__status-light {
+  animation: cyto-pulse 1.5s ease-in-out infinite;
+}
+
+.cyto-anim__scope-lens {
+  animation: cyto-typing 2s ease-in-out infinite;
+}
+
+.cyto-anim__slide-tray {
+  animation: cyto-write 2s ease-in-out infinite;
+}
+
+/* Resource parameter panel */
+
+.cyto-resource-panel {
+  width: min(340px, 100%);
+  flex-shrink: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 8rem);
+  position: sticky;
+  top: 1rem;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
+}
+
+.cyto-resource-panel__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.cyto-resource-panel__eyebrow {
+  margin: 0 0 0.15rem;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.cyto-resource-panel__title {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-h);
+  line-height: 1.3;
+}
+
+.cyto-resource-panel__close {
+  font-family: inherit;
+  font-size: 1.35rem;
+  line-height: 1;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.cyto-resource-panel__close:hover {
+  background: var(--bg-stage);
+  color: var(--text-h);
+}
+
+.cyto-resource-panel__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.cyto-resource-panel__hint {
+  margin: 0;
+  padding: 0.65rem 1rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  line-height: 1.4;
+}
+

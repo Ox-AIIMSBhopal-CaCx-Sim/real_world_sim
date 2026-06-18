@@ -32,6 +32,13 @@
       "large": 0.01
     }
   },
+  "histo_reception": {
+    "num_staff": 2,
+    "accessioning_time": {
+      "distribution": "constant",
+      "params": [8]
+    }
+  },
   "histo_fixation_time": {
     "by_size": {
       "small": { "distribution": "constant", "params": [360] },
@@ -90,23 +97,33 @@
   },
   "histo_grossing_station": {
     "num_stations": 2,
-    "batch_size": 1
+    "batch_size": 1,
+    "error_rate": 0.01
   },
   "histo_tissue_processor": {
     "num_stations": 1,
-    "batch_size": 90
+    "batch_size": 90,
+    "error_rate": 0.01
   },
   "histo_embedding_station": {
     "num_stations": 1,
-    "batch_size": 1
+    "batch_size": 1,
+    "error_rate": 0.005
   },
   "histo_sectioning_station": {
     "num_stations": 1,
-    "batch_size": 1
+    "batch_size": 1,
+    "error_rate": 0.005
   },
   "histo_staining_station": {
     "num_stations": 1,
-    "batch_size": 25
+    "batch_size": 25,
+    "error_rate": 0.01
+  },
+  "histo_reporting_station": {
+    "num_stations": 3,
+    "batch_size": 1,
+    "error_rate": 0.005
   },
   "histo_staining_kits": {
     "num_kits": 100000,
