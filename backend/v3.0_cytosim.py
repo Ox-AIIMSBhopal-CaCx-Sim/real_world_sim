@@ -1,3 +1,4 @@
+import re
 import simpy
 import numpy as np
 from utils.generic_entity import Generic_Entity
@@ -139,10 +140,20 @@ def create_schedule_from_params(schedule_name: str, schedule_params: Dict[str, A
 cytotech_params = params_dict.get('cyto_technicians', {}).get('cytotech_schedule', {})
 cytotech_schedule = create_schedule_from_params("Cytotech Schedule", cytotech_params)
 
-cytopath_params = params_dict.get('cyto_pathologists', {}).get('cytopath_schedule', {})
-cytopath_schedule = create_schedule_from_params("Cytopath Schedule", cytopath_params)
+junior_pathologist_cfg = params_dict.get('junior_pathologist', {})
+junior_pathologist_schedule = create_schedule_from_params(
+    "Junior Pathologist Schedule",
+    junior_pathologist_cfg.get('junior_pathologist_schedule', {}),
+)
+
+senior_pathologist_cfg = params_dict.get('senior_pathologists', {})
+senior_pathologist_schedule = create_schedule_from_params(
+    "Senior Pathologist Schedule",
+    senior_pathologist_cfg.get('senior_pathologist_schedule', {}),
+)
 
 # Defining Resources
+# Cytotechnicians
 num_cytotech = params_dict.get('cyto_technicians', {}).get('num_cytotech', 1)
 cytotechnician = ScheduledResource(
     env=sim_env,
@@ -151,14 +162,23 @@ cytotechnician = ScheduledResource(
     simulation_start_datetime=SIMULATION_START_DATETIME,
     name="Cytotechnicians"
 )
-
-num_cytopath = params_dict.get('cyto_pathologists', {}).get('num_cytopath', 1)
-cytopathologist = ScheduledResource(
+# Junior Cytopathologists
+num_junior_pathologist = params_dict.get('junior_pathologist', {}).get('num_junior_pathologist', 1)
+junior_pathologist = ScheduledResource(
     env=sim_env,
-    capacity=num_cytopath,
-    schedule=cytopath_schedule,
+    capacity=num_junior_pathologist,
+    schedule=junior_pathologist_schedule,
     simulation_start_datetime=SIMULATION_START_DATETIME,
-    name="Cytopathologists"
+    name="Junior Cytopathologists"
+)
+# Senior Cytopathologists
+num_senior_pathologist = params_dict.get('senior_pathologists', {}).get('num_senior_pathologist', 1)
+senior_pathologist = ScheduledResource(
+    env=sim_env,
+    capacity=num_senior_pathologist,
+    schedule=senior_pathologist_schedule,
+    simulation_start_datetime=SIMULATION_START_DATETIME,
+    name="Senior Pathologists"
 )
 
 # Non-scheduled Resources
@@ -174,23 +194,95 @@ cyto_staining_reagents = simpy.Container(env=sim_env, capacity=total_reagent_cap
 # Reagent consumption amount per slide
 reagent_per_slide = reagent_config.get('reagent_per_slide', 0.1)
 
-# Sync Point: Aggregating slides back to patient
+# Repeat staining parameters
+_staining_station_cfg = params_dict.get('cyto_manual_staining_station', {})
+STAINING_ERROR_RATE = float(_staining_station_cfg.get('error_rate', 0.01))
+SENIOR_RESTAIN_RATE = float(senior_pathologist_cfg.get('repeat_stain_rate', 0.05))
+MAX_RESTAIN_ATTEMPTS = int(params_dict.get('repeat_staining', {}).get('max_attempts', 5))
+
+# Process references filled in after manual_staining / screening are defined
+manual_staining = None
+screening = None
+reporting = None
+
+
+def base_slide_id(slide_id: str) -> str:
+    """Strip prior restain suffixes (e.g. Pap-000001-S1-R1 -> Pap-000001-S1)."""
+    return re.sub(r'-R\d+$', '', slide_id)
+
+
+def spawn_restain_slide(source_slide: 'CytoSlide', reason: str) -> None:
+    """Send a new slide entity back to staining with a traceable ID."""
+    attempt = getattr(source_slide, 'restain_attempt', 0) + 1
+    if attempt > MAX_RESTAIN_ATTEMPTS:
+        slide_to_patient_aggregation(source_slide)
+        return
+
+    source_slide.superseded = True
+    parent = source_slide.parent_patient
+    root_id = base_slide_id(source_slide.id)
+    new_slide_id = f"{root_id}-R{attempt}"
+    tracking_id = f"{parent.id}-R{attempt}"
+
+    new_slide = CytoSlide(
+        slide_id=new_slide_id,
+        parent_patient=parent,
+        arrival_time=sim_env.now,
+        case_complexity=getattr(source_slide, 'case_complexity', parent.case_complexity),
+        tracking_id=tracking_id,
+        original_slide_id=source_slide.id,
+        restain_attempt=attempt,
+        restain_reason=reason,
+    )
+    if not hasattr(parent, 'cyto_slides'):
+        parent.cyto_slides = []
+    parent.cyto_slides.append(new_slide)
+    manual_staining.add_item(new_slide)
+
+
+def route_after_staining(slide):
+    """Equipment QC after staining: failed slides are restained instead of aggregating."""
+    if np.random.random() < STAINING_ERROR_RATE:
+        spawn_restain_slide(slide, 'equipment_error')
+        return None
+    slide_to_patient_aggregation(slide)
+    return None
+
+
+def route_after_screening(patient):
+    """Senior pathologist preference: some slides return to staining before reporting."""
+    restain_triggered = False
+    for slide in getattr(patient, 'cyto_slides', []):
+        if getattr(slide, 'superseded', False):
+            continue
+        end_times = getattr(slide, 'process_end_time', {})
+        if 'manual staining' not in end_times:
+            continue
+        if np.random.random() < SENIOR_RESTAIN_RATE:
+            spawn_restain_slide(slide, 'senior_pathologist')
+            patient.slides_completed = max(0, patient.slides_completed - 1)
+            restain_triggered = True
+    if not restain_triggered:
+        reporting.add_item(patient)
+    return None
+
+
 def slide_to_patient_aggregation(slide):
-    """Callback to sync slides. Once all slides for a patient are done, start reporting."""
+    """Callback to sync slides. Once all slides for a patient are done, start screening."""
     patient = slide.parent_patient
     patient.slides_completed += 1
-    
-    if patient.slides_completed == patient.num_slides:
-        # All slides are ready, patient enters reporting
-        reporting.add_item(patient)
-    
-    return None # Slide entity ends its lifecycle here
+
+    target = getattr(patient, 'initial_num_slides', patient.num_slides)
+    if patient.slides_completed == target:
+        screening.add_item(patient)
+
+    return None
 
 # Defining Processes
 reporting = manual_generic_process(
     env=sim_env,
     process_name='Reporting',
-    resources_requested=[cytopathologist],
+    resources_requested=[senior_pathologist],
     service_time_params=params_dict.get(
         'cyto_reporting_time',
         {
@@ -200,8 +292,23 @@ reporting = manual_generic_process(
             }
         },
     ),
-    is_batched = False,
-    next_process = None,
+    is_batched=False,
+    next_process=None,
+)
+
+# Slide review by junior pathologist:
+screening = manual_generic_process(
+    env=sim_env,
+    process_name='slide screening',
+    resources_requested=[junior_pathologist],
+    service_time_params=params_dict.get('cyto_slide_screening_time', {
+        'by_case_complexity': {
+            'high': {'distribution': 'triangular', 'params': [10, 15, 30]},
+            'low': {'distribution': 'triangular', 'params': [2, 5, 10]},
+        }
+    }),
+    is_batched=False,
+    next_process=route_after_screening,
 )
 
 manual_staining = manual_generic_process(
@@ -212,9 +319,9 @@ manual_staining = manual_generic_process(
         'distribution': 'constant',
         'params': params_dict.get('cyto_staining_time', {}).get('params', {'value': 35})
     },
-    is_batched = True,
-    batch_size = params_dict.get('cyto_manual_staining_station', {}).get('batch_size', 5),
-    next_process = slide_to_patient_aggregation,
+    is_batched=True,
+    batch_size=params_dict.get('cyto_manual_staining_station', {}).get('batch_size', 5),
+    next_process=slide_to_patient_aggregation,
 )
 
 fixation = manual_generic_process(
@@ -233,10 +340,21 @@ fixation = manual_generic_process(
 class AccessioningGate:
     def add_item(self, patient):
         """Splits a patient into multiple slides and sends each to fixation."""
+        patient.initial_num_slides = patient.num_slides
+        patient.slides_completed = 0
+        patient.cyto_slides = []
         for i in range(patient.num_slides):
             slide_id = f"{patient.id}-S{i+1}"
-            slide = CytoSlide(slide_id=slide_id, parent_patient=patient, arrival_time=sim_env.now)
-            # Send slide to fixation
+            slide = CytoSlide(
+                slide_id=slide_id,
+                parent_patient=patient,
+                arrival_time=sim_env.now,
+                case_complexity=patient.case_complexity,
+                tracking_id=patient.id,
+                restain_attempt=0,
+                restain_reason=None,
+            )
+            patient.cyto_slides.append(slide)
             fixation.add_item(slide)
         return None
 
@@ -283,6 +401,10 @@ SIM_DURATION = int((SIMULATION_END_DATETIME - SIMULATION_START_DATETIME).total_s
 WARMUP_DURATION_MINUTES = int((WARMUP_END_DATETIME - SIMULATION_START_DATETIME).total_seconds() / 60)
 
 print(
+    f"--- Repeat staining: equipment error rate={STAINING_ERROR_RATE:.3f}, "
+    f"senior restain rate={SENIOR_RESTAIN_RATE:.3f}, max attempts={MAX_RESTAIN_ATTEMPTS} ---"
+)
+print(
     f"--- Starting Cytopathology Simulation ({SIM_DURATION} minutes / 12 months) ---"
 )
 print(
@@ -297,6 +419,13 @@ def to_datetime_str(sim_minutes):
         return 'N/A'
     dt = SIMULATION_START_DATETIME + timedelta(minutes=float(sim_minutes))
     return dt.strftime('%Y-%m-%d %H:%M')
+
+def process_duration_min(start_times, end_times, process_name):
+    start = start_times.get(process_name)
+    end = end_times.get(process_name)
+    if start is None or end is None:
+        return 'N/A'
+    return round(float(end) - float(start), 2)
 
 # Collecting Results
 import pandas as pd
@@ -315,6 +444,10 @@ for p in all_patients:
         'Patient ID': p.id,
         'Type': p.entity_type,
         'Arrival': f"{p.entry_timestamp_datetime.strftime('%Y-%m-%d %H:%M')}",
+        'Screening Queue': to_datetime_str(queue_times.get('slide screening', 'N/A')),
+        'Screening Start': to_datetime_str(start_times.get('slide screening', 'N/A')),
+        'Screening End': to_datetime_str(end_times.get('slide screening', 'N/A')),
+        'Screening Duration (min)': process_duration_min(start_times, end_times, 'slide screening'),
         'Reporting Queue': to_datetime_str(queue_times.get('Reporting', 'N/A')),
         'Reporting Start': to_datetime_str(start_times.get('Reporting', 'N/A')),
         'Reporting End': to_datetime_str(end_times.get('Reporting', 'N/A')),
@@ -334,6 +467,10 @@ for s in all_slides:
     slide_results.append({
         'Slide ID': s.id,
         'Patient ID': s.parent_patient.id,
+        'Tracking ID': getattr(s, 'tracking_id', s.parent_patient.id),
+        'Original Slide ID': getattr(s, 'original_slide_id', s.id),
+        'Restain Attempt': getattr(s, 'restain_attempt', 0),
+        'Restain Reason': getattr(s, 'restain_reason', '') or '',
         'Fixation Start': to_datetime_str(start_times.get('fixation', 'N/A')),
         'Fixation End': to_datetime_str(end_times.get('fixation', 'N/A')),
         'Staining Start': to_datetime_str(start_times.get('manual staining', 'N/A')),
@@ -349,6 +486,8 @@ print(df_patients.head(20).to_string(index=False))
 print("\n--- Slide Timestamps (First 20) ---")
 print(df_slides.head(20).to_string(index=False))
 print(f"\nRecorded slides after warm-up: {len(df_slides)}")
+restain_slides = sum(1 for s in all_slides if getattr(s, 'restain_attempt', 0) > 0)
+print(f"Restain slides (all attempts): {restain_slides}")
 
 # Saving to CSV for further analysis
 _SIM_RESULTS_DIR.mkdir(parents=True, exist_ok=True)
