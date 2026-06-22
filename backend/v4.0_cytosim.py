@@ -54,6 +54,12 @@ SLIDE_PT_RATIO_BY_CC = params_dict.get('slide_pt_ratio_by_case_complexity', {'hi
 NON_PAP_SLIDE_RATIO_DEFAULT = SLIDE_PT_RATIO_BY_CC.get('low', 1)
 CASE_COMPLEXITY_P_HIGH = params_dict.get('case_complexity', {}).get('p_high', 0.2)
 
+# Service time parameters (from YAML)
+CYTO_REPORTING_TIME = params_dict.get('cyto_reporting_time', {})
+CYTO_SLIDE_SCREENING_TIME = params_dict.get('cyto_slide_screening_time', {})
+CYTO_STAINING_TIME = params_dict.get('cyto_staining_time', {})
+CYTO_FIXATION_TIME = params_dict.get('cyto_fixation_time', {})
+
 
 def sample_case_complexity() -> str:
     """Return 'high' or 'low' using case_complexity.p_high from parameters."""
@@ -198,7 +204,7 @@ reagent_per_slide = reagent_config.get('reagent_per_slide', 0.1)
 _staining_station_cfg = params_dict.get('cyto_manual_staining_station', {})
 STAINING_ERROR_RATE = float(_staining_station_cfg.get('error_rate', 0.01))
 SENIOR_RESTAIN_RATE = float(senior_pathologist_cfg.get('repeat_stain_rate', 0.05))
-MAX_RESTAIN_ATTEMPTS = int(params_dict.get('repeat_staining', {}).get('max_attempts', 5))
+MAX_RESTAIN_ATTEMPTS = int(params_dict.get('repeat_staining', {}).get('max_attempts', 2))
 
 # Process references filled in after manual_staining / screening are defined
 manual_staining = None
@@ -283,15 +289,7 @@ reporting = manual_generic_process(
     env=sim_env,
     process_name='Reporting',
     resources_requested=[senior_pathologist],
-    service_time_params=params_dict.get(
-        'cyto_reporting_time',
-        {
-            'by_case_complexity': {
-                'high': {'distribution': 'triangular', 'params': [10, 15, 30]},
-                'low': {'distribution': 'triangular', 'params': [2, 5, 10]},
-            }
-        },
-    ),
+    service_time_params=params_dict.get('cyto_reporting_time', CYTO_REPORTING_TIME),
     is_batched=False,
     next_process=None,
 )
@@ -301,12 +299,7 @@ screening = manual_generic_process(
     env=sim_env,
     process_name='slide screening',
     resources_requested=[junior_pathologist],
-    service_time_params=params_dict.get('cyto_slide_screening_time', {
-        'by_case_complexity': {
-            'high': {'distribution': 'triangular', 'params': [10, 15, 30]},
-            'low': {'distribution': 'triangular', 'params': [2, 5, 10]},
-        }
-    }),
+    service_time_params=params_dict.get('cyto_slide_screening_time', CYTO_SLIDE_SCREENING_TIME),
     is_batched=False,
     next_process=route_after_screening,
 )
@@ -315,10 +308,7 @@ manual_staining = manual_generic_process(
     env=sim_env,
     process_name='manual staining',
     resources_requested=[cytotechnician, cyto_manual_staining_station, (cyto_staining_reagents, reagent_per_slide)],
-    service_time_params={
-        'distribution': 'constant',
-        'params': params_dict.get('cyto_staining_time', {}).get('params', {'value': 35})
-    },
+    service_time_params=params_dict.get('cyto_staining_time', CYTO_STAINING_TIME),
     is_batched=True,
     batch_size=params_dict.get('cyto_manual_staining_station', {}).get('batch_size', 5),
     next_process=slide_to_patient_aggregation,
@@ -328,10 +318,7 @@ fixation = manual_generic_process(
     env=sim_env,
     process_name = 'fixation',
     resources_requested=[],
-    service_time_params={
-        'distribution': 'constant',
-        'params': params_dict.get('cyto_fixation_time', {}).get('params', {'value': 20})
-    },
+    service_time_params=params_dict.get('cyto_fixation_time', CYTO_FIXATION_TIME),
     is_batched = False,
     next_process = manual_staining,
 )

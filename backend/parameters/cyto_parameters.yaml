@@ -86,10 +86,10 @@ junior_pathologist:
   num_junior_pathologist: 3
   junior_pathologist_schedule:
     Timeslot_1:
-      days: [0, 1, 2, 3, 4, 5, 6] #Monday to Friday
+      days: [0, 1, 2, 3, 4, 5] #Monday to Friday
       hours: [17, 19] # 5 pm to 7 pm
     Timeslot_2:
-      days: [6]
+      days: [5] # Saturday
       hours: [13, 15] # 1 pm to 3 pm
 
 senior_pathologists:
@@ -112,7 +112,7 @@ cyto_manual_staining_station:
 
 # Limits and rates for repeat staining workflow
 repeat_staining:
-  max_attempts: 5 # Maximum restain attempts per slide lineage before forced acceptance
+  max_attempts: 2 # Maximum restain attempts per slide lineage before forced acceptance
 
 #Consumables
 cyto_staining_kits:

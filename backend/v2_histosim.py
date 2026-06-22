@@ -182,50 +182,47 @@ def create_schedule_from_params(schedule_name: str, schedule_params: Dict[str, A
     return schedule
 
 # Defining Schedules
-histotech_params = params_dict.get('histo_technicians', {}).get('histotech_schedule', {})
-histotech_schedule = create_schedule_from_params("Histotech Schedule", histotech_params)
+histotechnician_params = params_dict.get('histo_technicians', {}).get('histotech_schedule', {})
+histotechnician_schedule = create_schedule_from_params("Histotechnician Schedule", histotechnician_params)
 
-histopath_params = params_dict.get('histo_pathologists', {}).get('histopath_schedule', {})
-histopath_schedule = create_schedule_from_params("Histopath Schedule", histopath_params)
+senior_pathologist_cfg = params_dict.get('senior_pathologists', {})
+senior_pathologist_params = senior_pathologist_cfg.get('senior_pathologist_schedule', {})
+senior_pathologist_schedule = create_schedule_from_params("Senior Pathologist Schedule", senior_pathologist_params)
 
-# Path residents: YAML key is path_resident (singular). Fall back to technician hours if no schedule.
-_path_resident_cfg = params_dict.get("path_resident") or params_dict.get("path_residents") or {}
-_resident_sched_params = _path_resident_cfg.get("resident_schedule") or _path_resident_cfg.get(
-    "histotech_schedule"
-)
-if _resident_sched_params:
-    path_resident_schedule = create_schedule_from_params(
-        "Resident Schedule", _resident_sched_params
-    )
-else:
-    path_resident_schedule = histotech_schedule
+# Junior pathologists (grossing support and slide screening); schedule matches cyto junior pathologists.
+junior_pathologist_cfg = params_dict.get("junior_pathologist") or params_dict.get("path_resident") or {}
+junior_schedule_params = junior_pathologist_cfg.get("junior_pathologist_schedule")
+junior_pathologist_schedule = create_schedule_from_params("Junior Pathologist Schedule", junior_schedule_params)
 
 # Defining Resources
 num_histotech = params_dict.get('histo_technicians', {}).get('num_cytotech', 1)
 histotechnician = ScheduledResource(
     env=sim_env,
     capacity=num_histotech,
-    schedule=histotech_schedule,
+    schedule=histotechnician_schedule,
     simulation_start_datetime=SIMULATION_START_DATETIME,
     name="Histotechnicians"
 )
 
-num_histopath = params_dict.get('histo_pathologists', {}).get('num_cytopath', 1)
-histopathologist = ScheduledResource(
+num_senior_pathologist = params_dict.get('senior_pathologists', {}).get('num_senior_pathologist', 3)
+senior_pathologist = ScheduledResource(
     env=sim_env,
-    capacity=num_histopath,
-    schedule=histopath_schedule,
+    capacity=num_senior_pathologist,
+    schedule=senior_pathologist_schedule,
     simulation_start_datetime=SIMULATION_START_DATETIME,
-    name="Histopathologists"
+    name="Senior Pathologists"
 )
 
-num_path_resident = int(params_dict.get("path_resident", {}).get("num", 5))
-path_resident = ScheduledResource(
+num_junior_pathologist = int(
+    junior_pathologist_cfg.get("num_junior_pathologist")
+    or junior_pathologist_cfg.get("num", 3)
+)
+junior_pathologist = ScheduledResource(
     env=sim_env,
-    capacity=num_path_resident,
-    schedule=path_resident_schedule,
+    capacity=num_junior_pathologist,
+    schedule=junior_pathologist_schedule,
     simulation_start_datetime=SIMULATION_START_DATETIME,
-    name="PathResidents",
+    name="Junior Pathologists",
 )
 
 # Non-scheduled Resources
@@ -269,53 +266,98 @@ STAINING_BATCH_SIZE = int(
     params_dict.get("histo_staining_station", {}).get("batch_size", 30)
 )
 
+# Repeat staining parameters (senior pathologist restain only; no equipment error rate)
+SENIOR_RESTAIN_RATE = float(senior_pathologist_cfg.get("repeat_stain_rate", 0.30))
+MAX_RESTAIN_ATTEMPTS = int(params_dict.get("repeat_staining", {}).get("max_attempts", 2))
+RESTAIN_SLIDES_PER_REWORK = int(params_dict.get("repeat_staining", {}).get("slides_per_rework", 5))
+
+# Service time parameters (from YAML)
+HISTO_REPORTING_TIME = params_dict.get("histo_reporting_time", {})
+HISTO_SLIDE_SCREENING_TIME = params_dict.get("histo_slide_screening_time", {})
+HISTO_FIXATION_TIME = params_dict.get("histo_fixation_time", {})
+HISTO_GROSSING_TIME = params_dict.get("histo_grossing_time", {})
+HISTO_STAINING_TIME = params_dict.get("histo_staining_time", {})
+HISTO_SECTIONING_TIME = params_dict.get("histo_sectioning_time", {})
+HISTO_EMBEDDING_TIME = params_dict.get("histo_embedding_time", {})
+HISTO_TISSUE_PROCESSING_TIME = params_dict.get("histo_tissue_processing_time", {})
+
+# Process references filled in after slide-prep processes are defined
+sectioning = None
+staining = None
+screening = None
+reporting = None
+
+
+def spawn_patient_rework_slides(patient) -> None:
+    """Senior pathologist sends the patient back: generate new slides from sectioning."""
+    attempt = getattr(patient, "patient_rework_attempt", 0) + 1
+    if attempt > MAX_RESTAIN_ATTEMPTS:
+        return
+
+    patient.patient_rework_attempt = attempt
+    patient.slides_completed = 0
+    patient.initial_num_slides = RESTAIN_SLIDES_PER_REWORK
+
+    if not hasattr(patient, "histo_slides"):
+        patient.histo_slides = []
+
+    for i in range(RESTAIN_SLIDES_PER_REWORK):
+        slide_id = f"{patient.id}-R{attempt}-S{i + 1}"
+        slide = HistoSlide(
+            slide_id=slide_id,
+            parent_patient=patient,
+            arrival_time=sim_env.now,
+            case_complexity=patient.case_complexity,
+            size=patient.size,
+            tracking_id=f"{patient.id}-R{attempt}",
+            original_slide_id=None,
+            restain_attempt=attempt,
+            restain_reason="senior_pathologist",
+        )
+        patient.histo_slides.append(slide)
+        sectioning.add_item(slide)
+
+
+def route_after_reporting(patient):
+    """Senior pathologist may send the whole patient back for rework after reporting."""
+    attempt = getattr(patient, "patient_rework_attempt", 0)
+    if attempt >= MAX_RESTAIN_ATTEMPTS:
+        return None
+    if np.random.random() < SENIOR_RESTAIN_RATE:
+        spawn_patient_rework_slides(patient)
+    return None
+
+
 # Sync Point: Aggregating slides back to patient
 def slide_to_patient_aggregation(slide):
-    """Callback to sync slides. Once all slides for a patient are done, start reporting."""
+    """Callback to sync slides. Once all slides for a patient are done, start screening."""
     patient = slide.parent_patient
     patient.slides_completed += 1
-    
-    if patient.slides_completed == patient.num_slides:
-        # All slides are ready, patient enters reporting
-        reporting.add_item(patient)
-    
-    return None # Slide entity ends its lifecycle here
+
+    target = getattr(patient, "initial_num_slides", patient.num_slides)
+    if patient.slides_completed == target:
+        screening.add_item(patient)
+
+    return None
 
 
-# 6) Reporting
-
-_DEFAULT_HISTO_REPORTING_TIME = {
-    "by_case_complexity": {
-        "high": {"distribution": "triangular", "params": [20, 30, 100]},
-        "low": {"distribution": "triangular", "params": [5, 10, 20]},
-    }
-}
-
-_DEFAULT_HISTO_FIXATION_TIME = {
-    "by_size": {
-        "small": {"distribution": "constant", "params": 360},
-        "medium": {"distribution": "constant", "params": 720},
-        "large": {"distribution": "constant", "params": 2880},
-    }
-}
-
-_DEFAULT_HISTO_GROSSING_TIME = {
-    "by_size": {
-        "small": {"distribution": "constant", "params": 10},
-        "medium": {"distribution": "constant", "params": 30},
-        "large": {"distribution": "constant", "params": 120},
-    }
-}
 
 reporting = manual_generic_process(
     env=sim_env,
     process_name="Reporting",
-    resources_requested=[histopathologist],
-    service_time_params=params_dict.get(
-        "histo_reporting_time", _DEFAULT_HISTO_REPORTING_TIME
-    ),
+    resources_requested=[senior_pathologist],
+    service_time_params=params_dict.get("histo_reporting_time", HISTO_REPORTING_TIME),
     is_batched=False,
-    next_process=None,
+    next_process=route_after_reporting,
+)
+
+screening = manual_generic_process(
+    env=sim_env,
+    process_name="slide screening",
+    resources_requested=[junior_pathologist],
+    service_time_params=params_dict.get("histo_slide_screening_time", HISTO_SLIDE_SCREENING_TIME),
+    is_batched=False,
+    next_process=reporting,
 )
 
 
@@ -324,10 +366,7 @@ staining = manual_generic_process(
     env=sim_env,
     process_name="Staining",
     resources_requested=[histotechnician, histo_staining_station, (histo_staining_reagents, reagent_per_slide)],
-    service_time_params={
-        'distribution': params_dict.get('histo_staining_time', {}).get('distribution', 'constant'),
-        'params': params_dict.get('histo_staining_time', {}).get('params', [35])
-    },
+    service_time_params=params_dict.get("histo_staining_time", HISTO_STAINING_TIME),
     is_batched=True,
     batch_size=STAINING_BATCH_SIZE,
     next_process=slide_to_patient_aggregation,
@@ -338,10 +377,7 @@ sectioning = manual_generic_process(
     env=sim_env,
     process_name="Sectioning",
     resources_requested=[histotechnician, histo_sectioning_station],
-    service_time_params={
-        'distribution': params_dict.get('histo_sectioning_time', {}).get('distribution', 'constant'),
-        'params': params_dict.get('histo_sectioning_time', {}).get('params', [1])
-    },
+    service_time_params=params_dict.get("histo_sectioning_time", HISTO_SECTIONING_TIME),
     is_batched=False,
     next_process=staining,
 )
@@ -351,10 +387,7 @@ embedding = manual_generic_process(
     env=sim_env,
     process_name="Embedding",
     resources_requested=[histotechnician, histo_embedding_station],
-    service_time_params={
-        'distribution': params_dict.get('histo_embedding_time', {}).get('distribution', 'constant'),
-        'params': params_dict.get('histo_embedding_time', {}).get('params', [1])
-    },
+    service_time_params=params_dict.get("histo_embedding_time", HISTO_EMBEDDING_TIME),
     is_batched=False,
     next_process=sectioning,
 )
@@ -364,10 +397,7 @@ tissue_processing = manual_generic_process(
     env=sim_env,
     process_name="Tissue Processing",
     resources_requested=[histo_tissue_processor],
-    service_time_params={
-        'distribution': params_dict.get('histo_tissue_processing_time', {}).get('distribution', 'constant'),
-        'params': params_dict.get('histo_tissue_processing_time', {}).get('params', [1320])
-    },
+    service_time_params=params_dict.get("histo_tissue_processing_time", HISTO_TISSUE_PROCESSING_TIME),
     is_batched=True,
     batch_size=TISSUE_PROCESSOR_BATCH_SIZE,
     next_process=embedding,
@@ -380,10 +410,23 @@ class BlockGenerationGate:
 
     def run_non_batch(self, patient):
         """Splits a patient into multiple slides and sends each to tissue processing."""
+        patient.initial_num_slides = patient.num_slides
+        patient.slides_completed = 0
+        patient.patient_rework_attempt = 0
+        patient.histo_slides = []
         for i in range(patient.num_slides):
             slide_id = f"{patient.id}-S{i+1}"
-            slide = HistoSlide(slide_id=slide_id, parent_patient=patient, arrival_time=sim_env.now)
-            # Send slide to tissue processing
+            slide = HistoSlide(
+                slide_id=slide_id,
+                parent_patient=patient,
+                arrival_time=sim_env.now,
+                case_complexity=patient.case_complexity,
+                size=patient.size,
+                tracking_id=patient.id,
+                restain_attempt=0,
+                restain_reason=None,
+            )
+            patient.histo_slides.append(slide)
             tissue_processing.add_item(slide)
         yield sim_env.timeout(0)
 
@@ -393,10 +436,8 @@ block_generation_gate = BlockGenerationGate()
 grossing = manual_generic_process(
     env=sim_env,
     process_name="Grossing",
-    resources_requested=[histo_grossing_station, path_resident],
-    service_time_params=params_dict.get(
-        "histo_grossing_time", _DEFAULT_HISTO_GROSSING_TIME
-    ),
+    resources_requested=[histo_grossing_station, junior_pathologist],
+    service_time_params=params_dict.get("histo_grossing_time", HISTO_GROSSING_TIME),
     is_batched=False,
     next_process=block_generation_gate,
 )
@@ -406,9 +447,7 @@ fixation = manual_generic_process(
     env=sim_env,
     process_name="Fixation",
     resources_requested=[],
-    service_time_params=params_dict.get(
-        "histo_fixation_time", _DEFAULT_HISTO_FIXATION_TIME
-    ),
+    service_time_params=params_dict.get("histo_fixation_time", HISTO_FIXATION_TIME),
     is_batched=False,
     next_process=grossing,
 )
@@ -463,6 +502,10 @@ SIM_DURATION = int((SIMULATION_END_DATETIME - SIMULATION_START_DATETIME).total_s
 WARMUP_DURATION_MINUTES = int((WARMUP_END_DATETIME - SIMULATION_START_DATETIME).total_seconds() / 60)
 
 print(
+    f"--- Repeat staining: senior restain rate={SENIOR_RESTAIN_RATE:.3f}, "
+    f"max attempts={MAX_RESTAIN_ATTEMPTS}, slides per rework={RESTAIN_SLIDES_PER_REWORK} ---"
+)
+print(
     f"--- Starting Histopathology Simulation ({SIM_DURATION} minutes / 12 months) ---"
 )
 print(
@@ -477,6 +520,14 @@ def to_datetime_str(sim_minutes):
         return 'N/A'
     dt = SIMULATION_START_DATETIME + timedelta(minutes=float(sim_minutes))
     return dt.strftime('%Y-%m-%d %H:%M')
+
+
+def process_duration_min(start_times, end_times, process_name):
+    start = start_times.get(process_name)
+    end = end_times.get(process_name)
+    if start is None or end is None:
+        return 'N/A'
+    return round(float(end) - float(start), 2)
     
 # Collecting Results
 import pandas as pd
@@ -498,6 +549,10 @@ for p in all_patients:
         'Num slides': getattr(p, 'num_slides', 'N/A'),
         'Biopsy size': getattr(p, 'size', 'N/A'),
         'Case complexity': getattr(p, 'case_complexity', 'N/A'),
+        'Screening Queue': to_datetime_str(queue_times.get('slide screening', 'N/A')),
+        'Screening Start': to_datetime_str(start_times.get('slide screening', 'N/A')),
+        'Screening End': to_datetime_str(end_times.get('slide screening', 'N/A')),
+        'Screening Duration (min)': process_duration_min(start_times, end_times, 'slide screening'),
         'Reporting Queue': to_datetime_str(queue_times.get('Reporting', 'N/A')),
         'Reporting Start': to_datetime_str(start_times.get('Reporting', 'N/A')),
         'Reporting End': to_datetime_str(end_times.get('Reporting', 'N/A')),
@@ -521,6 +576,10 @@ for s in all_slides:
     slide_results.append({
         'Slide ID': s.id,
         'Patient ID': s.parent_patient.id,
+        'Tracking ID': getattr(s, 'tracking_id', s.parent_patient.id),
+        'Original Slide ID': getattr(s, 'original_slide_id', s.id),
+        'Restain Attempt': getattr(s, 'restain_attempt', 0),
+        'Restain Reason': getattr(s, 'restain_reason', '') or '',
         'Fixation Start': to_datetime_str(patient_start_times.get('Fixation', 'N/A')),
         'Fixation End': to_datetime_str(patient_end_times.get('Fixation', 'N/A')),
         'Grossing Start': to_datetime_str(patient_start_times.get('Grossing', 'N/A')),
@@ -544,6 +603,8 @@ print(df_patients.head(20).to_string(index=False))
 print("\n--- Slide Timestamps (First 20) ---")
 print(df_slides.head(20).to_string(index=False))
 print(f"\nRecorded slides after warm-up: {len(df_slides)}")
+restain_slides = sum(1 for s in all_slides if getattr(s, 'restain_attempt', 0) > 0)
+print(f"Restain slides (all attempts): {restain_slides}")
 
 # Saving to CSV for further analysis
 _SIM_RESULTS_DIR.mkdir(parents=True, exist_ok=True)

@@ -91,6 +91,16 @@ histo_staining_time: #This is cumulative of staining, drying, labelling and moun
   params: 35 # minutes per batch # Constant time
 
 # Triangular(min, mode, max) in minutes per patient, by case complexity
+histo_slide_screening_time:
+  by_case_complexity:
+    high:
+      distribution: "triangular"
+      params: [20, 30, 40]
+    low:
+      distribution: "triangular"
+      params: [10, 20, 30]
+
+# Triangular(min, mode, max) in minutes per patient, by case complexity
 histo_reporting_time:
   by_case_complexity:
     high:
@@ -114,22 +124,26 @@ histo_technicians:
       days: [6]
       hours: [9, 13] # 9 am to 1 pm
 
-# Pathology residents (grossing); same working hours as histo_technicians.histotech_schedule in code.
-path_resident:
-  num: 5
-  resident_schedule:
+# Junior pathologists (grossing support and slide screening); schedule matches cyto junior pathologists.
+junior_pathologist:
+  num_junior_pathologist: 3
+  junior_pathologist_schedule:
     Timeslot_1:
-      days: [0, 1, 2, 3, 4, 5, 6] #Monday to Sunday
-      hours: [9, 19] # 9 am to 7 pm
+      days: [0, 1, 2, 3, 4] #Monday to Friday
+      hours: [17, 21] # 5 pm to 9 pm
+    Timeslot_2:
+      days: [5]
+      hours: [13, 17] # 1 pm to 3 pm
 
-histo_pathologists:
-  num_cytopath: 3 # These are the number of faculties that are posted in cyto I'm not including the residents as they're not licensed to sign off on the report yet
-  histopath_schedule:
+senior_pathologists:
+  num_senior_pathologist: 3 # Senior histopathologists (sign-out)
+  repeat_stain_rate: 0.30 # Per patient: senior pathologist sends patient back for rework after reporting
+  senior_pathologist_schedule:
     Timeslot_1:
-      days: [0, 1, 2, 3, 4, 5] #Monday to Friday
+      days: [0, 1, 2, 3, 4] #Monday to Friday
       hours: [10, 14] # 10 am to 2 pm
     Timeslot_2:
-      days: [6]
+      days: [5] # Saturday
       hours: [10, 12] # 10 am to 12 pm
 
 #Infrastructure
@@ -152,6 +166,11 @@ histo_sectioning_station:
 histo_staining_station:
   num_stations: 1 #manual staining station
   batch_size: 25 # samples per batch for staining
+
+# Limits for repeat staining workflow (senior pathologist restain only)
+repeat_staining:
+  max_attempts: 2 # Maximum patient rework cycles before acceptance
+  slides_per_rework: 5 # New slides generated when patient is sent back after reporting
 
 #Consumables
 histo_staining_kits:
