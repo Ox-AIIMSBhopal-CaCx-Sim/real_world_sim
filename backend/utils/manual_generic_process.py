@@ -2,6 +2,7 @@ import simpy
 import datetime
 import numpy as np
 import pandas as pd
+from typing import Any, Optional, Tuple
 
 #Manually coding the Generic Process class so that I know exactly about it's behaviour. The LLM will not be used to code the 
 #entire thing but only very small bits and pieces of code that I know is valid and I know the exact explanations of my 
@@ -53,28 +54,75 @@ class manual_generic_process(simpy.events.Process):
                 )
             return branch
         return stp
-        
+
+    def _parse_resource_spec(self, res_spec, entity_count: int = 1) -> Tuple[Any, Optional[str], float]:
+        """
+        Parse a resource specification.
+
+        Supported forms:
+        - resource
+        - (resource, amount) for containers
+        - (resource, task) for TaskScheduledResource
+        """
+        if not isinstance(res_spec, tuple):
+            return res_spec, None, float(entity_count)
+
+        res, second = res_spec[0], res_spec[1]
+        if isinstance(second, str):
+            return res, second, float(entity_count)
+        return res, None, float(second) * entity_count
+
+    def _task_window_fits(self, res, task: str, required_minutes: float) -> bool:
+        now_dt = res._sim_time_to_datetime(self.env.now)
+        if not res.task_schedules[task].is_available_at(now_dt):
+            return False
+        return res._minutes_remaining_in_task_window(task, now_dt) >= required_minutes
+
+    def _acquire_in_order(self, entity_count: int, gate_service_time: float):
+        """Acquire task-tagged resources first (with window gating), then other resources."""
+        acquired = []
+        for res_spec in self.resources_requested:
+            res, task, amount = self._parse_resource_spec(res_spec, entity_count)
+            if task is not None and hasattr(res, "wait_until_can_start"):
+                task_req = None
+                for _ in range(6):
+                    yield from res.wait_until_can_start(task, gate_service_time)
+                    req = res.request()
+                    yield req
+                    if self._task_window_fits(res, task, gate_service_time):
+                        task_req = req
+                        break
+                    res.release(req)
+                if task_req is None:
+                    yield from res.wait_until_can_start(task, gate_service_time)
+                    task_req = res.request()
+                    yield task_req
+                acquired.append(task_req)
+            elif hasattr(res, "level"):
+                req = res.get(amount)
+                yield req
+                acquired.append(req)
+            else:
+                req = res.request()
+                yield req
+                acquired.append(req)
+        return acquired
+
     def _request_all(self, entity_count):
-        """Helper to request all resources, handling both Resources and Containers."""
+        """Legacy helper without task-window gating (containers / plain resources)."""
         requests = []
         for res_spec in self.resources_requested:
-            # Handle (resource, amount) tuple or just resource
-            if isinstance(res_spec, tuple):
-                res, amount_per_entity = res_spec
+            res, task, amount = self._parse_resource_spec(res_spec, entity_count)
+            if hasattr(res, "level"):
+                requests.append(res.get(amount))
             else:
-                res, amount_per_entity = res_spec, 1
-            
-            if hasattr(res, 'level'): # It's a Container
-                requests.append(res.get(amount_per_entity * entity_count))
-            else:
-                # Standard Resource or ScheduledResource
                 requests.append(res.request())
         return requests
 
     def _release_all(self, requests):
         """Helper to release only the Resource-type objects (skips Containers)."""
         for res_spec, req in zip(self.resources_requested, requests):
-            res = res_spec[0] if isinstance(res_spec, tuple) else res_spec
+            res, _, _ = self._parse_resource_spec(res_spec, entity_count=1)
             if not hasattr(res, 'level'):
                 res.release(req)
         
@@ -122,6 +170,20 @@ class manual_generic_process(simpy.events.Process):
             return np.random.triangular(params.get('min', 0), params.get('mode', params.get('mean', 1)), params.get('max', 2)) 
         else:
             raise ValueError(f"Invalid service time distribution: {dist}")
+
+    def _pessimistic_service_time(self, params_dict) -> float:
+        """Upper-bound service time used for task-window gating (Option A)."""
+        dist = params_dict.get("distribution")
+        params = params_dict.get("params", {})
+        if dist == "triangular" and isinstance(params, list) and len(params) >= 3:
+            return float(max(params))
+        if dist == "pert" and isinstance(params, list) and len(params) >= 3:
+            return float(max(params))
+        if dist == "uniform" and isinstance(params, list) and len(params) >= 2:
+            return float(params[1])
+        if dist == "normal" and isinstance(params, list) and len(params) >= 2:
+            return float(params[0]) + 3.0 * float(params[1])
+        return float(self.get_service_time(params_dict))
         
     
     def is_batch_complete(self, entity):
@@ -145,16 +207,13 @@ class manual_generic_process(simpy.events.Process):
         if not hasattr(entity, 'process_end_time'): entity.process_end_time = {}
 
         entity.queue_entry_time[self.process_name] = self.env.now
-        
-        # Request resources (Handles Resource and Container)
-        requests = self._request_all(1)
-        yield self.env.all_of(requests)
-        
-        # Note the timestamp
+
+        resolved_params = self._resolve_service_time_params(entity)
+        gate_service_time = self._pessimistic_service_time(resolved_params)
+        requests = yield from self._acquire_in_order(1, gate_service_time)
+
         entity.process_start_time[self.process_name] = self.env.now
-        
-        # Work
-        service_time = self.get_service_time(self._resolve_service_time_params(entity))
+        service_time = self.get_service_time(resolved_params)
         yield self.env.timeout(service_time)
         
         # End of process
@@ -187,18 +246,14 @@ class manual_generic_process(simpy.events.Process):
         ready_batch = self.is_batch_complete(entity)
         
         if ready_batch is not None:
-            # Request resources for the whole batch
-            requests = self._request_all(len(ready_batch))
-            yield self.env.all_of(requests)
-            
-            # Resources granted! Note the timestamp for everyone in this batch
+            resolved_params = self._resolve_service_time_params(ready_batch[0])
+            gate_service_time = self._pessimistic_service_time(resolved_params)
+            requests = yield from self._acquire_in_order(len(ready_batch), gate_service_time)
+
             for ent in ready_batch:
                 ent.process_start_time[self.process_name] = self.env.now
-                
-            process_service_time = self.get_service_time(
-                self._resolve_service_time_params(ready_batch[0])
-            )
-            yield self.env.timeout(process_service_time)
+
+            yield self.env.timeout(self.get_service_time(resolved_params))
             
             #Note the timestamp for all the entities in the batch at the time that they exit the process
             for ent in ready_batch:

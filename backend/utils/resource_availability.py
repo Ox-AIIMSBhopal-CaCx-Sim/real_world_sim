@@ -6,7 +6,7 @@ based on time constraints (working hours, shifts, days off, etc.)
 
 import simpy
 from datetime import datetime, time, timedelta
-from typing import List, Tuple, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 
 class TimeSlot:
@@ -280,6 +280,116 @@ class ScheduledResource():
     
     def __repr__(self):
         return f"ScheduledResource('{self.name}', capacity={self.capacity}, available={self.is_available_now()})"
+
+
+def create_schedule_from_params(schedule_name: str, schedule_params: Dict[str, Any]) -> Schedule:
+    """Build a Schedule from YAML-style slot dictionaries."""
+    schedule = Schedule(schedule_name)
+    for _slot_name, slot_data in schedule_params.items():
+        days = slot_data["days"]
+        start_hour, end_hour = slot_data["hours"]
+        schedule.add_time_slot(
+            start_time=time(start_hour, 0),
+            end_time=time(end_hour, 0),
+            days_of_week=days,
+        )
+    return schedule
+
+
+def create_task_schedules_from_params(
+    task_windows: Dict[str, Dict[str, Any]],
+) -> Dict[str, Schedule]:
+    """Build per-task schedules from a YAML ``task_windows`` mapping."""
+    return {
+        task: create_schedule_from_params(f"{task.title()} Schedule", slots)
+        for task, slots in task_windows.items()
+    }
+
+
+def union_schedules(name: str, schedules: Dict[str, Schedule]) -> Schedule:
+    """Combine task schedules into one overall on-shift schedule (union of slots)."""
+    united = Schedule(name)
+    for sched in schedules.values():
+        united.time_slots.extend(sched.time_slots)
+    return united
+
+
+class TaskScheduledResource(ScheduledResource):
+    """
+    Scheduled resource with task-specific time windows on a single capacity pool.
+
+  Each task (e.g. ``grossing``, ``screening``) has its own Schedule. Processes must
+    call ``wait_until_can_start`` before requesting so Option A (no new work if
+    insufficient time remains in the window) is enforced.
+    """
+
+    def __init__(
+        self,
+        env: simpy.Environment,
+        capacity: int,
+        task_schedules: Dict[str, Schedule],
+        simulation_start_datetime: datetime,
+        name: str = "TaskScheduledResource",
+    ):
+        self.task_schedules = task_schedules
+        overall = union_schedules(f"{name} Overall", task_schedules)
+        super().__init__(
+            env=env,
+            capacity=capacity,
+            schedule=overall,
+            simulation_start_datetime=simulation_start_datetime,
+            name=name,
+        )
+
+    def _minutes_remaining_in_task_window(self, task: str, dt: datetime) -> float:
+        """Minutes until the end of the active task window containing ``dt``."""
+        schedule = self.task_schedules[task]
+        for slot in schedule.time_slots:
+            if slot.is_available_at(dt):
+                end_minutes = slot.end_time.hour * 60 + slot.end_time.minute
+                current_minutes = dt.hour * 60 + dt.minute + dt.second / 60.0
+                return max(0.0, end_minutes - current_minutes)
+        return 0.0
+
+    def _minutes_until_can_start(self, task: str, dt: datetime, required_minutes: float) -> float:
+        """Minutes from ``dt`` until the task window has at least ``required_minutes`` left."""
+        schedule = self.task_schedules[task]
+        for day_offset in range(8):
+            check_date = dt.date() + timedelta(days=day_offset)
+            for slot in schedule.time_slots:
+                if check_date.weekday() not in slot.days_of_week:
+                    continue
+                window_start = datetime.combine(check_date, slot.start_time)
+                window_end = datetime.combine(check_date, slot.end_time)
+                candidate = max(dt, window_start)
+                if candidate >= window_end:
+                    continue
+                remaining = (window_end - candidate).total_seconds() / 60.0
+                if remaining >= required_minutes:
+                    return max(0.0, (candidate - dt).total_seconds() / 60.0)
+        return 1440.0
+
+    def is_task_available_now(self, task: str) -> bool:
+        current_dt = self._sim_time_to_datetime(self.env.now)
+        return self.task_schedules[task].is_available_at(current_dt)
+
+    def wait_until_can_start(self, task: str, required_minutes: float):
+        """
+        Wait until ``task`` is active and at least ``required_minutes`` remain
+        in that window (Option A: no new starts near cutoff).
+        """
+        if task not in self.task_schedules:
+            raise KeyError(f"Unknown task {task!r} for {self.name}")
+
+        while True:
+            now_dt = self._sim_time_to_datetime(self.env.now)
+            schedule = self.task_schedules[task]
+            if schedule.is_available_at(now_dt):
+                remaining = self._minutes_remaining_in_task_window(task, now_dt)
+                if remaining >= required_minutes:
+                    return
+            wait_minutes = self._minutes_until_can_start(task, now_dt, required_minutes)
+            yield self.env.timeout(max(1.0, wait_minutes))
 
 
 class ScheduledPriorityResource(ScheduledResource):

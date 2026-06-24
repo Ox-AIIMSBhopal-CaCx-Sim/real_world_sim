@@ -84,7 +84,7 @@ histo_embedding_time:
 
 histo_sectioning_time:
   distribution: "constant"
-  params: 1 # minute per sample # Constant time
+  params: 2 # minute per sample # Constant time
 
 histo_staining_time: #This is cumulative of staining, drying, labelling and mounting,
   distribution: "constant"
@@ -124,16 +124,25 @@ histo_technicians:
       days: [6]
       hours: [9, 13] # 9 am to 1 pm
 
-# Junior pathologists (grossing support and slide screening); schedule matches cyto junior pathologists.
+# Junior pathologists: grossing until 17:00, slide screening from 17:00 onward.
 junior_pathologist:
-  num_junior_pathologist: 3
-  junior_pathologist_schedule:
-    Timeslot_1:
-      days: [0, 1, 2, 3, 4] #Monday to Friday
-      hours: [17, 21] # 5 pm to 9 pm
-    Timeslot_2:
-      days: [5]
-      hours: [13, 17] # 1 pm to 3 pm
+  num_junior_pathologist: 6
+  grossing_cutoff_policy: "no_new_starts" # Option A: defer if insufficient time before 17:00
+  task_windows:
+    grossing:
+      Timeslot_1:
+        days: [0, 1, 2, 3, 4] # Monday to Friday (aligned with histotech shift)
+        hours: [9, 17] # 9 am to 5 pm
+      Timeslot_2:
+        days: [5] # Saturday
+        hours: [9, 12] # 9 am to 12 pm
+    screening:
+      Timeslot_1:
+        days: [0, 1, 2, 3, 4] # Monday to Friday
+        hours: [17, 21] # 5 pm to 9 pm
+      Timeslot_2:
+        days: [5] # Saturday
+        hours: [13, 17] # 1 pm to 5 pm
 
 senior_pathologists:
   num_senior_pathologist: 3 # Senior histopathologists (sign-out)
@@ -148,23 +157,23 @@ senior_pathologists:
 
 #Infrastructure
 histo_grossing_station:
-  num_stations: 2 #manual staining station
+  num_stations: 2 #manual grossing station
   batch_size: 1 # samples per batch for grossing
 
 histo_tissue_processor:
-  num_stations: 1 #manual staining station
+  num_stations: 1 # automated tissue processing station
   batch_size: 90 # samples per batch for tissue processing
 
 histo_embedding_station:
-  num_stations: 1 #manual staining station
+  num_stations: 1 # manual embedding station
   batch_size: 1 # samples per batch for embedding
 
 histo_sectioning_station:
-  num_stations: 1 #manual staining station
+  num_stations: 1 #manual sectioning station
   batch_size: 1 # samples per batch for sectioning
 
 histo_staining_station:
-  num_stations: 1 #manual staining station
+  num_stations: 1 #automated staining station
   batch_size: 25 # samples per batch for staining
 
 # Limits for repeat staining workflow (senior pathologist restain only)

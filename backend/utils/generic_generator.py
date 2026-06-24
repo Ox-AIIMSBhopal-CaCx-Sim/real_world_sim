@@ -279,6 +279,112 @@ class Entity_Generator:
                 yield self.env.timeout(inter_arrival_time)
 
 
+class DailyScheduleEntityGenerator:
+    """
+    Generate a fixed number of entities on each simulation day from a schedule.
+
+    ``daily_schedule`` maps simulation day index (0 = first calendar day) to entity count.
+    Arrivals are spread evenly across the configured working hours.
+    """
+
+    def __init__(
+        self,
+        env,
+        name,
+        entity_class,
+        first_stage=None,
+        working_days=None,
+        working_hours=None,
+        daily_schedule=None,
+        entity_properties=None,
+        simulation_start_datetime=None,
+    ):
+        self.env = env
+        self.name = name
+        self.entity_class = entity_class
+        self.first_stage = first_stage
+        self.working_days = working_days if working_days is not None else [0, 1, 2, 3, 4, 5]
+        self.working_hours = working_hours if working_hours is not None else (9, 16)
+        self.daily_schedule = daily_schedule or {}
+        self.entity_properties = entity_properties
+        self.simulation_start_datetime = simulation_start_datetime
+        if self.simulation_start_datetime:
+            self.start_minutes_offset = (
+                self.simulation_start_datetime.hour * 60 + self.simulation_start_datetime.minute
+            )
+            self.start_weekday = self.simulation_start_datetime.weekday()
+        else:
+            self.start_minutes_offset = 540
+            self.start_weekday = 0
+        self.entity_count = 0
+        self.process = env.process(self.run())
+
+    def _adjusted_minutes(self) -> float:
+        return self.env.now + self.start_minutes_offset
+
+    def _simulation_day(self) -> int:
+        return int(self._adjusted_minutes() // 1440)
+
+    def _minutes_into_day(self) -> float:
+        return self._adjusted_minutes() % 1440
+
+    def _day_of_week(self, simulation_day: int) -> int:
+        return (self.start_weekday + simulation_day) % 7
+
+    def _is_working_day(self, simulation_day: int) -> bool:
+        return self._day_of_week(simulation_day) in self.working_days
+
+    def get_entity_properties(self):
+        if callable(self.entity_properties):
+            return self.entity_properties()
+        if isinstance(self.entity_properties, dict):
+            return self.entity_properties.copy()
+        return {}
+
+    def _spawn_entity(self):
+        self.entity_count += 1
+        properties = self.get_entity_properties()
+        entity = self.entity_class(
+            id=self.entity_count,
+            arrival_time=self.env.now,
+            **properties,
+        )
+        print(
+            f"[{self.env.now:.2f}] {self.name}: Generated entity {self.entity_count} "
+            f"with properties {properties}"
+        )
+        if self.first_stage:
+            self.first_stage.add_item(entity)
+
+    def run(self):
+        start_hour, end_hour = self.working_hours
+        start_minutes = start_hour * 60
+        end_minutes = end_hour * 60
+        working_minutes = end_minutes - start_minutes
+
+        while True:
+            simulation_day = self._simulation_day()
+            count = int(self.daily_schedule.get(simulation_day, 0))
+
+            if count > 0 and self._is_working_day(simulation_day):
+                minutes_into_day = self._minutes_into_day()
+                if minutes_into_day < start_minutes:
+                    yield self.env.timeout(start_minutes - minutes_into_day)
+
+                minutes_into_day = self._minutes_into_day()
+                remaining = min(end_minutes - minutes_into_day, working_minutes)
+                if remaining > 0:
+                    interval = remaining / count
+                    for _ in range(count):
+                        if self._minutes_into_day() >= end_minutes:
+                            break
+                        self._spawn_entity()
+                        yield self.env.timeout(interval)
+
+            minutes_into_day = self._minutes_into_day()
+            yield self.env.timeout(1440 - minutes_into_day)
+
+
 # Example usage and testing
 if __name__ == "__main__":
     # Define a simple test entity class

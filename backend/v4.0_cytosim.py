@@ -381,31 +381,42 @@ non_pap_patient_generator = Entity_Generator(
 
 
 
-# Run the Simulation
 SIMULATION_END_DATETIME = add_months(SIMULATION_START_DATETIME, 12)
 WARMUP_END_DATETIME = add_months(SIMULATION_START_DATETIME, 1)
 SIM_DURATION = int((SIMULATION_END_DATETIME - SIMULATION_START_DATETIME).total_seconds() / 60)
 WARMUP_DURATION_MINUTES = int((WARMUP_END_DATETIME - SIMULATION_START_DATETIME).total_seconds() / 60)
 
-print(
-    f"--- Repeat staining: equipment error rate={STAINING_ERROR_RATE:.3f}, "
-    f"senior restain rate={SENIOR_RESTAIN_RATE:.3f}, max attempts={MAX_RESTAIN_ATTEMPTS} ---"
-)
-print(
-    f"--- Starting Cytopathology Simulation ({SIM_DURATION} minutes / 12 months) ---"
-)
-print(
-    f"--- Warm-up Period: first month until {WARMUP_END_DATETIME.strftime('%Y-%m-%d %H:%M')} (slides not recorded) ---"
-)
-sim_env.run(until=SIM_DURATION)
-print("--- Simulation Complete ---\n")
 
-# Helper to convert simulation minutes to datetime string
+def count_daily_pap_arrivals() -> Dict[int, int]:
+    """Return pap smear arrival counts keyed by simulation day index (0-based)."""
+    counts: Dict[int, int] = {}
+    for patient in PapSmearPatient.all_pap_smears:
+        day = int(patient.arrival_time // 1440)
+        counts[day] = counts.get(day, 0) + 1
+    return counts
+
+
+def run_simulation() -> None:
+    """Run the cytopathology simulation and write result CSVs."""
+    print(
+        f"--- Repeat staining: equipment error rate={STAINING_ERROR_RATE:.3f}, "
+        f"senior restain rate={SENIOR_RESTAIN_RATE:.3f}, max attempts={MAX_RESTAIN_ATTEMPTS} ---"
+    )
+    print(
+        f"--- Starting Cytopathology Simulation ({SIM_DURATION} minutes / 12 months) ---"
+    )
+    print(
+        f"--- Warm-up Period: first month until {WARMUP_END_DATETIME.strftime('%Y-%m-%d %H:%M')} (slides not recorded) ---"
+    )
+    sim_env.run(until=SIM_DURATION)
+    print("--- Simulation Complete ---\n")
+
 def to_datetime_str(sim_minutes):
     if sim_minutes == 'N/A' or (isinstance(sim_minutes, float) and np.isnan(sim_minutes)):
         return 'N/A'
     dt = SIMULATION_START_DATETIME + timedelta(minutes=float(sim_minutes))
     return dt.strftime('%Y-%m-%d %H:%M')
+
 
 def process_duration_min(start_times, end_times, process_name):
     start = start_times.get(process_name)
@@ -414,72 +425,76 @@ def process_duration_min(start_times, end_times, process_name):
         return 'N/A'
     return round(float(end) - float(start), 2)
 
-# Collecting Results
-import pandas as pd
 
-all_patients = PapSmearPatient.all_pap_smears + notPapSmearPatient.all_non_pap_smears
-all_slides = CytoSlide.all_slides
+def collect_and_save_results() -> None:
+    """Collect cytopathology trace data and write CSVs."""
+    import pandas as pd
 
-patient_results = []
-for p in all_patients:
-    # Safely get timestamp dictionaries
-    queue_times = getattr(p, 'queue_entry_time', {})
-    start_times = getattr(p, 'process_start_time', {})
-    end_times = getattr(p, 'process_end_time', {})
-    
-    patient_results.append({
-        'Patient ID': p.id,
-        'Type': p.entity_type,
-        'Arrival': f"{p.entry_timestamp_datetime.strftime('%Y-%m-%d %H:%M')}",
-        'Screening Queue': to_datetime_str(queue_times.get('slide screening', 'N/A')),
-        'Screening Start': to_datetime_str(start_times.get('slide screening', 'N/A')),
-        'Screening End': to_datetime_str(end_times.get('slide screening', 'N/A')),
-        'Screening Duration (min)': process_duration_min(start_times, end_times, 'slide screening'),
-        'Reporting Queue': to_datetime_str(queue_times.get('Reporting', 'N/A')),
-        'Reporting Start': to_datetime_str(start_times.get('Reporting', 'N/A')),
-        'Reporting End': to_datetime_str(end_times.get('Reporting', 'N/A')),
-        'Completed': 'Yes' if 'Reporting' in end_times else 'No'
-    })
+    all_patients = PapSmearPatient.all_pap_smears + notPapSmearPatient.all_non_pap_smears
+    all_slides = CytoSlide.all_slides
 
-slide_results = []
-for s in all_slides:
-    if s.arrival_time < WARMUP_DURATION_MINUTES:
-        continue
+    patient_results = []
+    for p in all_patients:
+        queue_times = getattr(p, 'queue_entry_time', {})
+        start_times = getattr(p, 'process_start_time', {})
+        end_times = getattr(p, 'process_end_time', {})
 
-    # Safely get timestamp dictionaries
-    queue_times = getattr(s, 'queue_entry_time', {})
-    start_times = getattr(s, 'process_start_time', {})
-    end_times = getattr(s, 'process_end_time', {})
-    
-    slide_results.append({
-        'Slide ID': s.id,
-        'Patient ID': s.parent_patient.id,
-        'Tracking ID': getattr(s, 'tracking_id', s.parent_patient.id),
-        'Original Slide ID': getattr(s, 'original_slide_id', s.id),
-        'Restain Attempt': getattr(s, 'restain_attempt', 0),
-        'Restain Reason': getattr(s, 'restain_reason', '') or '',
-        'Fixation Start': to_datetime_str(start_times.get('fixation', 'N/A')),
-        'Fixation End': to_datetime_str(end_times.get('fixation', 'N/A')),
-        'Staining Start': to_datetime_str(start_times.get('manual staining', 'N/A')),
-        'Staining End': to_datetime_str(end_times.get('manual staining', 'N/A')),
-    })
+        patient_results.append({
+            'Patient ID': p.id,
+            'Type': p.entity_type,
+            'Arrival': f"{p.entry_timestamp_datetime.strftime('%Y-%m-%d %H:%M')}",
+            'Screening Queue': to_datetime_str(queue_times.get('slide screening', 'N/A')),
+            'Screening Start': to_datetime_str(start_times.get('slide screening', 'N/A')),
+            'Screening End': to_datetime_str(end_times.get('slide screening', 'N/A')),
+            'Screening Duration (min)': process_duration_min(start_times, end_times, 'slide screening'),
+            'Reporting Queue': to_datetime_str(queue_times.get('Reporting', 'N/A')),
+            'Reporting Start': to_datetime_str(start_times.get('Reporting', 'N/A')),
+            'Reporting End': to_datetime_str(end_times.get('Reporting', 'N/A')),
+            'Completed': 'Yes' if 'Reporting' in end_times else 'No'
+        })
 
-df_patients = pd.DataFrame(patient_results)
-df_slides = pd.DataFrame(slide_results)
+    slide_results = []
+    for s in all_slides:
+        if s.arrival_time < WARMUP_DURATION_MINUTES:
+            continue
 
-print("\n--- Patient Timestamps (First 20) ---")
-print(df_patients.head(20).to_string(index=False))
+        queue_times = getattr(s, 'queue_entry_time', {})
+        start_times = getattr(s, 'process_start_time', {})
+        end_times = getattr(s, 'process_end_time', {})
 
-print("\n--- Slide Timestamps (First 20) ---")
-print(df_slides.head(20).to_string(index=False))
-print(f"\nRecorded slides after warm-up: {len(df_slides)}")
-restain_slides = sum(1 for s in all_slides if getattr(s, 'restain_attempt', 0) > 0)
-print(f"Restain slides (all attempts): {restain_slides}")
+        slide_results.append({
+            'Slide ID': s.id,
+            'Patient ID': s.parent_patient.id,
+            'Tracking ID': getattr(s, 'tracking_id', s.parent_patient.id),
+            'Original Slide ID': getattr(s, 'original_slide_id', s.id),
+            'Restain Attempt': getattr(s, 'restain_attempt', 0),
+            'Restain Reason': getattr(s, 'restain_reason', '') or '',
+            'Fixation Start': to_datetime_str(start_times.get('fixation', 'N/A')),
+            'Fixation End': to_datetime_str(end_times.get('fixation', 'N/A')),
+            'Staining Start': to_datetime_str(start_times.get('manual staining', 'N/A')),
+            'Staining End': to_datetime_str(end_times.get('manual staining', 'N/A')),
+        })
 
-# Saving to CSV for further analysis
-_SIM_RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-_patient_csv = _SIM_RESULTS_DIR / "simulation_patient_timestamps.csv"
-_slide_csv = _SIM_RESULTS_DIR / "simulation_slide_timestamps.csv"
-df_patients.to_csv(_patient_csv, index=False)
-df_slides.to_csv(_slide_csv, index=False)
-print(f"\nResults saved to '{_patient_csv}' and '{_slide_csv}'")
+    df_patients = pd.DataFrame(patient_results)
+    df_slides = pd.DataFrame(slide_results)
+
+    print("\n--- Patient Timestamps (First 20) ---")
+    print(df_patients.head(20).to_string(index=False))
+
+    print("\n--- Slide Timestamps (First 20) ---")
+    print(df_slides.head(20).to_string(index=False))
+    print(f"\nRecorded slides after warm-up: {len(df_slides)}")
+    restain_slides = sum(1 for s in all_slides if getattr(s, 'restain_attempt', 0) > 0)
+    print(f"Restain slides (all attempts): {restain_slides}")
+
+    _SIM_RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    _patient_csv = _SIM_RESULTS_DIR / "simulation_patient_timestamps.csv"
+    _slide_csv = _SIM_RESULTS_DIR / "simulation_slide_timestamps.csv"
+    df_patients.to_csv(_patient_csv, index=False)
+    df_slides.to_csv(_slide_csv, index=False)
+    print(f"\nResults saved to '{_patient_csv}' and '{_slide_csv}'")
+
+
+if __name__ == "__main__":
+    run_simulation()
+    collect_and_save_results()

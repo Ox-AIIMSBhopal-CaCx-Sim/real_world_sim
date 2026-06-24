@@ -1,9 +1,15 @@
 import simpy
 import numpy as np
 from utils.generic_entity import Generic_Entity, HistoSample
-from utils.generic_generator import Entity_Generator
+from utils.generic_generator import Entity_Generator, DailyScheduleEntityGenerator
 from utils.manual_generic_process import manual_generic_process
-from utils.resource_availability import ScheduledResource, TimeSlot, Schedule
+from utils.resource_availability import (
+    ScheduledResource,
+    TaskScheduledResource,
+    Schedule,
+    create_schedule_from_params,
+    create_task_schedules_from_params,
+)
 
 from datetime import datetime, time, timedelta
 from typing import Any, Dict, List, Optional
@@ -15,6 +21,7 @@ _SIM_RESULTS_DIR = _ROOT / "sim_results"
 import yaml
 import csv
 import calendar
+import integrated_config
 
 # Configuration
 SIMULATION_START_DATETIME = datetime(2026, 5, 1, 8, 0, 0)  # Simulation starts on May 1st 2026 at 8am
@@ -167,32 +174,21 @@ class HistoSlide(Generic_Entity):
         self.parent_patient = parent_patient
         HistoSlide.all_slides.append(self)
 
-# Helper function to create schedule from yaml parameters
-def create_schedule_from_params(schedule_name: str, schedule_params: Dict[str, Any]) -> Schedule:
-    """Creates a Schedule object from YAML-defined time slots."""
-    schedule = Schedule(schedule_name)
-    for slot_name, slot_data in schedule_params.items():
-        days = slot_data['days']
-        start_hour, end_hour = slot_data['hours']
-        schedule.add_time_slot(
-            start_time=time(start_hour, 0),
-            end_time=time(end_hour, 0),
-            days_of_week=days
-        )
-    return schedule
+# Helper function to create schedule from yaml parameters (re-exported helper)
+def _create_schedule_from_params(schedule_name: str, schedule_params: Dict[str, Any]) -> Schedule:
+    return create_schedule_from_params(schedule_name, schedule_params)
 
 # Defining Schedules
 histotechnician_params = params_dict.get('histo_technicians', {}).get('histotech_schedule', {})
-histotechnician_schedule = create_schedule_from_params("Histotechnician Schedule", histotechnician_params)
+histotechnician_schedule = _create_schedule_from_params("Histotechnician Schedule", histotechnician_params)
 
 senior_pathologist_cfg = params_dict.get('senior_pathologists', {})
 senior_pathologist_params = senior_pathologist_cfg.get('senior_pathologist_schedule', {})
-senior_pathologist_schedule = create_schedule_from_params("Senior Pathologist Schedule", senior_pathologist_params)
+senior_pathologist_schedule = _create_schedule_from_params("Senior Pathologist Schedule", senior_pathologist_params)
 
-# Junior pathologists (grossing support and slide screening); schedule matches cyto junior pathologists.
+# Junior pathologists: grossing until 17:00, slide screening from 17:00 onward.
 junior_pathologist_cfg = params_dict.get("junior_pathologist") or params_dict.get("path_resident") or {}
-junior_schedule_params = junior_pathologist_cfg.get("junior_pathologist_schedule")
-junior_pathologist_schedule = create_schedule_from_params("Junior Pathologist Schedule", junior_schedule_params)
+junior_task_windows = junior_pathologist_cfg.get("task_windows", {})
 
 # Defining Resources
 num_histotech = params_dict.get('histo_technicians', {}).get('num_cytotech', 1)
@@ -217,18 +213,28 @@ num_junior_pathologist = int(
     junior_pathologist_cfg.get("num_junior_pathologist")
     or junior_pathologist_cfg.get("num", 3)
 )
-junior_pathologist = ScheduledResource(
-    env=sim_env,
-    capacity=num_junior_pathologist,
-    schedule=junior_pathologist_schedule,
-    simulation_start_datetime=SIMULATION_START_DATETIME,
-    name="Junior Pathologists",
-)
+if junior_task_windows:
+    junior_pathologist = TaskScheduledResource(
+        env=sim_env,
+        capacity=num_junior_pathologist,
+        task_schedules=create_task_schedules_from_params(junior_task_windows),
+        simulation_start_datetime=SIMULATION_START_DATETIME,
+        name="Junior Pathologists",
+    )
+else:
+    junior_schedule_params = junior_pathologist_cfg.get("junior_pathologist_schedule", {})
+    junior_pathologist = ScheduledResource(
+        env=sim_env,
+        capacity=num_junior_pathologist,
+        schedule=_create_schedule_from_params("Junior Pathologist Schedule", junior_schedule_params),
+        simulation_start_datetime=SIMULATION_START_DATETIME,
+        name="Junior Pathologists",
+    )
 
 # Non-scheduled Resources
 histo_grossing_station = simpy.Resource(
     env=sim_env,
-    capacity=params_dict.get('histo_grossing_station', {}).get('num_stations', 1)
+    capacity=params_dict.get('histo_grossing_station', {}).get('num_stations', 2)
 )
 
 histo_tissue_processor = simpy.Resource(
@@ -354,7 +360,7 @@ reporting = manual_generic_process(
 screening = manual_generic_process(
     env=sim_env,
     process_name="slide screening",
-    resources_requested=[junior_pathologist],
+    resources_requested=[(junior_pathologist, "screening")],
     service_time_params=params_dict.get("histo_slide_screening_time", HISTO_SLIDE_SCREENING_TIME),
     is_batched=False,
     next_process=reporting,
@@ -436,7 +442,7 @@ block_generation_gate = BlockGenerationGate()
 grossing = manual_generic_process(
     env=sim_env,
     process_name="Grossing",
-    resources_requested=[histo_grossing_station, junior_pathologist],
+    resources_requested=[(junior_pathologist, "grossing"), histo_grossing_station],
     service_time_params=params_dict.get("histo_grossing_time", HISTO_GROSSING_TIME),
     is_batched=False,
     next_process=block_generation_gate,
@@ -452,21 +458,34 @@ fixation = manual_generic_process(
     next_process=grossing,
 )
 
-# Defining the generator functions
-cervical_patient_generator = Entity_Generator(
-    env=sim_env,
-    entity_class=CervicalBiopsyPatient,
-    simulation_start_datetime=SIMULATION_START_DATETIME,
-    name='Cervical Patient Generator',
-    first_stage=fixation    , # Start with accessioning to split into slides
-    working_days=[0,1,2,3,4,5,6],
-    working_hours=[9,17],
-    arrival_params={
-        'distribution': params_dict.get('cervical_biopsies_per_day', {}).get('distribution', 'poisson'),
-        'params': params_dict.get('cervical_biopsies_per_day', {}).get('params', [1])
-    },
-    entity_properties=_biopsy_patient_properties,
-)
+# Cervical arrivals: Poisson by default, or daily schedule from integrated cyto run.
+if integrated_config.cervical_daily_schedule is not None:
+    cervical_patient_generator = DailyScheduleEntityGenerator(
+        env=sim_env,
+        entity_class=CervicalBiopsyPatient,
+        simulation_start_datetime=SIMULATION_START_DATETIME,
+        name='Cervical Patient Generator (from cyto positives)',
+        first_stage=fixation,
+        working_days=[0, 1, 2, 3, 4, 5, 6],
+        working_hours=[9, 17],
+        daily_schedule=integrated_config.cervical_daily_schedule,
+        entity_properties=_biopsy_patient_properties,
+    )
+else:
+    cervical_patient_generator = Entity_Generator(
+        env=sim_env,
+        entity_class=CervicalBiopsyPatient,
+        simulation_start_datetime=SIMULATION_START_DATETIME,
+        name='Cervical Patient Generator',
+        first_stage=fixation    , # Start with accessioning to split into slides
+        working_days=[0,1,2,3,4,5,6],
+        working_hours=[9,17],
+        arrival_params={
+            'distribution': params_dict.get('cervical_biopsies_per_day', {}).get('distribution', 'poisson'),
+            'params': params_dict.get('cervical_biopsies_per_day', {}).get('params', [1])
+        },
+        entity_properties=_biopsy_patient_properties,
+    )
 
 non_cervical_patient_generator = Entity_Generator(
     env=sim_env,
@@ -488,31 +507,37 @@ non_cervical_patient_generator = Entity_Generator(
 2) FIXATION TIME WILL DEPEND AND NUMBER OF BLOCKS GENERATED ALSO DEPEND. 
 3) Service time for reporting is also dependent on slide size """
 
-# --- Print Summary of Parameters Used ---
-print("=========================================")
-print("  HISTOPATHOLOGY SIMULATION PARAMETERS   ")
-print("=========================================")
-print(yaml.dump(params_dict, default_flow_style=False))
-print("=========================================\n")
-
-# Run the Simulation
 SIMULATION_END_DATETIME = add_months(SIMULATION_START_DATETIME, 12)
 WARMUP_END_DATETIME = add_months(SIMULATION_START_DATETIME, 1)
 SIM_DURATION = int((SIMULATION_END_DATETIME - SIMULATION_START_DATETIME).total_seconds() / 60)
 WARMUP_DURATION_MINUTES = int((WARMUP_END_DATETIME - SIMULATION_START_DATETIME).total_seconds() / 60)
 
-print(
-    f"--- Repeat staining: senior restain rate={SENIOR_RESTAIN_RATE:.3f}, "
-    f"max attempts={MAX_RESTAIN_ATTEMPTS}, slides per rework={RESTAIN_SLIDES_PER_REWORK} ---"
-)
-print(
-    f"--- Starting Histopathology Simulation ({SIM_DURATION} minutes / 12 months) ---"
-)
-print(
-    f"--- Warm-up Period: first month until {WARMUP_END_DATETIME.strftime('%Y-%m-%d %H:%M')} (slides not recorded) ---"
-)
-sim_env.run(until=SIM_DURATION)
-print("--- Simulation Complete ---\n")
+
+def run_simulation() -> None:
+    """Run the histopathology simulation."""
+    print("=========================================")
+    print("  HISTOPATHOLOGY SIMULATION PARAMETERS   ")
+    print("=========================================")
+    print(yaml.dump(params_dict, default_flow_style=False))
+    print("=========================================\n")
+    print(
+        f"--- Repeat staining: senior restain rate={SENIOR_RESTAIN_RATE:.3f}, "
+        f"max attempts={MAX_RESTAIN_ATTEMPTS}, slides per rework={RESTAIN_SLIDES_PER_REWORK} ---"
+    )
+    if integrated_config.cervical_daily_schedule is not None:
+        total_scheduled = sum(integrated_config.cervical_daily_schedule.values())
+        print(
+            f"--- Cervical biopsies driven by cyto pap-smear positives "
+            f"({total_scheduled} scheduled over {len(integrated_config.cervical_daily_schedule)} days) ---"
+        )
+    print(
+        f"--- Starting Histopathology Simulation ({SIM_DURATION} minutes / 12 months) ---"
+    )
+    print(
+        f"--- Warm-up Period: first month until {WARMUP_END_DATETIME.strftime('%Y-%m-%d %H:%M')} (slides not recorded) ---"
+    )
+    sim_env.run(until=SIM_DURATION)
+    print("--- Simulation Complete ---\n")
 
 # Helper to convert simulation minutes to datetime string
 def to_datetime_str(sim_minutes):
@@ -529,110 +554,88 @@ def process_duration_min(start_times, end_times, process_name):
         return 'N/A'
     return round(float(end) - float(start), 2)
     
-# Collecting Results
-import pandas as pd
+def collect_and_save_results() -> None:
+    """Collect histopathology trace data and write CSVs."""
+    import pandas as pd
 
-all_patients = CervicalBiopsyPatient.all_cervical_biopsies + NonCervicalBiopsyPatient.all_non_cervical_biopsies
-all_slides = HistoSlide.all_slides
+    all_patients = CervicalBiopsyPatient.all_cervical_biopsies + NonCervicalBiopsyPatient.all_non_cervical_biopsies
+    all_slides = HistoSlide.all_slides
 
-patient_results = []
-for p in all_patients:
-    # Safely get timestamp dictionaries
-    queue_times = getattr(p, 'queue_entry_time', {})
-    start_times = getattr(p, 'process_start_time', {})
-    end_times = getattr(p, 'process_end_time', {})
-    
-    patient_results.append({
-        'Patient ID': p.id,
-        'Type': p.entity_type,
-        'Arrival': f"{p.entry_timestamp_datetime.strftime('%Y-%m-%d %H:%M')}",
-        'Num slides': getattr(p, 'num_slides', 'N/A'),
-        'Biopsy size': getattr(p, 'size', 'N/A'),
-        'Case complexity': getattr(p, 'case_complexity', 'N/A'),
-        'Screening Queue': to_datetime_str(queue_times.get('slide screening', 'N/A')),
-        'Screening Start': to_datetime_str(start_times.get('slide screening', 'N/A')),
-        'Screening End': to_datetime_str(end_times.get('slide screening', 'N/A')),
-        'Screening Duration (min)': process_duration_min(start_times, end_times, 'slide screening'),
-        'Reporting Queue': to_datetime_str(queue_times.get('Reporting', 'N/A')),
-        'Reporting Start': to_datetime_str(start_times.get('Reporting', 'N/A')),
-        'Reporting End': to_datetime_str(end_times.get('Reporting', 'N/A')),
-        'Completed': 'Yes' if 'Reporting' in end_times else 'No'
-    })
+    patient_results = []
+    for p in all_patients:
+        queue_times = getattr(p, 'queue_entry_time', {})
+        start_times = getattr(p, 'process_start_time', {})
+        end_times = getattr(p, 'process_end_time', {})
 
-slide_results = []
-for s in all_slides:
-    if s.parent_patient.arrival_time < WARMUP_DURATION_MINUTES:
-        continue
+        patient_results.append({
+            'Patient ID': p.id,
+            'Type': p.entity_type,
+            'Arrival': f"{p.entry_timestamp_datetime.strftime('%Y-%m-%d %H:%M')}",
+            'Num slides': getattr(p, 'num_slides', 'N/A'),
+            'Biopsy size': getattr(p, 'size', 'N/A'),
+            'Case complexity': getattr(p, 'case_complexity', 'N/A'),
+            'Screening Queue': to_datetime_str(queue_times.get('slide screening', 'N/A')),
+            'Screening Start': to_datetime_str(start_times.get('slide screening', 'N/A')),
+            'Screening End': to_datetime_str(end_times.get('slide screening', 'N/A')),
+            'Screening Duration (min)': process_duration_min(start_times, end_times, 'slide screening'),
+            'Reporting Queue': to_datetime_str(queue_times.get('Reporting', 'N/A')),
+            'Reporting Start': to_datetime_str(start_times.get('Reporting', 'N/A')),
+            'Reporting End': to_datetime_str(end_times.get('Reporting', 'N/A')),
+            'Completed': 'Yes' if 'Reporting' in end_times else 'No'
+        })
 
-    # Safely get timestamp dictionaries for slide
-    queue_times = getattr(s, 'queue_entry_time', {})
-    start_times = getattr(s, 'process_start_time', {})
-    end_times = getattr(s, 'process_end_time', {})
-    
-    # Safely get timestamp dictionaries for parent patient (for pre-slide processes)
-    patient_start_times = getattr(s.parent_patient, 'process_start_time', {})
-    patient_end_times = getattr(s.parent_patient, 'process_end_time', {})
-    
-    slide_results.append({
-        'Slide ID': s.id,
-        'Patient ID': s.parent_patient.id,
-        'Tracking ID': getattr(s, 'tracking_id', s.parent_patient.id),
-        'Original Slide ID': getattr(s, 'original_slide_id', s.id),
-        'Restain Attempt': getattr(s, 'restain_attempt', 0),
-        'Restain Reason': getattr(s, 'restain_reason', '') or '',
-        'Fixation Start': to_datetime_str(patient_start_times.get('Fixation', 'N/A')),
-        'Fixation End': to_datetime_str(patient_end_times.get('Fixation', 'N/A')),
-        'Grossing Start': to_datetime_str(patient_start_times.get('Grossing', 'N/A')),
-        'Grossing End': to_datetime_str(patient_end_times.get('Grossing', 'N/A')),
-        'Tissue Processing Start': to_datetime_str(start_times.get('Tissue Processing', 'N/A')),
-        'Tissue Processing End': to_datetime_str(end_times.get('Tissue Processing', 'N/A')),
-        'Embedding Start': to_datetime_str(start_times.get('Embedding', 'N/A')),
-        'Embedding End': to_datetime_str(end_times.get('Embedding', 'N/A')),
-        'Sectioning Start': to_datetime_str(start_times.get('Sectioning', 'N/A')),
-        'Sectioning End': to_datetime_str(end_times.get('Sectioning', 'N/A')),
-        'Staining Start': to_datetime_str(start_times.get('Staining', 'N/A')),
-        'Staining End': to_datetime_str(end_times.get('Staining', 'N/A')),
-    })
+    slide_results = []
+    for s in all_slides:
+        if s.parent_patient.arrival_time < WARMUP_DURATION_MINUTES:
+            continue
 
-df_patients = pd.DataFrame(patient_results)
-df_slides = pd.DataFrame(slide_results)
+        queue_times = getattr(s, 'queue_entry_time', {})
+        start_times = getattr(s, 'process_start_time', {})
+        end_times = getattr(s, 'process_end_time', {})
+        patient_start_times = getattr(s.parent_patient, 'process_start_time', {})
+        patient_end_times = getattr(s.parent_patient, 'process_end_time', {})
 
-print("\n--- Patient Timestamps (First 20) ---")
-print(df_patients.head(20).to_string(index=False))
+        slide_results.append({
+            'Slide ID': s.id,
+            'Patient ID': s.parent_patient.id,
+            'Tracking ID': getattr(s, 'tracking_id', s.parent_patient.id),
+            'Original Slide ID': getattr(s, 'original_slide_id', s.id),
+            'Restain Attempt': getattr(s, 'restain_attempt', 0),
+            'Restain Reason': getattr(s, 'restain_reason', '') or '',
+            'Fixation Start': to_datetime_str(patient_start_times.get('Fixation', 'N/A')),
+            'Fixation End': to_datetime_str(patient_end_times.get('Fixation', 'N/A')),
+            'Grossing Start': to_datetime_str(patient_start_times.get('Grossing', 'N/A')),
+            'Grossing End': to_datetime_str(patient_end_times.get('Grossing', 'N/A')),
+            'Tissue Processing Start': to_datetime_str(start_times.get('Tissue Processing', 'N/A')),
+            'Tissue Processing End': to_datetime_str(end_times.get('Tissue Processing', 'N/A')),
+            'Embedding Start': to_datetime_str(start_times.get('Embedding', 'N/A')),
+            'Embedding End': to_datetime_str(end_times.get('Embedding', 'N/A')),
+            'Sectioning Start': to_datetime_str(start_times.get('Sectioning', 'N/A')),
+            'Sectioning End': to_datetime_str(end_times.get('Sectioning', 'N/A')),
+            'Staining Start': to_datetime_str(start_times.get('Staining', 'N/A')),
+            'Staining End': to_datetime_str(end_times.get('Staining', 'N/A')),
+        })
 
-print("\n--- Slide Timestamps (First 20) ---")
-print(df_slides.head(20).to_string(index=False))
-print(f"\nRecorded slides after warm-up: {len(df_slides)}")
-restain_slides = sum(1 for s in all_slides if getattr(s, 'restain_attempt', 0) > 0)
-print(f"Restain slides (all attempts): {restain_slides}")
+    df_patients = pd.DataFrame(patient_results)
+    df_slides = pd.DataFrame(slide_results)
 
-# Saving to CSV for further analysis
-_SIM_RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-_patient_csv = _SIM_RESULTS_DIR / "histo_simulation_patient_timestamps.csv"
-_slide_csv = _SIM_RESULTS_DIR / "histo_simulation_slide_timestamps.csv"
-df_patients.to_csv(_patient_csv, index=False)
-df_slides.to_csv(_slide_csv, index=False)
-print(f"\nResults saved to '{_patient_csv}' and '{_slide_csv}'")
+    print("\n--- Patient Timestamps (First 20) ---")
+    print(df_patients.head(20).to_string(index=False))
+
+    print("\n--- Slide Timestamps (First 20) ---")
+    print(df_slides.head(20).to_string(index=False))
+    print(f"\nRecorded slides after warm-up: {len(df_slides)}")
+    restain_slides = sum(1 for s in all_slides if getattr(s, 'restain_attempt', 0) > 0)
+    print(f"Restain slides (all attempts): {restain_slides}")
+
+    _SIM_RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    _patient_csv = _SIM_RESULTS_DIR / "histo_simulation_patient_timestamps.csv"
+    _slide_csv = _SIM_RESULTS_DIR / "histo_simulation_slide_timestamps.csv"
+    df_patients.to_csv(_patient_csv, index=False)
+    df_slides.to_csv(_slide_csv, index=False)
+    print(f"\nResults saved to '{_patient_csv}' and '{_slide_csv}'")
 
 
-# MAchine resource utilisation percentage
-# HR utilisation percentage
-# Additional processes which can be bottlenecks
-# Model limitations are adverse events - Strikes, machine not working, 
-# Model should also need to identify when the machine needs to be serviced because if the machine is not 
-# Incident register - which machine breaks down by what frequency
-# Contingency plans cannot run forever
-# After how many days after breakdown does the queues explode
-# TAT will increase expoenntially, we will stop the billing after 8th day. 
-# Can also work on Sundays
-# Nice implementations of the model. 
-# Predictive Daily modelling - how do I distribute resources today
-# 
-
-# What features about UI
-# Tell me all the assumptions - tweak all the parameters
-# All the Graphs/numbers and Tables
-# Details of a report - Input parameters
-# KPI Graph and Table 
-# KPI that we are measuring 
-
+if __name__ == "__main__":
+    run_simulation()
+    collect_and_save_results()
