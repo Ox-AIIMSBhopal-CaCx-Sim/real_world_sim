@@ -1,7 +1,10 @@
 """FastAPI entrypoint."""
 
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.routes import parameters, simulations
 
@@ -26,3 +29,8 @@ app.include_router(parameters.router, prefix="/api/parameters", tags=["parameter
 @app.get("/api/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+_STATIC_DIR = Path(__file__).resolve().parents[2] / "static"
+if _STATIC_DIR.is_dir():
+    app.mount("/", StaticFiles(directory=_STATIC_DIR, html=True), name="frontend")
