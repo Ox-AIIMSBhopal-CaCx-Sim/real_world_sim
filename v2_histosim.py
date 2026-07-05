@@ -9,7 +9,9 @@ from utils.resource_availability import (
     Schedule,
     create_schedule_from_params,
     create_task_schedules_from_params,
+    union_schedules,
 )
+from utils.resource_utilisation import ResourceUtilisationMonitor, set_monitor
 
 from datetime import datetime, time, timedelta
 from typing import Any, Dict, List, Optional
@@ -263,6 +265,71 @@ histo_staining_reagents = simpy.Container(env=sim_env, capacity=total_reagent_ca
 
 # Reagent consumption amount per slide
 reagent_per_slide = reagent_config.get('reagent_per_slide', 0.1)
+
+_utilisation_monitor = ResourceUtilisationMonitor(SIMULATION_START_DATETIME)
+_utilisation_monitor.register(
+    histotechnician,
+    name="Histotechnicians",
+    capacity=num_histotech,
+    resource_type="scheduled",
+    schedule=histotechnician_schedule,
+)
+_utilisation_monitor.register(
+    senior_pathologist,
+    name="Senior Pathologists",
+    capacity=num_senior_pathologist,
+    resource_type="scheduled",
+    schedule=senior_pathologist_schedule,
+)
+if junior_task_windows:
+    _junior_task_schedules = create_task_schedules_from_params(junior_task_windows)
+    _utilisation_monitor.register(
+        junior_pathologist,
+        name="Junior Pathologists",
+        capacity=num_junior_pathologist,
+        resource_type="task_scheduled",
+        schedule=union_schedules("Junior Pathologists Overall", _junior_task_schedules),
+        task_schedules=_junior_task_schedules,
+    )
+else:
+    _utilisation_monitor.register(
+        junior_pathologist,
+        name="Junior Pathologists",
+        capacity=num_junior_pathologist,
+        resource_type="scheduled",
+        schedule=junior_pathologist.schedule,
+    )
+_utilisation_monitor.register(
+    histo_grossing_station,
+    name="Grossing Station",
+    capacity=histo_grossing_station.capacity,
+    resource_type="equipment",
+)
+_utilisation_monitor.register(
+    histo_tissue_processor,
+    name="Tissue Processor",
+    capacity=histo_tissue_processor.capacity,
+    resource_type="equipment",
+)
+_utilisation_monitor.register(
+    histo_embedding_station,
+    name="Embedding Station",
+    capacity=histo_embedding_station.capacity,
+    resource_type="equipment",
+)
+_utilisation_monitor.register(
+    histo_sectioning_station,
+    name="Sectioning Station",
+    capacity=histo_sectioning_station.capacity,
+    resource_type="equipment",
+)
+_utilisation_monitor.register(
+    histo_staining_station,
+    name="Staining Station",
+    capacity=histo_staining_station.capacity,
+    resource_type="equipment",
+)
+set_monitor(_utilisation_monitor)
 
 # Batch sizes for batched stations (from YAML infrastructure sections)
 TISSUE_PROCESSOR_BATCH_SIZE = int(
@@ -629,11 +696,24 @@ def collect_and_save_results() -> None:
     print(f"Restain slides (all attempts): {restain_slides}")
 
     _SIM_RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    _patient_csv = _SIM_RESULTS_DIR / "histo_simulation_patient_timestamps.csv"
-    _slide_csv = _SIM_RESULTS_DIR / "histo_simulation_slide_timestamps.csv"
+    run_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    _patient_csv = _SIM_RESULTS_DIR / f"{run_timestamp}_histo_simulation_patient_timestamps.csv"
+    _slide_csv = _SIM_RESULTS_DIR / f"{run_timestamp}_histo_simulation_slide_timestamps.csv"
     df_patients.to_csv(_patient_csv, index=False)
     df_slides.to_csv(_slide_csv, index=False)
     print(f"\nResults saved to '{_patient_csv}' and '{_slide_csv}'")
+
+    util_paths = _utilisation_monitor.save(
+        _SIM_RESULTS_DIR,
+        run_timestamp,
+        analysis_start_min=WARMUP_DURATION_MINUTES,
+        analysis_end_min=SIM_DURATION,
+        prefix="histo",
+    )
+    print(
+        f"Resource utilisation logs saved to '{util_paths['held_intervals']}', "
+        f"'{util_paths['productive_intervals']}', and '{util_paths['metadata']}'"
+    )
 
 
 if __name__ == "__main__":

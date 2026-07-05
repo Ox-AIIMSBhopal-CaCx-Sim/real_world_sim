@@ -2,7 +2,9 @@ import simpy
 import datetime
 import numpy as np
 import pandas as pd
-from typing import Any, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
+
+from utils import resource_utilisation
 
 #Manually coding the Generic Process class so that I know exactly about it's behaviour. The LLM will not be used to code the 
 #entire thing but only very small bits and pieces of code that I know is valid and I know the exact explanations of my 
@@ -78,35 +80,100 @@ class manual_generic_process(simpy.events.Process):
             return False
         return res._minutes_remaining_in_task_window(task, now_dt) >= required_minutes
 
-    def _acquire_in_order(self, entity_count: int, gate_service_time: float):
+    def _acquire_in_order(self, entity_count: int, gate_service_time: float) -> List[Dict[str, Any]]:
         """Acquire task-tagged resources first (with window gating), then other resources."""
-        acquired = []
+        monitor = resource_utilisation.get_monitor()
+        acquired: List[Dict[str, Any]] = []
         for res_spec in self.resources_requested:
             res, task, amount = self._parse_resource_spec(res_spec, entity_count)
             if task is not None and hasattr(res, "wait_until_can_start"):
                 task_req = None
+                req_id = None
                 for _ in range(6):
                     yield from res.wait_until_can_start(task, gate_service_time)
                     req = res.request()
                     yield req
                     if self._task_window_fits(res, task, gate_service_time):
                         task_req = req
+                        if monitor is not None:
+                            req_id = monitor.record_held_start(
+                                res,
+                                self.process_name,
+                                self.env.now,
+                                task=task,
+                            )
                         break
                     res.release(req)
                 if task_req is None:
                     yield from res.wait_until_can_start(task, gate_service_time)
                     task_req = res.request()
                     yield task_req
-                acquired.append(task_req)
+                    if monitor is not None:
+                        req_id = monitor.record_held_start(
+                            res,
+                            self.process_name,
+                            self.env.now,
+                            task=task,
+                        )
+                acquired.append(
+                    {
+                        "req": task_req,
+                        "req_id": req_id,
+                        "res": res,
+                        "task": task,
+                        "is_container": False,
+                    }
+                )
             elif hasattr(res, "level"):
                 req = res.get(amount)
                 yield req
-                acquired.append(req)
+                acquired.append(
+                    {
+                        "req": req,
+                        "req_id": None,
+                        "res": res,
+                        "task": None,
+                        "is_container": True,
+                    }
+                )
             else:
                 req = res.request()
                 yield req
-                acquired.append(req)
+                req_id = None
+                if monitor is not None:
+                    req_id = monitor.record_held_start(
+                        res,
+                        self.process_name,
+                        self.env.now,
+                        task=task,
+                    )
+                acquired.append(
+                    {
+                        "req": req,
+                        "req_id": req_id,
+                        "res": res,
+                        "task": task,
+                        "is_container": False,
+                    }
+                )
         return acquired
+
+    def _record_productive_starts(self, acquired: List[Dict[str, Any]]) -> None:
+        """Start productive intervals once all resources for the process are acquired."""
+        monitor = resource_utilisation.get_monitor()
+        if monitor is None:
+            return
+
+        sim_time = self.env.now
+        for item in acquired:
+            if item["is_container"]:
+                continue
+            item["productive_req_id"] = monitor.record_productive_start(
+                item["res"],
+                self.process_name,
+                sim_time,
+                task=item.get("task"),
+            )
 
     def _request_all(self, entity_count):
         """Legacy helper without task-window gating (containers / plain resources)."""
@@ -119,12 +186,32 @@ class manual_generic_process(simpy.events.Process):
                 requests.append(res.request())
         return requests
 
-    def _release_all(self, requests):
+    def _release_all(self, acquired: List[Dict[str, Any]]) -> None:
         """Helper to release only the Resource-type objects (skips Containers)."""
-        for res_spec, req in zip(self.resources_requested, requests):
-            res, _, _ = self._parse_resource_spec(res_spec, entity_count=1)
-            if not hasattr(res, 'level'):
-                res.release(req)
+        monitor = resource_utilisation.get_monitor()
+        for item in acquired:
+            if item["is_container"]:
+                continue
+            res = item["res"]
+            if monitor is not None:
+                productive_req_id = item.get("productive_req_id")
+                if productive_req_id is not None:
+                    monitor.record_productive_end(
+                        res,
+                        productive_req_id,
+                        self.process_name,
+                        self.env.now,
+                        task=item.get("task"),
+                    )
+                if item.get("req_id") is not None:
+                    monitor.record_held_end(
+                        res,
+                        item["req_id"],
+                        self.process_name,
+                        self.env.now,
+                        task=item.get("task"),
+                    )
+            res.release(item["req"])
         
     def add_item(self, entity):
         '''
@@ -211,6 +298,7 @@ class manual_generic_process(simpy.events.Process):
         resolved_params = self._resolve_service_time_params(entity)
         gate_service_time = self._pessimistic_service_time(resolved_params)
         requests = yield from self._acquire_in_order(1, gate_service_time)
+        self._record_productive_starts(requests)
 
         entity.process_start_time[self.process_name] = self.env.now
         service_time = self.get_service_time(resolved_params)
@@ -249,6 +337,7 @@ class manual_generic_process(simpy.events.Process):
             resolved_params = self._resolve_service_time_params(ready_batch[0])
             gate_service_time = self._pessimistic_service_time(resolved_params)
             requests = yield from self._acquire_in_order(len(ready_batch), gate_service_time)
+            self._record_productive_starts(requests)
 
             for ent in ready_batch:
                 ent.process_start_time[self.process_name] = self.env.now

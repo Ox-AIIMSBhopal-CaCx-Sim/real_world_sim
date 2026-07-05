@@ -53,10 +53,10 @@ cyto_slide_screening_time:
   by_case_complexity:
     high:
       distribution: "triangular"
-      params: [20, 30, 40]
+      params: [15, 20, 40]
     low:
       distribution: "triangular"
-      params: [10, 20, 30]
+      params: [5, 10, 20]
 
 cyto_reporting_time: # minutes per patient; triangular(min, mode, max), chosen by patient case_complexity
   by_case_complexity:
@@ -83,7 +83,7 @@ cyto_technicians:
 
 # Junior pathologist
 junior_pathologist:
-  num_junior_pathologist: 3
+  num_junior_pathologist: 5
   junior_pathologist_schedule:
     Timeslot_1:
       days: [0, 1, 2, 3, 4, 5] #Monday to Friday
