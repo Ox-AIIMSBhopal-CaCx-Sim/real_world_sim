@@ -12,6 +12,7 @@ from utils.resource_availability import (
     union_schedules,
 )
 from utils.resource_utilisation import ResourceUtilisationMonitor, set_monitor
+from utils.run_parameters import save_run_parameters_csv
 
 from datetime import datetime, time, timedelta
 from typing import Any, Dict, List, Optional
@@ -55,6 +56,7 @@ def get_parameters(parameter_path: Optional[Path] = None) -> Dict[str, Any]:
 
 # Load Parameters
 params_dict = get_parameters()
+_PARAMETERS_SOURCE = _PARAMETERS_DIR / "histo_parameters.yaml"
 
 # Slides per patient by biopsy size (small / medium / large); same for cervical and non-cervical.
 _DEFAULT_SLIDE_PT_RATIO_BY_SIZE: Dict[str, int] = {"small": 1, "medium": 5, "large": 20}
@@ -621,9 +623,16 @@ def process_duration_min(start_times, end_times, process_name):
         return 'N/A'
     return round(float(end) - float(start), 2)
     
-def collect_and_save_results() -> None:
-    """Collect histopathology trace data and write CSVs."""
+def collect_and_save_results(
+    *,
+    output_root: Path | str | None = None,
+    run_timestamp: str | None = None,
+    tags: str = "",
+    run_analysis: bool = True,
+) -> Dict[str, Any]:
+    """Collect histopathology trace data, write CSVs, manifest, and analysis."""
     import pandas as pd
+    from utils.analysis import DATA_FILE_NAMES, create_run_directory, finalise_sim_run
 
     all_patients = CervicalBiopsyPatient.all_cervical_biopsies + NonCervicalBiopsyPatient.all_non_cervical_biopsies
     all_slides = HistoSlide.all_slides
@@ -669,16 +678,22 @@ def collect_and_save_results() -> None:
             'Original Slide ID': getattr(s, 'original_slide_id', s.id),
             'Restain Attempt': getattr(s, 'restain_attempt', 0),
             'Restain Reason': getattr(s, 'restain_reason', '') or '',
+            'Fixation Queue': to_datetime_str(queue_times.get('fixation', 'N/A')),
             'Fixation Start': to_datetime_str(patient_start_times.get('Fixation', 'N/A')),
             'Fixation End': to_datetime_str(patient_end_times.get('Fixation', 'N/A')),
+            'Grossing Queue': to_datetime_str(queue_times.get('Grossing', 'N/A')),
             'Grossing Start': to_datetime_str(patient_start_times.get('Grossing', 'N/A')),
             'Grossing End': to_datetime_str(patient_end_times.get('Grossing', 'N/A')),
-            'Tissue Processing Start': to_datetime_str(start_times.get('Tissue Processing', 'N/A')),
-            'Tissue Processing End': to_datetime_str(end_times.get('Tissue Processing', 'N/A')),
+            'Tissue Processing Queue': to_datetime_str(queue_times.get('Tissue Processing', 'N/A')),
+            'Tissue Processing Start': to_datetime_str(patient_start_times.get('Tissue Processing', 'N/A')),
+            'Tissue Processing End': to_datetime_str(patient_end_times.get('Tissue Processing', 'N/A')),
+            'Embedding Queue': to_datetime_str(queue_times.get('Embedding', 'N/A')),
             'Embedding Start': to_datetime_str(start_times.get('Embedding', 'N/A')),
             'Embedding End': to_datetime_str(end_times.get('Embedding', 'N/A')),
+            'Sectioning Queue': to_datetime_str(queue_times.get('Sectioning', 'N/A')),
             'Sectioning Start': to_datetime_str(start_times.get('Sectioning', 'N/A')),
             'Sectioning End': to_datetime_str(end_times.get('Sectioning', 'N/A')),
+            'Staining Queue': to_datetime_str(queue_times.get('Staining', 'N/A')),
             'Staining Start': to_datetime_str(start_times.get('Staining', 'N/A')),
             'Staining End': to_datetime_str(end_times.get('Staining', 'N/A')),
         })
@@ -695,25 +710,73 @@ def collect_and_save_results() -> None:
     restain_slides = sum(1 for s in all_slides if getattr(s, 'restain_attempt', 0) > 0)
     print(f"Restain slides (all attempts): {restain_slides}")
 
-    _SIM_RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    run_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    _patient_csv = _SIM_RESULTS_DIR / f"{run_timestamp}_histo_simulation_patient_timestamps.csv"
-    _slide_csv = _SIM_RESULTS_DIR / f"{run_timestamp}_histo_simulation_slide_timestamps.csv"
-    df_patients.to_csv(_patient_csv, index=False)
-    df_slides.to_csv(_slide_csv, index=False)
-    print(f"\nResults saved to '{_patient_csv}' and '{_slide_csv}'")
+    run_timestamp = run_timestamp or datetime.now().strftime("%Y%m%d_%H%M%S")
+    run_dir = create_run_directory(output_root or _SIM_RESULTS_DIR, run_timestamp, "histo", tags)
+
+    patient_csv = run_dir / DATA_FILE_NAMES["patient_timestamps"]
+    slide_csv = run_dir / DATA_FILE_NAMES["slide_timestamps"]
+    params_csv = run_dir / DATA_FILE_NAMES["parameters"]
+    df_patients.to_csv(patient_csv, index=False)
+    df_slides.to_csv(slide_csv, index=False)
+    print(f"\nResults saved to '{patient_csv}' and '{slide_csv}'")
+
+    _histo_run_metadata = {
+        "run_timestamp": run_timestamp,
+        "simulation": "histopathology",
+        "parameters_file": str(_PARAMETERS_SOURCE),
+        "numpy_seed": 42,
+        "simulation_start_datetime": SIMULATION_START_DATETIME.isoformat(sep=" "),
+        "warmup_end_datetime": WARMUP_END_DATETIME.isoformat(sep=" "),
+        "simulation_end_datetime": SIMULATION_END_DATETIME.isoformat(sep=" "),
+        "warmup_duration_minutes": WARMUP_DURATION_MINUTES,
+        "simulation_duration_minutes": SIM_DURATION,
+        "cervical_daily_schedule_from_cyto": integrated_config.cervical_daily_schedule is not None,
+    }
+    if integrated_config.cervical_daily_schedule is not None:
+        _histo_run_metadata["integrated_pap_positivity_rate"] = integrated_config.PAP_POSITIVITY_RATE
+        _histo_run_metadata["integrated_cervical_biopsy_days"] = len(
+            integrated_config.cervical_daily_schedule
+        )
+        _histo_run_metadata["integrated_cervical_biopsy_total"] = sum(
+            int(v) for v in integrated_config.cervical_daily_schedule.values()
+        )
+
+    save_run_parameters_csv(params_dict, params_csv, run_metadata=_histo_run_metadata)
+    print(f"Run parameters saved to '{params_csv}'")
 
     util_paths = _utilisation_monitor.save(
-        _SIM_RESULTS_DIR,
+        run_dir,
         run_timestamp,
         analysis_start_min=WARMUP_DURATION_MINUTES,
         analysis_end_min=SIM_DURATION,
-        prefix="histo",
+        simple_names=True,
     )
     print(
         f"Resource utilisation logs saved to '{util_paths['held_intervals']}', "
         f"'{util_paths['productive_intervals']}', and '{util_paths['metadata']}'"
     )
+
+    data_paths = {
+        "patient_timestamps": patient_csv,
+        "slide_timestamps": slide_csv,
+        "parameters": params_csv,
+        "resource_busy_intervals": util_paths["held_intervals"],
+        "resource_productive_intervals": util_paths["productive_intervals"],
+        "resource_metadata": util_paths["metadata"],
+    }
+    result = finalise_sim_run(
+        run_dir,
+        lab="histo",
+        run_timestamp=run_timestamp,
+        data_paths=data_paths,
+        tags=tags,
+        run_post_analysis=run_analysis,
+    )
+    print(f"Run folder: '{result['run_dir']}'")
+    print(f"Manifest: '{result['manifest']}'")
+    if run_analysis:
+        print(f"Analysis outputs: '{result['analysis']['output_dir']}'")
+    return result
 
 
 if __name__ == "__main__":

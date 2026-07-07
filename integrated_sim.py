@@ -104,8 +104,8 @@ def run_integrated_simulation(
     histo = _load_module("v2_histosim", _ROOT / "v2_histosim.py")
     histo.run_simulation()
 
-    cyto.collect_and_save_results()
-    histo.collect_and_save_results()
+    cyto.collect_and_save_results(tags="integrated")
+    histo.collect_and_save_results(tags="integrated")
 
     _save_schedule_csv(daily_pap_counts, cervical_schedule, rate)
 

@@ -328,14 +328,20 @@ class ResourceUtilisationMonitor:
         analysis_start_min: float,
         analysis_end_min: float,
         prefix: str = "",
+        simple_names: bool = False,
     ) -> Dict[str, Path]:
         output_dir = Path(output_dir)
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        label = f"{prefix}_" if prefix else ""
-        held_path = output_dir / f"{run_timestamp}_{label}resource_busy_intervals.csv"
-        productive_path = output_dir / f"{run_timestamp}_{label}resource_productive_intervals.csv"
-        metadata_path = output_dir / f"{run_timestamp}_{label}resource_metadata.csv"
+        if simple_names:
+            held_path = output_dir / "resource_busy_intervals.csv"
+            productive_path = output_dir / "resource_productive_intervals.csv"
+            metadata_path = output_dir / "resource_metadata.csv"
+        else:
+            label = f"{prefix}_" if prefix else ""
+            held_path = output_dir / f"{run_timestamp}_{label}resource_busy_intervals.csv"
+            productive_path = output_dir / f"{run_timestamp}_{label}resource_productive_intervals.csv"
+            metadata_path = output_dir / f"{run_timestamp}_{label}resource_metadata.csv"
 
         held_df = self.to_held_intervals_dataframe()
         productive_df = self.to_productive_intervals_dataframe()
