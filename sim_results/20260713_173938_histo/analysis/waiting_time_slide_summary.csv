@@ -1,0 +1,49 @@
+group,process,stat,value
+all,fixation,count,0.0
+all,fixation,mean,
+all,fixation,std,
+all,fixation,min,
+all,fixation,25%,
+all,fixation,50%,
+all,fixation,75%,
+all,fixation,max,
+all,grossing,count,0.0
+all,grossing,mean,
+all,grossing,std,
+all,grossing,min,
+all,grossing,25%,
+all,grossing,50%,
+all,grossing,75%,
+all,grossing,max,
+all,tissue processing,count,0.0
+all,tissue processing,mean,
+all,tissue processing,std,
+all,tissue processing,min,
+all,tissue processing,25%,
+all,tissue processing,50%,
+all,tissue processing,75%,
+all,tissue processing,max,
+all,embedding,count,22099.0
+all,embedding,mean,0.13429881191205234
+all,embedding,std,0.14966074964212428
+all,embedding,min,0.0
+all,embedding,25%,0.03611111111111111
+all,embedding,50%,0.06805555555555555
+all,embedding,75%,0.18819444444444444
+all,embedding,max,0.8118055555555556
+all,sectioning,count,42039.0
+all,sectioning,mean,0.10152897045336207
+all,sectioning,std,0.11421902782023678
+all,sectioning,min,0.0
+all,sectioning,25%,0.06597222222222222
+all,sectioning,50%,0.09236111111111112
+all,sectioning,75%,0.11597222222222223
+all,sectioning,max,0.9361111111111111
+all,staining,count,42034.0
+all,staining,mean,0.2653208811121156
+all,staining,std,0.3364362687489499
+all,staining,min,0.0
+all,staining,25%,0.08611111111111111
+all,staining,50%,0.11180555555555556
+all,staining,75%,0.15138888888888888
+all,staining,max,1.9743055555555555

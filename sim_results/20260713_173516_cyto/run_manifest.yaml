@@ -1,0 +1,54 @@
+run_timestamp: '20260713_173516'
+lab: cyto
+tags: ''
+created_at: '2026-07-13T17:35:18'
+run_dir: /Users/varad/Desktop/Lenovo Desktop/Oxford/DPhil Cervical Cancer Scale-up/Code/real_world_sim/sim_results/20260713_173516_cyto
+data:
+  patient_timestamps:
+    path: /Users/varad/Desktop/Lenovo Desktop/Oxford/DPhil Cervical Cancer Scale-up/Code/real_world_sim/sim_results/20260713_173516_cyto/patient_timestamps.csv
+    uri: file:/Users/varad/Desktop/Lenovo%20Desktop/Oxford/DPhil%20Cervical%20Cancer%20Scale-up/Code/real_world_sim/sim_results/20260713_173516_cyto/patient_timestamps.csv
+  slide_timestamps:
+    path: /Users/varad/Desktop/Lenovo Desktop/Oxford/DPhil Cervical Cancer Scale-up/Code/real_world_sim/sim_results/20260713_173516_cyto/slide_timestamps.csv
+    uri: file:/Users/varad/Desktop/Lenovo%20Desktop/Oxford/DPhil%20Cervical%20Cancer%20Scale-up/Code/real_world_sim/sim_results/20260713_173516_cyto/slide_timestamps.csv
+  parameters:
+    path: /Users/varad/Desktop/Lenovo Desktop/Oxford/DPhil Cervical Cancer Scale-up/Code/real_world_sim/sim_results/20260713_173516_cyto/parameters.csv
+    uri: file:/Users/varad/Desktop/Lenovo%20Desktop/Oxford/DPhil%20Cervical%20Cancer%20Scale-up/Code/real_world_sim/sim_results/20260713_173516_cyto/parameters.csv
+  resource_busy_intervals:
+    path: /Users/varad/Desktop/Lenovo Desktop/Oxford/DPhil Cervical Cancer Scale-up/Code/real_world_sim/sim_results/20260713_173516_cyto/resource_busy_intervals.csv
+    uri: file:/Users/varad/Desktop/Lenovo%20Desktop/Oxford/DPhil%20Cervical%20Cancer%20Scale-up/Code/real_world_sim/sim_results/20260713_173516_cyto/resource_busy_intervals.csv
+  resource_productive_intervals:
+    path: /Users/varad/Desktop/Lenovo Desktop/Oxford/DPhil Cervical Cancer Scale-up/Code/real_world_sim/sim_results/20260713_173516_cyto/resource_productive_intervals.csv
+    uri: file:/Users/varad/Desktop/Lenovo%20Desktop/Oxford/DPhil%20Cervical%20Cancer%20Scale-up/Code/real_world_sim/sim_results/20260713_173516_cyto/resource_productive_intervals.csv
+  resource_metadata:
+    path: /Users/varad/Desktop/Lenovo Desktop/Oxford/DPhil Cervical Cancer Scale-up/Code/real_world_sim/sim_results/20260713_173516_cyto/resource_metadata.csv
+    uri: file:/Users/varad/Desktop/Lenovo%20Desktop/Oxford/DPhil%20Cervical%20Cancer%20Scale-up/Code/real_world_sim/sim_results/20260713_173516_cyto/resource_metadata.csv
+analysis:
+  output_dir: /Users/varad/Desktop/Lenovo Desktop/Oxford/DPhil Cervical Cancer Scale-up/Code/real_world_sim/sim_results/20260713_173516_cyto/analysis
+  tables:
+    waiting_time_patient_summary: /Users/varad/Desktop/Lenovo Desktop/Oxford/DPhil
+      Cervical Cancer Scale-up/Code/real_world_sim/sim_results/20260713_173516_cyto/analysis/waiting_time_patient_summary.csv
+    turnaround_time_patient_summary: /Users/varad/Desktop/Lenovo Desktop/Oxford/DPhil
+      Cervical Cancer Scale-up/Code/real_world_sim/sim_results/20260713_173516_cyto/analysis/turnaround_time_patient_summary.csv
+    waiting_time_slide_summary: /Users/varad/Desktop/Lenovo Desktop/Oxford/DPhil Cervical
+      Cancer Scale-up/Code/real_world_sim/sim_results/20260713_173516_cyto/analysis/waiting_time_slide_summary.csv
+    resource_utilisation: /Users/varad/Desktop/Lenovo Desktop/Oxford/DPhil Cervical
+      Cancer Scale-up/Code/real_world_sim/sim_results/20260713_173516_cyto/analysis/resource_utilisation.csv
+  plots:
+    waiting_patient_screening_non_pap_smear: /Users/varad/Desktop/Lenovo Desktop/Oxford/DPhil
+      Cervical Cancer Scale-up/Code/real_world_sim/sim_results/20260713_173516_cyto/analysis/waiting_patient_screening_non_pap_smear.png
+    waiting_patient_reporting_non_pap_smear: /Users/varad/Desktop/Lenovo Desktop/Oxford/DPhil
+      Cervical Cancer Scale-up/Code/real_world_sim/sim_results/20260713_173516_cyto/analysis/waiting_patient_reporting_non_pap_smear.png
+    turnaround_patient_non_pap_smear: /Users/varad/Desktop/Lenovo Desktop/Oxford/DPhil
+      Cervical Cancer Scale-up/Code/real_world_sim/sim_results/20260713_173516_cyto/analysis/turnaround_patient_non_pap_smear.png
+    waiting_patient_screening_pap_smear: /Users/varad/Desktop/Lenovo Desktop/Oxford/DPhil
+      Cervical Cancer Scale-up/Code/real_world_sim/sim_results/20260713_173516_cyto/analysis/waiting_patient_screening_pap_smear.png
+    waiting_patient_reporting_pap_smear: /Users/varad/Desktop/Lenovo Desktop/Oxford/DPhil
+      Cervical Cancer Scale-up/Code/real_world_sim/sim_results/20260713_173516_cyto/analysis/waiting_patient_reporting_pap_smear.png
+    turnaround_patient_pap_smear: /Users/varad/Desktop/Lenovo Desktop/Oxford/DPhil
+      Cervical Cancer Scale-up/Code/real_world_sim/sim_results/20260713_173516_cyto/analysis/turnaround_patient_pap_smear.png
+    waiting_slide_fixation: /Users/varad/Desktop/Lenovo Desktop/Oxford/DPhil Cervical
+      Cancer Scale-up/Code/real_world_sim/sim_results/20260713_173516_cyto/analysis/waiting_slide_fixation_all.png
+    waiting_slide_staining: /Users/varad/Desktop/Lenovo Desktop/Oxford/DPhil Cervical
+      Cancer Scale-up/Code/real_world_sim/sim_results/20260713_173516_cyto/analysis/waiting_slide_staining_all.png
+    resource_utilisation: /Users/varad/Desktop/Lenovo Desktop/Oxford/DPhil Cervical
+      Cancer Scale-up/Code/real_world_sim/sim_results/20260713_173516_cyto/analysis/resource_utilisation.png

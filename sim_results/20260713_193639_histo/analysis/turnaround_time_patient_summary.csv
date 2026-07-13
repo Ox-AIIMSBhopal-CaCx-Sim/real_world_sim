@@ -1,0 +1,17 @@
+group,process,stat,value
+cervical_biopsy,turnaround,count,3905.0
+cervical_biopsy,turnaround,mean,11.626907632664675
+cervical_biopsy,turnaround,std,5.52498481040234
+cervical_biopsy,turnaround,min,2.776388888888889
+cervical_biopsy,turnaround,25%,7.105555555555555
+cervical_biopsy,turnaround,50%,11.061111111111112
+cervical_biopsy,turnaround,75%,13.8375
+cervical_biopsy,turnaround,max,34.03611111111111
+non_cervical_biopsy,turnaround,count,12963.0
+non_cervical_biopsy,turnaround,mean,11.676232032194195
+non_cervical_biopsy,turnaround,std,5.547691936884401
+non_cervical_biopsy,turnaround,min,2.859027777777778
+non_cervical_biopsy,turnaround,25%,7.069791666666667
+non_cervical_biopsy,turnaround,50%,11.047222222222222
+non_cervical_biopsy,turnaround,75%,13.891666666666666
+non_cervical_biopsy,turnaround,max,35.010416666666664

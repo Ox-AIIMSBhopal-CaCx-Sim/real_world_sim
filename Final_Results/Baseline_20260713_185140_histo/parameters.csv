@@ -1,0 +1,92 @@
+parameter,value
+run_timestamp,20260713_185140
+simulation,histopathology
+parameters_file,/Users/varad/Desktop/Lenovo Desktop/Oxford/DPhil Cervical Cancer Scale-up/Code/real_world_sim/parameters/histo_parameters.yaml
+numpy_seed,42
+simulation_start_datetime,2026-05-01 08:00:00
+warmup_end_datetime,2026-06-01 08:00:00
+simulation_end_datetime,2027-05-01 08:00:00
+warmup_duration_minutes,44640
+simulation_duration_minutes,525600
+cervical_daily_schedule_from_cyto,False
+---,---
+project_title,GMC_Banavati_CaCx_sim
+simulation.name,GMC_Banavati_Histopath_Sim
+simulation.run_time,1000
+simulation.experiment_no,1
+simulation.no_of_sims,1
+cervical_biopsies_per_day.distribution,poisson
+cervical_biopsies_per_day.params,[1]
+other_biopsies_per_day.distribution,poisson
+other_biopsies_per_day.params,[35]
+case_complexity.p_high,0.05
+slide_pt_ratio_by_biopsy_size.small,1
+slide_pt_ratio_by_biopsy_size.medium,5
+slide_pt_ratio_by_biopsy_size.large,20
+biopsy_size.weights.small,0.9
+biopsy_size.weights.medium,0.09
+biopsy_size.weights.large,0.01
+histo_fixation_time.by_size.small.distribution,constant
+histo_fixation_time.by_size.small.params,360
+histo_fixation_time.by_size.medium.distribution,constant
+histo_fixation_time.by_size.medium.params,720
+histo_fixation_time.by_size.large.distribution,constant
+histo_fixation_time.by_size.large.params,2880
+histo_grossing_time.by_size.small.distribution,constant
+histo_grossing_time.by_size.small.params,10
+histo_grossing_time.by_size.medium.distribution,constant
+histo_grossing_time.by_size.medium.params,30
+histo_grossing_time.by_size.large.distribution,constant
+histo_grossing_time.by_size.large.params,120
+histo_tissue_processing_time.distribution,constant
+histo_tissue_processing_time.params,1320
+histo_embedding_time.distribution,constant
+histo_embedding_time.params,1
+histo_sectioning_time.distribution,constant
+histo_sectioning_time.params,2
+histo_staining_time.distribution,constant
+histo_staining_time.params,35
+histo_slide_screening_time.by_case_complexity.high.distribution,triangular
+histo_slide_screening_time.by_case_complexity.high.params,"[20, 30, 40]"
+histo_slide_screening_time.by_case_complexity.low.distribution,triangular
+histo_slide_screening_time.by_case_complexity.low.params,"[10, 20, 30]"
+histo_reporting_time.by_case_complexity.high.distribution,triangular
+histo_reporting_time.by_case_complexity.high.params,"[20, 30, 100]"
+histo_reporting_time.by_case_complexity.low.distribution,triangular
+histo_reporting_time.by_case_complexity.low.params,"[5, 10, 20]"
+histo_technicians.num_cytotech,11
+histo_technicians.histotech_schedule.Timeslot_1.days,"[0, 1, 2, 3, 4, 5]"
+histo_technicians.histotech_schedule.Timeslot_1.hours,"[9, 17]"
+histo_technicians.histotech_schedule.Timeslot_2.days,[6]
+histo_technicians.histotech_schedule.Timeslot_2.hours,"[9, 13]"
+junior_pathologist.num_junior_pathologist,6
+junior_pathologist.grossing_cutoff_policy,no_new_starts
+junior_pathologist.task_windows.grossing.Timeslot_1.days,"[0, 1, 2, 3, 4]"
+junior_pathologist.task_windows.grossing.Timeslot_1.hours,"[9, 17]"
+junior_pathologist.task_windows.grossing.Timeslot_2.days,[5]
+junior_pathologist.task_windows.grossing.Timeslot_2.hours,"[9, 12]"
+junior_pathologist.task_windows.screening.Timeslot_1.days,"[0, 1, 2, 3, 4]"
+junior_pathologist.task_windows.screening.Timeslot_1.hours,"[17, 21]"
+junior_pathologist.task_windows.screening.Timeslot_2.days,[5]
+junior_pathologist.task_windows.screening.Timeslot_2.hours,"[13, 17]"
+senior_pathologists.num_senior_pathologist,5
+senior_pathologists.repeat_stain_rate,0.3
+senior_pathologists.senior_pathologist_schedule.Timeslot_1.days,"[0, 1, 2, 3, 4]"
+senior_pathologists.senior_pathologist_schedule.Timeslot_1.hours,"[10, 14]"
+senior_pathologists.senior_pathologist_schedule.Timeslot_2.days,[5]
+senior_pathologists.senior_pathologist_schedule.Timeslot_2.hours,"[10, 12]"
+histo_grossing_station.num_stations,2
+histo_grossing_station.batch_size,1
+histo_tissue_processor.num_stations,1
+histo_tissue_processor.batch_size,90
+histo_embedding_station.num_stations,1
+histo_embedding_station.batch_size,1
+histo_sectioning_station.num_stations,1
+histo_sectioning_station.batch_size,1
+histo_staining_station.num_stations,1
+histo_staining_station.batch_size,25
+repeat_staining.max_attempts,2
+repeat_staining.slides_per_rework,5
+histo_staining_kits.num_kits,100000
+histo_staining_kits.stain_per_kit,100
+histo_staining_kits.reagent_per_slide,0.1

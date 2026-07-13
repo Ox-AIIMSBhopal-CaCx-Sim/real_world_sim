@@ -435,8 +435,11 @@ non_pap_patient_generator = Entity_Generator(
 
 
 
-SIMULATION_END_DATETIME = add_months(SIMULATION_START_DATETIME, 12)
-WARMUP_END_DATETIME = add_months(SIMULATION_START_DATETIME, 1)
+_sim_cfg = params_dict.get("simulation", {})
+SIM_DURATION_MONTHS = int(_sim_cfg.get("duration_months", 12))
+WARMUP_MONTHS = int(_sim_cfg.get("warmup_months", 1))
+SIMULATION_END_DATETIME = add_months(SIMULATION_START_DATETIME, SIM_DURATION_MONTHS)
+WARMUP_END_DATETIME = add_months(SIMULATION_START_DATETIME, WARMUP_MONTHS)
 SIM_DURATION = int((SIMULATION_END_DATETIME - SIMULATION_START_DATETIME).total_seconds() / 60)
 WARMUP_DURATION_MINUTES = int((WARMUP_END_DATETIME - SIMULATION_START_DATETIME).total_seconds() / 60)
 
@@ -457,10 +460,12 @@ def run_simulation() -> None:
         f"senior restain rate={SENIOR_RESTAIN_RATE:.3f}, max attempts={MAX_RESTAIN_ATTEMPTS} ---"
     )
     print(
-        f"--- Starting Cytopathology Simulation ({SIM_DURATION} minutes / 12 months) ---"
+        f"--- Starting Cytopathology Simulation "
+        f"({SIM_DURATION} minutes / {SIM_DURATION_MONTHS} months) ---"
     )
     print(
-        f"--- Warm-up Period: first month until {WARMUP_END_DATETIME.strftime('%Y-%m-%d %H:%M')} (slides not recorded) ---"
+        f"--- Warm-up Period: first {WARMUP_MONTHS} month(s) until "
+        f"{WARMUP_END_DATETIME.strftime('%Y-%m-%d %H:%M')} (slides not recorded) ---"
     )
     sim_env.run(until=SIM_DURATION)
     print("--- Simulation Complete ---\n")

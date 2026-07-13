@@ -601,8 +601,11 @@ non_cervical_patient_generator = Entity_Generator(
 2) FIXATION TIME WILL DEPEND AND NUMBER OF BLOCKS GENERATED ALSO DEPEND. 
 3) Service time for reporting is also dependent on slide size """
 
-SIMULATION_END_DATETIME = add_months(SIMULATION_START_DATETIME, 12)
-WARMUP_END_DATETIME = add_months(SIMULATION_START_DATETIME, 1)
+_sim_cfg = params_dict.get("simulation", {})
+SIM_DURATION_MONTHS = int(_sim_cfg.get("duration_months", 12))
+WARMUP_MONTHS = int(_sim_cfg.get("warmup_months", 1))
+SIMULATION_END_DATETIME = add_months(SIMULATION_START_DATETIME, SIM_DURATION_MONTHS)
+WARMUP_END_DATETIME = add_months(SIMULATION_START_DATETIME, WARMUP_MONTHS)
 SIM_DURATION = int((SIMULATION_END_DATETIME - SIMULATION_START_DATETIME).total_seconds() / 60)
 WARMUP_DURATION_MINUTES = int((WARMUP_END_DATETIME - SIMULATION_START_DATETIME).total_seconds() / 60)
 
@@ -625,10 +628,12 @@ def run_simulation() -> None:
             f"({total_scheduled} scheduled over {len(integrated_config.cervical_daily_schedule)} days) ---"
         )
     print(
-        f"--- Starting Histopathology Simulation ({SIM_DURATION} minutes / 12 months) ---"
+        f"--- Starting Histopathology Simulation "
+        f"({SIM_DURATION} minutes / {SIM_DURATION_MONTHS} months) ---"
     )
     print(
-        f"--- Warm-up Period: first month until {WARMUP_END_DATETIME.strftime('%Y-%m-%d %H:%M')} (slides not recorded) ---"
+        f"--- Warm-up Period: first {WARMUP_MONTHS} month(s) until "
+        f"{WARMUP_END_DATETIME.strftime('%Y-%m-%d %H:%M')} (slides not recorded) ---"
     )
     sim_env.run(until=SIM_DURATION)
     print("--- Simulation Complete ---\n")
@@ -675,6 +680,12 @@ def collect_and_save_results(
             'Num slides': getattr(p, 'num_slides', 'N/A'),
             'Biopsy size': getattr(p, 'size', 'N/A'),
             'Case complexity': getattr(p, 'case_complexity', 'N/A'),
+            'Fixation Queue': to_datetime_str(queue_times.get('Fixation', 'N/A')),
+            'Fixation Start': to_datetime_str(start_times.get('Fixation', 'N/A')),
+            'Fixation End': to_datetime_str(end_times.get('Fixation', 'N/A')),
+            'Grossing Queue': to_datetime_str(queue_times.get('Grossing', 'N/A')),
+            'Grossing Start': to_datetime_str(start_times.get('Grossing', 'N/A')),
+            'Grossing End': to_datetime_str(end_times.get('Grossing', 'N/A')),
             'Screening Queue': to_datetime_str(queue_times.get('slide screening', 'N/A')),
             'Screening Start': to_datetime_str(start_times.get('slide screening', 'N/A')),
             'Screening End': to_datetime_str(end_times.get('slide screening', 'N/A')),
@@ -693,6 +704,8 @@ def collect_and_save_results(
         queue_times = getattr(s, 'queue_entry_time', {})
         start_times = getattr(s, 'process_start_time', {})
         end_times = getattr(s, 'process_end_time', {})
+        # Fixation/Grossing run on the patient before slides exist.
+        patient_queue_times = getattr(s.parent_patient, 'queue_entry_time', {})
         patient_start_times = getattr(s.parent_patient, 'process_start_time', {})
         patient_end_times = getattr(s.parent_patient, 'process_end_time', {})
 
@@ -703,15 +716,15 @@ def collect_and_save_results(
             'Original Slide ID': getattr(s, 'original_slide_id', s.id),
             'Restain Attempt': getattr(s, 'restain_attempt', 0),
             'Restain Reason': getattr(s, 'restain_reason', '') or '',
-            'Fixation Queue': to_datetime_str(queue_times.get('fixation', 'N/A')),
+            'Fixation Queue': to_datetime_str(patient_queue_times.get('Fixation', 'N/A')),
             'Fixation Start': to_datetime_str(patient_start_times.get('Fixation', 'N/A')),
             'Fixation End': to_datetime_str(patient_end_times.get('Fixation', 'N/A')),
-            'Grossing Queue': to_datetime_str(queue_times.get('Grossing', 'N/A')),
+            'Grossing Queue': to_datetime_str(patient_queue_times.get('Grossing', 'N/A')),
             'Grossing Start': to_datetime_str(patient_start_times.get('Grossing', 'N/A')),
             'Grossing End': to_datetime_str(patient_end_times.get('Grossing', 'N/A')),
             'Tissue Processing Queue': to_datetime_str(queue_times.get('Tissue Processing', 'N/A')),
-            'Tissue Processing Start': to_datetime_str(patient_start_times.get('Tissue Processing', 'N/A')),
-            'Tissue Processing End': to_datetime_str(patient_end_times.get('Tissue Processing', 'N/A')),
+            'Tissue Processing Start': to_datetime_str(start_times.get('Tissue Processing', 'N/A')),
+            'Tissue Processing End': to_datetime_str(end_times.get('Tissue Processing', 'N/A')),
             'Embedding Queue': to_datetime_str(queue_times.get('Embedding', 'N/A')),
             'Embedding Start': to_datetime_str(start_times.get('Embedding', 'N/A')),
             'Embedding End': to_datetime_str(end_times.get('Embedding', 'N/A')),

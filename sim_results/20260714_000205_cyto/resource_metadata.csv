@@ -1,0 +1,5 @@
+utilisation_key,resource_name,task,capacity,resource_type,calendar_minutes,scheduled_available_minutes,analysis_start_min,analysis_end_min
+Cytotechnicians,Cytotechnicians,,9,scheduled,480960,149040.0,44640,525600
+Junior Cytopathologists,Junior Cytopathologists,,5,scheduled,480960,40080.0,44640,525600
+Senior Pathologists,Senior Pathologists,,3,scheduled,480960,74520.0,44640,525600
+Manual Staining Station,Manual Staining Station,,3,equipment,480960,480960.0,44640,525600

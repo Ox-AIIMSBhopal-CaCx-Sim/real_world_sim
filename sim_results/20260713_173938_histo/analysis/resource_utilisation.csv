@@ -1,0 +1,11 @@
+utilisation_key,resource_name,task,capacity,resource_type,calendar_minutes,scheduled_available_minutes,analysis_start_min,analysis_end_min,denominator_source_key,duration_min,available_person_minutes,utilisation_pct
+Embedding Station,Embedding Station,,1,equipment,480960,149040.0,44640,525600,Histotechnicians,24300.0,149040.0,16.3
+Grossing Station,Grossing Station,,2,equipment,480960,123660.0,44640,525600,Junior Pathologists (grossing),203210.0,247320.0,82.16
+Histotechnicians,Histotechnicians,,11,scheduled,480960,149040.0,44640,525600,Histotechnicians,1237383.6954171413,1639440.0,75.48
+Junior Pathologists,Junior Pathologists,,6,task_scheduled,480960,192540.0,44640,525600,Junior Pathologists,,1155240.0,
+Junior Pathologists (grossing),Junior Pathologists,grossing,6,task_scheduled,480960,123660.0,44640,525600,Junior Pathologists (grossing),538854.8013685922,741960.0,72.63
+Junior Pathologists (screening),Junior Pathologists,screening,6,task_scheduled,480960,68880.0,44640,525600,Junior Pathologists (screening),410261.50942911033,413280.0,99.27
+Sectioning Station,Sectioning Station,,1,equipment,480960,149040.0,44640,525600,Histotechnicians,93810.0,149040.0,62.94
+Senior Pathologists,Senior Pathologists,,3,scheduled,480960,63240.0,44640,525600,Senior Pathologists,213445.79091197523,189720.0,112.51
+Staining Station,Staining Station,,1,equipment,480960,149040.0,44640,525600,Histotechnicians,65660.0,149040.0,44.06
+Tissue Processor,Tissue Processor,,1,equipment,480960,480960.0,44640,525600,Tissue Processor,356400.0,480960.0,74.1

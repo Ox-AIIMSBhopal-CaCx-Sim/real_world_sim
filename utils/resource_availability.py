@@ -225,9 +225,13 @@ class ScheduledResource():
                 # Note: this might take time if items are currently processing
                 
             elif is_open and blocker_requests:
-                # Shift just OPENED: Release all blocking units
+                # Shift just OPENED: release granted blockers; cancel any still
+                # waiting in the queue (e.g. queued behind a higher-priority
+                # disruption). A bare release() on an ungranted request is a
+                # no-op in SimPy and would orphan the request so it seizes
+                # capacity later and never gets released.
                 for req in blocker_requests:
-                    self._resource.release(req)
+                    _release_or_cancel_blocker(self._resource, req)
                 blocker_requests = []
             
             # Check for shift changes every minute
@@ -555,6 +559,20 @@ def parse_disruptions(
     return disruptions
 
 
+def _release_or_cancel_blocker(resource: simpy.PriorityResource, req) -> None:
+    """
+    Release a granted blocker, or cancel it if it is still waiting in the queue.
+
+    Calling ``resource.release(req)`` on an ungranted request is a silent no-op
+    in SimPy; the request stays queued and can seize capacity later forever.
+    """
+    if req.triggered:
+        if req in resource.users:
+            resource.release(req)
+    else:
+        req.cancel()
+
+
 def _disruption_monitor(env: simpy.Environment, resource: Any, disruption: Disruption):
     """
     Background process: block ``original_capacity - effective_capacity`` units
@@ -573,6 +591,11 @@ def _disruption_monitor(env: simpy.Environment, resource: Any, disruption: Disru
         for _ in range(units_to_block):
             req = underlying.request(priority=-2)
             blocker_requests.append(req)
+        # Wait until blockers are granted (finish in-progress work first) so the
+        # outage duration is measured from when capacity is actually held.
+        for req in blocker_requests:
+            if not req.triggered:
+                yield req
 
     print(
         f"--- Disruption '{disruption.id}' ACTIVE on {resource_name}: "
@@ -585,10 +608,7 @@ def _disruption_monitor(env: simpy.Environment, resource: Any, disruption: Disru
         yield env.timeout(remaining)
 
     for req in blocker_requests:
-        if req.triggered:
-            underlying.release(req)
-        else:
-            req.cancel()
+        _release_or_cancel_blocker(underlying, req)
 
     print(f"--- Disruption '{disruption.id}' ENDED on {resource_name} ---")
 

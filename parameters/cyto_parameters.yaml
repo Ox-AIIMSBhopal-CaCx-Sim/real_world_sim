@@ -12,9 +12,10 @@ project_title: "GMC_Banavati_CaCx_sim"
 # ===============================
 simulation:
   name: "GMC_Banavati_CaCx_sim"
-  run_time: 1000 # in days = 3 years approx
+  duration_months: 12 # calendar months from simulation start
+  warmup_months: 1 # slides/patients before this cutoff are excluded from analysis
   experiment_no: 1
-  no_of_sims: 50
+  no_of_sims: 1
 
 # ===============================
 # Cytopathology
@@ -72,7 +73,7 @@ cyto_reporting_time: # minutes per patient; triangular(min, mode, max), chosen b
 # ===============================
 #Number of Technicians and Pathologists
 cyto_technicians:
-  num_cytotech: 3
+  num_cytotech: 9
   cytotech_schedule:
     Timeslot_1:
       days: [0, 1, 2, 3, 4, 5] #Monday to Friday
@@ -105,7 +106,7 @@ senior_pathologists:
 
 #Infrastructure
 cyto_manual_staining_station:
-  num_stations: 1 #manual staining station
+  num_stations: 3 #manual staining station
   batch_size: 5 # slides per batch for staining
   error_rate: 0.01 # Per slide: probability staining fails QC and slide is restained
   reagent_per_slide: 1 #ml per slide Calculated from 50 mL kit pach staining 500 slides
@@ -116,7 +117,7 @@ repeat_staining:
 
 #Consumables
 cyto_staining_kits:
-  num_kits: 5000 #Stain per ml calculated by 100 ml stain per kit and a total of 5 kits #Number of staining kits they have
+  num_kits: 500000 #Stain per ml calculated by 100 ml stain per kit and a total of 5 kits #Number of staining kits they have
   stain_per_kit: 100 #ml per kit
   reagent_per_slide: 0.1 #ml per slide Calculated from 50 mL kit pach staining 500 slides
 
@@ -127,17 +128,17 @@ cyto_staining_kits:
 # Use start_day (0-based from sim start) OR start_datetime — not both.
 # effective_capacity: 0 = full outage; partial values leave that many units available.
 # Leave empty for baseline runs.
-disruptions: []
+#disruptions: []
 # Example:
-# disruptions:
-#   - id: junior_strike_week12
-#     resource: junior_pathologist
-#     start_day: 84
-#     duration_days: 5
-#     effective_capacity: 0
-#   - id: staining_station_breakdown
-#     resource: cyto_manual_staining_station
-#     start_datetime: "2026-08-15 09:00"
-#     duration_days: 14
-#     effective_capacity: 0
+disruptions:
+  - id: staining_station_breakdown
+    resource: cyto_manual_staining_station
+    start_datetime: "2026-08-15 09:00"
+    duration_days: 28
+    effective_capacity: 0
 
+#  - id: junior_strike_week12
+#    resource: junior_pathologist
+#    start_day: 84
+#    duration_days: 5
+#    effective_capacity: 0

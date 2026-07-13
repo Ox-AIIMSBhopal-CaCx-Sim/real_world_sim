@@ -1,0 +1,17 @@
+group,process,stat,value
+all,fixation,count,12923.0
+all,fixation,mean,0.0
+all,fixation,std,0.0
+all,fixation,min,0.0
+all,fixation,25%,0.0
+all,fixation,50%,0.0
+all,fixation,75%,0.0
+all,fixation,max,0.0
+all,staining,count,13035.0
+all,staining,mean,0.14249685675318585
+all,staining,std,0.2663332511371543
+all,staining,min,0.0
+all,staining,25%,0.009027777777777777
+all,staining,50%,0.024305555555555556
+all,staining,75%,0.059027777777777776
+all,staining,max,0.9375

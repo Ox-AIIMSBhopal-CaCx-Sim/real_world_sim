@@ -12,9 +12,10 @@ project_title: "GMC_Banavati_CaCx_sim"
 # ===============================
 simulation:
   name: "GMC_Banavati_Histopath_Sim"
-  run_time: 1000 # in days = 3 years approx
+  duration_months: 12 # calendar months from simulation start
+  warmup_months: 1 # slides/patients before this cutoff are excluded from analysis
   experiment_no: 1
-  no_of_sims: 50
+  no_of_sims: 1
 
 # ===============================
 # Histopathology
@@ -26,7 +27,7 @@ cervical_biopsies_per_day:
   params: [1] # This is the lambda or number of Cervical Biopsy patients per day
 other_biopsies_per_day:
   distribution: "poisson" #Patients arrive from a poisson process (slide count follows biopsy size)
-  params: [40]
+  params: [35]
 
 # Probability each new biopsy patient is high complexity; otherwise low (cervical and non-cervical use the same rule).
 case_complexity:
@@ -145,7 +146,7 @@ junior_pathologist:
         hours: [13, 17] # 1 pm to 5 pm
 
 senior_pathologists:
-  num_senior_pathologist: 3 # Senior histopathologists (sign-out)
+  num_senior_pathologist: 5 # Senior histopathologists (sign-out)
   repeat_stain_rate: 0.30 # Per patient: senior pathologist sends patient back for rework after reporting
   senior_pathologist_schedule:
     Timeslot_1:
@@ -194,17 +195,14 @@ histo_staining_kits:
 # Use start_day (0-based from sim start) OR start_datetime — not both.
 # effective_capacity: 0 = full outage; partial values leave that many units available.
 # Leave empty for baseline runs.
-disruptions: []
-# Example:
-# disruptions:
-#   - id: junior_strike_week12
-#     resource: junior_pathologist
-#     start_day: 84
-#     duration_days: 5
-#     effective_capacity: 0
-#   - id: tissue_processor_breakdown
-#     resource: histo_tissue_processor
-#     start_datetime: "2026-08-15 09:00"
-#     duration_days: 14
-#     effective_capacity: 0
-
+disruptions:
+  - id: junior_strike_week12
+    resource: junior_pathologist
+    start_day: 84
+    duration_days: 5
+    effective_capacity: 0
+#  - id: tissue_processor_breakdown
+#    resource: histo_tissue_processor
+#    start_datetime: "2026-08-15 09:00"
+#    duration_days: 14
+#    effective_capacity: 0

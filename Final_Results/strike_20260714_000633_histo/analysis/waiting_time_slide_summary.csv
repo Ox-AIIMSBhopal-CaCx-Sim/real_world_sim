@@ -1,0 +1,49 @@
+group,process,stat,value
+all,fixation,count,42533.0
+all,fixation,mean,0.0
+all,fixation,std,0.0
+all,fixation,min,0.0
+all,fixation,25%,0.0
+all,fixation,50%,0.0
+all,fixation,75%,0.0
+all,fixation,max,0.0
+all,grossing,count,42533.0
+all,grossing,mean,0.7519503646841538
+all,grossing,std,0.6703267923195008
+all,grossing,min,0.0
+all,grossing,25%,0.46319444444444446
+all,grossing,50%,0.6166666666666667
+all,grossing,75%,0.7944444444444444
+all,grossing,max,5.711805555555555
+all,tissue processing,count,18650.0
+all,tissue processing,mean,0.8368068960381293
+all,tissue processing,std,0.720630882830119
+all,tissue processing,min,0.0
+all,tissue processing,25%,0.13194444444444445
+all,tissue processing,50%,0.8333333333333334
+all,tissue processing,75%,1.0277777777777777
+all,tissue processing,max,5.986111111111111
+all,embedding,count,18650.0
+all,embedding,mean,0.06277312332439679
+all,embedding,std,0.052081519869753824
+all,embedding,min,0.0
+all,embedding,25%,0.02847222222222222
+all,embedding,50%,0.050694444444444445
+all,embedding,75%,0.08055555555555556
+all,embedding,max,0.30486111111111114
+all,sectioning,count,42466.0
+all,sectioning,mean,0.10133431908925832
+all,sectioning,std,0.126480255327408
+all,sectioning,min,0.0
+all,sectioning,25%,0.03333333333333333
+all,sectioning,50%,0.0875
+all,sectioning,75%,0.1284722222222222
+all,sectioning,max,0.9361111111111111
+all,staining,count,42330.0
+all,staining,mean,0.3085133835997585
+all,staining,std,0.38012384612436917
+all,staining,min,0.0
+all,staining,25%,0.08125
+all,staining,50%,0.13194444444444445
+all,staining,75%,0.7416666666666667
+all,staining,max,5.740972222222222
