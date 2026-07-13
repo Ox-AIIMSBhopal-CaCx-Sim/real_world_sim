@@ -4,9 +4,12 @@ This module provides functionality to manage staff schedules and resource availa
 based on time constraints (working hours, shifts, days off, etc.)
 """
 
+from __future__ import annotations
+
 import simpy
+from dataclasses import dataclass
 from datetime import datetime, time, timedelta
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 
 
 class TimeSlot:
@@ -428,6 +431,215 @@ class ScheduledPriorityResource(ScheduledResource):
         simpy.PriorityRequest : Request object
         """
         return self._resource.request(priority=priority)
+
+
+class DisruptableResource:
+    """
+    Thin PriorityResource wrapper for equipment that can be taken offline.
+
+    Exposes the same ``request`` / ``release`` / ``capacity`` interface as
+    ``simpy.Resource`` so process code does not need to change. Disruptions
+    hold units with priority ``-2`` (higher than shift blockers at ``-1``).
+    """
+
+    def __init__(
+        self,
+        env: simpy.Environment,
+        capacity: int,
+        name: str = "DisruptableResource",
+    ):
+        self.env = env
+        self.capacity = capacity
+        self._original_capacity = capacity
+        self.name = name
+        self._resource = simpy.PriorityResource(env, capacity=capacity)
+
+    def request(self, priority: int = 0):
+        return self._resource.request(priority=priority)
+
+    def release(self, request):
+        return self._resource.release(request)
+
+    @property
+    def count(self):
+        return self._resource.count
+
+    @property
+    def queue(self):
+        return self._resource.queue
+
+    def __repr__(self):
+        return f"DisruptableResource('{self.name}', capacity={self.capacity})"
+
+
+@dataclass(frozen=True)
+class Disruption:
+    """A time-bounded capacity reduction for a named resource."""
+
+    id: str
+    resource_key: str
+    start_minutes: float
+    duration_minutes: float
+    effective_capacity: int = 0
+
+    @property
+    def end_minutes(self) -> float:
+        return self.start_minutes + self.duration_minutes
+
+
+def parse_disruptions(
+    raw_list: Optional[List[Mapping[str, Any]]],
+    simulation_start_datetime: datetime,
+) -> List[Disruption]:
+    """
+    Parse YAML disruption entries into ``Disruption`` objects.
+
+    Each entry must provide either ``start_day`` (0-based days from sim start)
+    or ``start_datetime`` (``YYYY-MM-DD HH:MM``), but not both.
+    """
+    if not raw_list:
+        return []
+
+    disruptions: List[Disruption] = []
+    for i, raw in enumerate(raw_list):
+        if not isinstance(raw, Mapping):
+            raise TypeError(f"disruptions[{i}] must be a mapping, got {type(raw)!r}")
+
+        disruption_id = str(raw.get("id") or f"disruption_{i}")
+        resource_key = raw.get("resource")
+        if not resource_key:
+            raise ValueError(f"disruptions[{i}] ({disruption_id}) missing 'resource'")
+
+        has_start_day = "start_day" in raw and raw["start_day"] is not None
+        has_start_dt = "start_datetime" in raw and raw["start_datetime"] is not None
+        if has_start_day == has_start_dt:
+            raise ValueError(
+                f"disruptions[{i}] ({disruption_id}) must set exactly one of "
+                "'start_day' or 'start_datetime'"
+            )
+
+        if has_start_day:
+            start_minutes = float(raw["start_day"]) * 1440.0
+        else:
+            start_dt = datetime.strptime(str(raw["start_datetime"]), "%Y-%m-%d %H:%M")
+            start_minutes = (start_dt - simulation_start_datetime).total_seconds() / 60.0
+            if start_minutes < 0:
+                raise ValueError(
+                    f"disruptions[{i}] ({disruption_id}) start_datetime is before "
+                    f"simulation start ({simulation_start_datetime})"
+                )
+
+        if "duration_days" not in raw:
+            raise ValueError(f"disruptions[{i}] ({disruption_id}) missing 'duration_days'")
+        duration_minutes = float(raw["duration_days"]) * 1440.0
+        if duration_minutes <= 0:
+            raise ValueError(
+                f"disruptions[{i}] ({disruption_id}) duration_days must be positive"
+            )
+
+        effective_capacity = int(raw.get("effective_capacity", 0))
+        if effective_capacity < 0:
+            raise ValueError(
+                f"disruptions[{i}] ({disruption_id}) effective_capacity must be >= 0"
+            )
+
+        disruptions.append(
+            Disruption(
+                id=disruption_id,
+                resource_key=str(resource_key),
+                start_minutes=start_minutes,
+                duration_minutes=duration_minutes,
+                effective_capacity=effective_capacity,
+            )
+        )
+    return disruptions
+
+
+def _disruption_monitor(env: simpy.Environment, resource: Any, disruption: Disruption):
+    """
+    Background process: block ``original_capacity - effective_capacity`` units
+    with priority ``-2`` for the disruption window, then release them.
+    """
+    underlying = resource._resource
+    original_capacity = int(getattr(resource, "_original_capacity", resource.capacity))
+    units_to_block = max(0, original_capacity - disruption.effective_capacity)
+    resource_name = getattr(resource, "name", disruption.resource_key)
+
+    if disruption.start_minutes > env.now:
+        yield env.timeout(disruption.start_minutes - env.now)
+
+    blocker_requests = []
+    if units_to_block > 0:
+        for _ in range(units_to_block):
+            req = underlying.request(priority=-2)
+            blocker_requests.append(req)
+
+    print(
+        f"--- Disruption '{disruption.id}' ACTIVE on {resource_name}: "
+        f"effective capacity -> {disruption.effective_capacity} "
+        f"(blocked {units_to_block}/{original_capacity}) ---"
+    )
+
+    remaining = disruption.end_minutes - env.now
+    if remaining > 0:
+        yield env.timeout(remaining)
+
+    for req in blocker_requests:
+        if req.triggered:
+            underlying.release(req)
+        else:
+            req.cancel()
+
+    print(f"--- Disruption '{disruption.id}' ENDED on {resource_name} ---")
+
+
+def apply_disruptions(
+    env: simpy.Environment,
+    disruptions_raw: Optional[List[Mapping[str, Any]]],
+    resource_map: Mapping[str, Any],
+    simulation_start_datetime: datetime,
+) -> List[Disruption]:
+    """
+    Parse YAML disruptions and start a monitor process for each.
+
+    ``resource_map`` maps YAML ``resource`` keys to live resource objects that
+    expose ``_resource`` (a ``simpy.PriorityResource``) and ``_original_capacity``.
+    """
+    disruptions = parse_disruptions(disruptions_raw, simulation_start_datetime)
+    if not disruptions:
+        return []
+
+    for disruption in disruptions:
+        if disruption.resource_key not in resource_map:
+            known = ", ".join(sorted(resource_map.keys())) or "(none)"
+            raise KeyError(
+                f"Unknown disruption resource '{disruption.resource_key}'. "
+                f"Known keys: {known}"
+            )
+        resource = resource_map[disruption.resource_key]
+        if not hasattr(resource, "_resource"):
+            raise TypeError(
+                f"Resource '{disruption.resource_key}' cannot be disrupted "
+                f"(missing PriorityResource wrapper): {type(resource)!r}"
+            )
+        original_capacity = int(getattr(resource, "_original_capacity", resource.capacity))
+        if disruption.effective_capacity > original_capacity:
+            raise ValueError(
+                f"Disruption '{disruption.id}': effective_capacity "
+                f"({disruption.effective_capacity}) exceeds resource capacity "
+                f"({original_capacity})"
+            )
+        env.process(_disruption_monitor(env, resource, disruption))
+        start_day = disruption.start_minutes / 1440.0
+        duration_days = disruption.duration_minutes / 1440.0
+        print(
+            f"--- Scheduled disruption '{disruption.id}' on "
+            f"{disruption.resource_key}: start_day={start_day:.1f}, "
+            f"duration_days={duration_days:.1f}, "
+            f"effective_capacity={disruption.effective_capacity} ---"
+        )
+
+    return disruptions
 
 
 # Predefined common schedules

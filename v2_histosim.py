@@ -7,6 +7,8 @@ from utils.resource_availability import (
     ScheduledResource,
     TaskScheduledResource,
     Schedule,
+    DisruptableResource,
+    apply_disruptions,
     create_schedule_from_params,
     create_task_schedules_from_params,
     union_schedules,
@@ -235,30 +237,35 @@ else:
         name="Junior Pathologists",
     )
 
-# Non-scheduled Resources
-histo_grossing_station = simpy.Resource(
+# Non-scheduled Resources (disruptable equipment)
+histo_grossing_station = DisruptableResource(
     env=sim_env,
-    capacity=params_dict.get('histo_grossing_station', {}).get('num_stations', 2)
+    capacity=params_dict.get('histo_grossing_station', {}).get('num_stations', 2),
+    name="Grossing Station",
 )
 
-histo_tissue_processor = simpy.Resource(
+histo_tissue_processor = DisruptableResource(
     env=sim_env,
-    capacity=params_dict.get('histo_tissue_processor', {}).get('num_stations', 1)
+    capacity=params_dict.get('histo_tissue_processor', {}).get('num_stations', 1),
+    name="Tissue Processor",
 )
 
-histo_embedding_station = simpy.Resource(
+histo_embedding_station = DisruptableResource(
     env=sim_env,
-    capacity=params_dict.get('histo_embedding_station', {}).get('num_stations', 1)
+    capacity=params_dict.get('histo_embedding_station', {}).get('num_stations', 1),
+    name="Embedding Station",
 )
 
-histo_sectioning_station = simpy.Resource(
+histo_sectioning_station = DisruptableResource(
     env=sim_env,
-    capacity=params_dict.get('histo_sectioning_station', {}).get('num_stations', 1)
+    capacity=params_dict.get('histo_sectioning_station', {}).get('num_stations', 1),
+    name="Sectioning Station",
 )
 
-histo_staining_station = simpy.Resource(
-    env=sim_env, 
-    capacity=params_dict.get('histo_staining_station', {}).get('num_stations', 1)
+histo_staining_station = DisruptableResource(
+    env=sim_env,
+    capacity=params_dict.get('histo_staining_station', {}).get('num_stations', 1),
+    name="Staining Station",
 )
 
 reagent_config = params_dict.get('histo_staining_kits', {})
@@ -267,6 +274,24 @@ histo_staining_reagents = simpy.Container(env=sim_env, capacity=total_reagent_ca
 
 # Reagent consumption amount per slide
 reagent_per_slide = reagent_config.get('reagent_per_slide', 0.1)
+
+# Time-bounded outages / strikes from YAML (no-op if disruptions: [])
+_DISRUPTION_RESOURCE_MAP = {
+    "histotechnician": histotechnician,
+    "junior_pathologist": junior_pathologist,
+    "senior_pathologist": senior_pathologist,
+    "histo_grossing_station": histo_grossing_station,
+    "histo_tissue_processor": histo_tissue_processor,
+    "histo_embedding_station": histo_embedding_station,
+    "histo_sectioning_station": histo_sectioning_station,
+    "histo_staining_station": histo_staining_station,
+}
+apply_disruptions(
+    sim_env,
+    params_dict.get("disruptions", []),
+    _DISRUPTION_RESOURCE_MAP,
+    SIMULATION_START_DATETIME,
+)
 
 _utilisation_monitor = ResourceUtilisationMonitor(SIMULATION_START_DATETIME)
 _utilisation_monitor.register(

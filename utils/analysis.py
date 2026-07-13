@@ -161,6 +161,113 @@ def load_waiting_times(path: Optional[PathLike] = None, df: Optional[pd.DataFram
     return df
 
 
+def has_tat_columns(df: pd.DataFrame) -> bool:
+    """Return True when ``Arrival`` and ``Reporting End`` columns are present."""
+    cols = {c.strip().lower() for c in df.columns}
+    return "arrival" in cols and "reporting end" in cols
+
+
+def calc_tat(df: pd.DataFrame) -> pd.DataFrame:
+    """Add ``tat`` (days) and ``tat_moving_avg`` (7-observation rolling mean)."""
+    if not has_tat_columns(df):
+        raise ValueError("Expected 'Arrival' and 'Reporting End' columns for turnaround time")
+
+    df = df.copy()
+    df.columns = df.columns.str.strip()
+    col_map = {c.lower(): c for c in df.columns}
+    arrival_col = col_map["arrival"]
+    reporting_end_col = col_map["reporting end"]
+
+    for col in (arrival_col, reporting_end_col):
+        df[col] = (
+            df[col]
+            .astype(str)
+            .str.strip()
+            .replace("N/A", pd.NA)
+        )
+        df[col] = pd.to_datetime(df[col], errors="coerce")
+
+    df["tat"] = (
+        (df[reporting_end_col] - df[arrival_col]).dt.total_seconds() / (24 * 3600)
+    )
+    df["tat_moving_avg"] = df["tat"].rolling(window=7, min_periods=1).mean()
+    return df
+
+
+def summarise_tat(df: pd.DataFrame, *, group_name: str = "all") -> pd.DataFrame:
+    """Summarise turnaround-time distribution for patient-level results."""
+    tat_df = calc_tat(df)
+    rows: list[dict[str, Any]] = []
+
+    for stat_name, value in tat_df["tat"].describe().items():
+        rows.append(
+            {
+                "group": group_name,
+                "process": "turnaround",
+                "stat": stat_name,
+                "value": value,
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def plot_tat(
+    df: pd.DataFrame,
+    group_name: Optional[str] = None,
+    *,
+    output_path: Optional[PathLike] = None,
+    show: bool = False,
+) -> tuple[plt.Figure, plt.Axes]:
+    """Plot turnaround time per entity and optionally save to disk."""
+    fig, ax = plt.subplots(figsize=(16, 10))
+    ax.plot(df.index, df["tat"], linewidth=1, alpha=0.7, color="steelblue")
+    title_group = f" ({group_name})" if group_name else ""
+    ax.set_title(f"Turnaround Time{title_group}", fontweight="bold")
+    ax.set_xlabel("Entity Number")
+    ax.set_ylabel("Turnaround Time (days)")
+    ax.grid(True, alpha=0.3)
+
+    if output_path is not None:
+        fig.savefig(output_path, dpi=150, bbox_inches="tight")
+
+    if show:
+        plt.show()
+    else:
+        plt.close(fig)
+
+    return fig, ax
+
+
+def analyse_tat(
+    filepath: Optional[PathLike] = None,
+    df: Optional[pd.DataFrame] = None,
+    group_name: Optional[str] = None,
+    *,
+    output_dir: Optional[PathLike] = None,
+    label: str = "tat",
+    show: bool = False,
+) -> tuple[pd.DataFrame, Optional[Path]]:
+    """Compute turnaround-time summaries and optionally save a plot."""
+    if df is None and filepath is None:
+        raise ValueError("Provide either filepath or df")
+
+    source_df = df if df is not None else pd.read_csv(filepath, skipinitialspace=True)
+    if not has_tat_columns(source_df):
+        raise ValueError("Expected 'Arrival' and 'Reporting End' columns for turnaround time")
+
+    tat_df = calc_tat(source_df)
+    plot_path: Optional[Path] = None
+
+    if output_dir is not None:
+        output_dir = Path(output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+        group_slug = (group_name or "all").replace(" ", "_")
+        plot_path = output_dir / f"{label}_{group_slug}.png"
+        plot_tat(tat_df, group_name=group_name, output_path=plot_path, show=show)
+
+    return tat_df, plot_path
+
+
 def summarise_waiting_times(df: pd.DataFrame, *, group_name: str = "all") -> pd.DataFrame:
     """Summarise waiting-time distributions for each detected process."""
     wait_df = load_waiting_times(df=df)
@@ -429,9 +536,12 @@ def run_analysis(run_dir: PathLike, *, lab: str) -> Dict[str, Any]:
     metadata_path = run_dir / DATA_FILE_NAMES["resource_metadata"]
 
     patient_summary_parts: list[pd.DataFrame] = []
+    tat_summary_parts: list[pd.DataFrame] = []
 
     if patient_path.exists():
         patient_df = pd.read_csv(patient_path, skipinitialspace=True)
+        include_tat = has_tat_columns(patient_df)
+
         if "Type" in patient_df.columns:
             for group_value, group_df in patient_df.groupby("Type", dropna=False):
                 summary = summarise_waiting_times(group_df, group_name=str(group_value))
@@ -444,6 +554,19 @@ def run_analysis(run_dir: PathLike, *, lab: str) -> Dict[str, Any]:
                 )
                 for process, plot_path in group_plots.items():
                     plots[f"waiting_patient_{process}_{group_value}"] = plot_path
+
+                if include_tat:
+                    tat_summary_parts.append(
+                        summarise_tat(group_df, group_name=str(group_value))
+                    )
+                    _, tat_plot_path = analyse_tat(
+                        df=group_df,
+                        group_name=str(group_value),
+                        output_dir=analysis_dir,
+                        label="turnaround_patient",
+                    )
+                    if tat_plot_path is not None:
+                        plots[f"turnaround_patient_{group_value}"] = tat_plot_path
         else:
             patient_summary_parts.append(summarise_waiting_times(patient_df))
             _, patient_plots = analyse_wait_times(
@@ -454,11 +577,27 @@ def run_analysis(run_dir: PathLike, *, lab: str) -> Dict[str, Any]:
             for process, plot_path in patient_plots.items():
                 plots[f"waiting_patient_{process}"] = plot_path
 
+            if include_tat:
+                tat_summary_parts.append(summarise_tat(patient_df))
+                _, tat_plot_path = analyse_tat(
+                    df=patient_df,
+                    output_dir=analysis_dir,
+                    label="turnaround_patient",
+                )
+                if tat_plot_path is not None:
+                    plots["turnaround_patient"] = tat_plot_path
+
     if patient_summary_parts:
         patient_summary = pd.concat(patient_summary_parts, ignore_index=True)
         patient_summary_path = analysis_dir / "waiting_time_patient_summary.csv"
         patient_summary.to_csv(patient_summary_path, index=False)
         tables["waiting_time_patient_summary"] = patient_summary_path
+
+    if tat_summary_parts:
+        tat_summary = pd.concat(tat_summary_parts, ignore_index=True)
+        tat_summary_path = analysis_dir / "turnaround_time_patient_summary.csv"
+        tat_summary.to_csv(tat_summary_path, index=False)
+        tables["turnaround_time_patient_summary"] = tat_summary_path
 
     if slide_path.exists():
         slide_df = pd.read_csv(slide_path, skipinitialspace=True)

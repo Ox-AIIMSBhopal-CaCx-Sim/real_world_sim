@@ -4,7 +4,13 @@ import numpy as np
 from utils.generic_entity import Generic_Entity
 from utils.generic_generator import Entity_Generator
 from utils.manual_generic_process import manual_generic_process
-from utils.resource_availability import ScheduledResource, TimeSlot, Schedule
+from utils.resource_availability import (
+    ScheduledResource,
+    TimeSlot,
+    Schedule,
+    DisruptableResource,
+    apply_disruptions,
+)
 from utils.resource_utilisation import ResourceUtilisationMonitor, set_monitor
 from utils.run_parameters import save_run_parameters_csv
 
@@ -190,10 +196,11 @@ senior_pathologist = ScheduledResource(
     name="Senior Pathologists"
 )
 
-# Non-scheduled Resources
-cyto_manual_staining_station = simpy.Resource(
-    env=sim_env, 
-    capacity=params_dict.get('cyto_manual_staining_station', {}).get('num_stations', 1)
+# Non-scheduled Resources (disruptable equipment)
+cyto_manual_staining_station = DisruptableResource(
+    env=sim_env,
+    capacity=params_dict.get('cyto_manual_staining_station', {}).get('num_stations', 1),
+    name="Manual Staining Station",
 )
 
 reagent_config = params_dict.get('cyto_staining_kits', {})
@@ -202,6 +209,20 @@ cyto_staining_reagents = simpy.Container(env=sim_env, capacity=total_reagent_cap
 
 # Reagent consumption amount per slide
 reagent_per_slide = reagent_config.get('reagent_per_slide', 0.1)
+
+# Time-bounded outages / strikes from YAML (no-op if disruptions: [])
+_DISRUPTION_RESOURCE_MAP = {
+    "cytotechnician": cytotechnician,
+    "junior_pathologist": junior_pathologist,
+    "senior_pathologist": senior_pathologist,
+    "cyto_manual_staining_station": cyto_manual_staining_station,
+}
+apply_disruptions(
+    sim_env,
+    params_dict.get("disruptions", []),
+    _DISRUPTION_RESOURCE_MAP,
+    SIMULATION_START_DATETIME,
+)
 
 _utilisation_monitor = ResourceUtilisationMonitor(SIMULATION_START_DATETIME)
 _utilisation_monitor.register(

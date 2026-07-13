@@ -187,3 +187,24 @@ histo_staining_kits:
   stain_per_kit: 100 #ml per kit
   reagent_per_slide: 0.1 #ml per slide Calculated from 50 mL kit pach staining 500 slides
 
+# ===============================
+# Disruptions (optional)
+# ===============================
+# Time-bounded capacity reductions for resilience testing.
+# Use start_day (0-based from sim start) OR start_datetime — not both.
+# effective_capacity: 0 = full outage; partial values leave that many units available.
+# Leave empty for baseline runs.
+disruptions: []
+# Example:
+# disruptions:
+#   - id: junior_strike_week12
+#     resource: junior_pathologist
+#     start_day: 84
+#     duration_days: 5
+#     effective_capacity: 0
+#   - id: tissue_processor_breakdown
+#     resource: histo_tissue_processor
+#     start_datetime: "2026-08-15 09:00"
+#     duration_days: 14
+#     effective_capacity: 0
+
