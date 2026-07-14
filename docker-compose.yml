@@ -1,0 +1,26 @@
+services:
+  gcs-emulator:
+    image: fsouza/fake-gcs-server:latest
+    command: ["-scheme", "http", "-port", "4443", "-external-url", "http://localhost:4443"]
+    ports:
+      - "4443:4443"
+    volumes:
+      - gcs-data:/data
+
+  gcs-init:
+    image: curlimages/curl:8.5.0
+    depends_on:
+      - gcs-emulator
+    restart: "no"
+    entrypoint: >
+      /bin/sh -c "
+      sleep 2;
+      curl -s -X POST 'http://gcs-emulator:4443/storage/v1/b?project=local-dev'
+        -H 'Content-Type: application/json'
+        -d '{\"name\":\"sim-results\"}'
+        || true;
+      echo 'bucket ready'
+      "
+
+volumes:
+  gcs-data:

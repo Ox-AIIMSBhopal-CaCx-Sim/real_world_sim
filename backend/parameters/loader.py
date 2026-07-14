@@ -1,14 +1,16 @@
-"""Load cyto parameter JSON (shared ground truth)."""
+"""Load cyto/histo parameter JSON (shared ground truth)."""
 
 from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 CYTO_DEFAULT_JSON = _REPO_ROOT / "shared" / "cyto_parameters.default.json"
 HISTO_DEFAULT_JSON = _REPO_ROOT / "shared" / "histo_parameters.default.json"
+
+LabKind = Literal["cyto", "histo"]
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -28,9 +30,22 @@ def load_default_histo_parameters() -> dict[str, Any]:
     return _load_json(HISTO_DEFAULT_JSON)
 
 
-def merge_parameters(overrides: dict[str, Any] | None) -> dict[str, Any]:
-    """Deep-merge overrides onto defaults (overrides win)."""
-    base = load_default_cyto_parameters()
+def load_default_parameters(kind: LabKind) -> dict[str, Any]:
+    """Load default parameters for the given lab kind."""
+    if kind == "cyto":
+        return load_default_cyto_parameters()
+    if kind == "histo":
+        return load_default_histo_parameters()
+    raise ValueError(f"Unknown lab kind: {kind}")
+
+
+def merge_parameters(
+    overrides: dict[str, Any] | None,
+    *,
+    kind: LabKind = "cyto",
+) -> dict[str, Any]:
+    """Deep-merge overrides onto defaults for the given lab (overrides win)."""
+    base = load_default_parameters(kind)
     if not overrides:
         return base
     return _deep_merge(base, overrides)

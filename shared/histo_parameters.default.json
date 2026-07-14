@@ -1,0 +1,265 @@
+{
+  "project_title": "GMC_Banavati_CaCx_sim",
+  "simulation": {
+    "name": "GMC_Banavati_Histopath_Sim",
+    "duration_months": 12,
+    "warmup_months": 1,
+    "experiment_no": 1,
+    "no_of_sims": 1
+  },
+  "cervical_biopsies_per_day": {
+    "distribution": "poisson",
+    "params": [
+      1
+    ]
+  },
+  "other_biopsies_per_day": {
+    "distribution": "poisson",
+    "params": [
+      35
+    ]
+  },
+  "case_complexity": {
+    "p_high": 0.05
+  },
+  "slide_pt_ratio_by_biopsy_size": {
+    "small": 1,
+    "medium": 10,
+    "large": 20
+  },
+  "biopsy_size": {
+    "weights": {
+      "small": 0.9,
+      "medium": 0.1,
+      "large": 0.01
+    }
+  },
+  "histo_fixation_time": {
+    "by_size": {
+      "small": {
+        "distribution": "constant",
+        "params": 360
+      },
+      "medium": {
+        "distribution": "constant",
+        "params": 720
+      },
+      "large": {
+        "distribution": "constant",
+        "params": 2880
+      }
+    }
+  },
+  "histo_grossing_time": {
+    "by_size": {
+      "small": {
+        "distribution": "constant",
+        "params": 10
+      },
+      "medium": {
+        "distribution": "constant",
+        "params": 30
+      },
+      "large": {
+        "distribution": "constant",
+        "params": 120
+      }
+    }
+  },
+  "histo_tissue_processing_time": {
+    "distribution": "constant",
+    "params": 1320
+  },
+  "histo_embedding_time": {
+    "distribution": "constant",
+    "params": 1
+  },
+  "histo_sectioning_time": {
+    "distribution": "constant",
+    "params": 2
+  },
+  "histo_staining_time": {
+    "distribution": "constant",
+    "params": 35
+  },
+  "histo_slide_screening_time": {
+    "by_case_complexity": {
+      "high": {
+        "distribution": "triangular",
+        "params": [
+          20,
+          30,
+          40
+        ]
+      },
+      "low": {
+        "distribution": "triangular",
+        "params": [
+          10,
+          20,
+          30
+        ]
+      }
+    }
+  },
+  "histo_reporting_time": {
+    "by_case_complexity": {
+      "high": {
+        "distribution": "triangular",
+        "params": [
+          20,
+          30,
+          100
+        ]
+      },
+      "low": {
+        "distribution": "triangular",
+        "params": [
+          5,
+          10,
+          20
+        ]
+      }
+    }
+  },
+  "histo_technicians": {
+    "num_cytotech": 11,
+    "histotech_schedule": {
+      "Timeslot_1": {
+        "days": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "hours": [
+          9,
+          17
+        ]
+      },
+      "Timeslot_2": {
+        "days": [
+          6
+        ],
+        "hours": [
+          9,
+          13
+        ]
+      }
+    }
+  },
+  "junior_pathologist": {
+    "num_junior_pathologist": 6,
+    "grossing_cutoff_policy": "no_new_starts",
+    "task_windows": {
+      "grossing": {
+        "Timeslot_1": {
+          "days": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "hours": [
+            9,
+            17
+          ]
+        },
+        "Timeslot_2": {
+          "days": [
+            5
+          ],
+          "hours": [
+            9,
+            12
+          ]
+        }
+      },
+      "screening": {
+        "Timeslot_1": {
+          "days": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "hours": [
+            17,
+            21
+          ]
+        },
+        "Timeslot_2": {
+          "days": [
+            5
+          ],
+          "hours": [
+            13,
+            17
+          ]
+        }
+      }
+    }
+  },
+  "senior_pathologists": {
+    "num_senior_pathologist": 5,
+    "repeat_stain_rate": 0.3,
+    "senior_pathologist_schedule": {
+      "Timeslot_1": {
+        "days": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "hours": [
+          10,
+          14
+        ]
+      },
+      "Timeslot_2": {
+        "days": [
+          5
+        ],
+        "hours": [
+          10,
+          12
+        ]
+      }
+    }
+  },
+  "histo_grossing_station": {
+    "num_stations": 2,
+    "batch_size": 1
+  },
+  "histo_tissue_processor": {
+    "num_stations": 1,
+    "batch_size": 90
+  },
+  "histo_embedding_station": {
+    "num_stations": 1,
+    "batch_size": 1
+  },
+  "histo_sectioning_station": {
+    "num_stations": 1,
+    "batch_size": 1
+  },
+  "histo_staining_station": {
+    "num_stations": 1,
+    "batch_size": 25
+  },
+  "repeat_staining": {
+    "max_attempts": 2,
+    "slides_per_rework": 5
+  },
+  "histo_staining_kits": {
+    "num_kits": 100000,
+    "stain_per_kit": 100,
+    "reagent_per_slide": 0.1
+  },
+  "disruptions": []
+}
