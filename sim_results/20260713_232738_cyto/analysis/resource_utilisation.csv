@@ -1,5 +1,0 @@
-utilisation_key,resource_name,task,capacity,resource_type,calendar_minutes,scheduled_available_minutes,analysis_start_min,analysis_end_min,denominator_source_key,duration_min,available_person_minutes,utilisation_pct
-Cytotechnicians,Cytotechnicians,,30,scheduled,480960,149040.0,44640,525600,Cytotechnicians,882819.2741493023,4471200.0,19.74
-Junior Cytopathologists,Junior Cytopathologists,,5,scheduled,480960,40080.0,44640,525600,Junior Cytopathologists,234531.82587927202,200400.0,117.03
-Manual Staining Station,Manual Staining Station,,10,equipment,480960,149040.0,44640,525600,Cytotechnicians,781305.0,1490400.0,52.42
-Senior Pathologists,Senior Pathologists,,3,scheduled,480960,74520.0,44640,525600,Senior Pathologists,89277.98820342745,223560.0,39.93

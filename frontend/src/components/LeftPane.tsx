@@ -3,12 +3,10 @@ import type { RunHistoryEntry, SimulationKind } from '../types/simulation';
 interface LeftPaneProps {
   kind: SimulationKind;
   onKindChange: (kind: SimulationKind) => void;
-  seed: number;
-  onSeedChange: (seed: number) => void;
   history: RunHistoryEntry[];
   activeRunId: string | null;
   onSelectRun: (runId: string) => void;
-  onRun: () => void;
+  onNewSimulation: () => void;
   isRunning: boolean;
   projectTitle: string;
 }
@@ -16,12 +14,10 @@ interface LeftPaneProps {
 export function LeftPane({
   kind,
   onKindChange,
-  seed,
-  onSeedChange,
   history,
   activeRunId,
   onSelectRun,
-  onRun,
+  onNewSimulation,
   isRunning,
   projectTitle,
 }: LeftPaneProps) {
@@ -56,18 +52,13 @@ export function LeftPane({
       </section>
 
       <section className="left-pane__section">
-        <h2>Settings</h2>
-        <label className="field">
-          <span>RNG seed</span>
-          <input
-            type="number"
-            value={seed}
-            onChange={(e) => onSeedChange(Number(e.target.value))}
-            disabled={isRunning}
-          />
-        </label>
-        <button type="button" className="run-button" onClick={onRun} disabled={isRunning}>
-          {isRunning ? 'Running…' : 'Run simulation'}
+        <button
+          type="button"
+          className="run-button run-button--secondary"
+          onClick={onNewSimulation}
+          disabled={isRunning}
+        >
+          New simulation
         </button>
       </section>
 

@@ -41,13 +41,15 @@ function setNestedValue(obj: ParametersDict, path: string[], value: unknown): Pa
 export function useWorkspace() {
   const [kind, setKind] = useState<SimulationKind>('cyto');
   const [parameters, setParameters] = useState<ParametersDict | null>(null);
-  const [seed, setSeed] = useState<number>(42);
+  const [seed] = useState<number>(42);
   const [history, setHistory] = useState<RunHistoryEntry[]>(() => loadHistory());
   const [activeRunId, setActiveRunId] = useState<string | null>(null);
   const [result, setResult] = useState<SimulationRunResult | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loadingDefaults, setLoadingDefaults] = useState(true);
+
+  const [workspaceEpoch, setWorkspaceEpoch] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -59,6 +61,7 @@ export function useWorkspace() {
           setParameters(defaults);
           setResult(null);
           setActiveRunId(null);
+          setWorkspaceEpoch((n) => n + 1);
         }
       })
       .catch((err: Error) => {
@@ -115,6 +118,22 @@ export function useWorkspace() {
     [history],
   );
 
+  const startNewSimulation = useCallback(async () => {
+    setLoadingDefaults(true);
+    setError(null);
+    setResult(null);
+    setActiveRunId(null);
+    try {
+      const defaults = await fetchDefaults(kind);
+      setParameters(defaults);
+      setWorkspaceEpoch((n) => n + 1);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setLoadingDefaults(false);
+    }
+  }, [kind]);
+
   const projectTitle = useMemo(() => {
     if (!parameters) return '';
     return String(parameters.project_title ?? '');
@@ -125,8 +144,6 @@ export function useWorkspace() {
     setKind,
     parameters,
     updateParameter,
-    seed,
-    setSeed,
     history,
     activeRunId,
     selectRun,
@@ -135,6 +152,8 @@ export function useWorkspace() {
     error,
     loadingDefaults,
     executeRun,
+    startNewSimulation,
+    workspaceEpoch,
     projectTitle,
   };
 }

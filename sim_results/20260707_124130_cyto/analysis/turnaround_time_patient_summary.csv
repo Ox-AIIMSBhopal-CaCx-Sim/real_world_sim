@@ -1,9 +1,0 @@
-group,process,stat,value
-all,turnaround,count,9968.0
-all,turnaround,mean,1.2158661188023898
-all,turnaround,std,0.5889962294108855
-all,turnaround,min,0.05347222222222222
-all,turnaround,25%,0.8701388888888889
-all,turnaround,50%,0.9930555555555556
-all,turnaround,75%,1.7625
-all,turnaround,max,4.9222222222222225

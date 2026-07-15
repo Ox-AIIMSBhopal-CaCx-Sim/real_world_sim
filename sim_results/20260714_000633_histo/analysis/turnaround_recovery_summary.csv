@@ -1,3 +1,0 @@
-group,disruption_id,resource,disruption_start,disruption_end,baseline_window_days,baseline_tat_days,relative_tolerance,threshold_tat_days,hold_days,recovery_date,recovery_days_after_end,recovered
-cervical_biopsy,junior_strike_week12,junior_pathologist,2026-07-24 08:00,2026-07-29 08:00,14,6.243923611111111,0.1,6.868315972222223,3,2026-08-30,31.666666666666668,True
-non_cervical_biopsy,junior_strike_week12,junior_pathologist,2026-07-24 08:00,2026-07-29 08:00,14,5.421006944444445,0.1,5.963107638888889,3,2026-08-11,12.666666666666666,True

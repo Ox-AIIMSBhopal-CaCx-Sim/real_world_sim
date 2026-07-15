@@ -1,37 +1,45 @@
 import type { SimulationKind } from '../types/simulation';
+import { getPipelineSteps, type PipelineStepId } from './pipelineConfig';
+import { ResourceIcon } from './ResourceIcons';
 
-const CYTO_STEPS = [
-  'Accessioning',
-  'Fixation',
-  'Staining',
-  'Screening',
-  'Reporting',
-];
+interface PipelineStepsProps {
+  kind: SimulationKind;
+  selectedStepId: PipelineStepId | null;
+  onSelectStep: (stepId: PipelineStepId) => void;
+}
 
-const HISTO_STEPS = [
-  'Fixation',
-  'Grossing',
-  'Tissue processing',
-  'Embedding',
-  'Sectioning',
-  'Staining',
-  'Screening',
-  'Reporting',
-];
+export function PipelineSteps({ kind, selectedStepId, onSelectStep }: PipelineStepsProps) {
+  const steps = getPipelineSteps(kind);
 
-export function PipelineSteps({ kind }: { kind: SimulationKind }) {
-  const steps = kind === 'cyto' ? CYTO_STEPS : HISTO_STEPS;
   return (
     <div className="pipeline">
-      <h3>Process pipeline</h3>
-      <ol className="pipeline__steps">
-        {steps.map((step, index) => (
-          <li key={step}>
-            <span className="pipeline__index">{index + 1}</span>
-            <span>{step}</span>
-            {index < steps.length - 1 ? <span className="pipeline__arrow" aria-hidden>→</span> : null}
-          </li>
-        ))}
+      <div className="pipeline__header">
+        <h3>Process pipeline</h3>
+        <p className="muted">Click a step to edit its parameters</p>
+      </div>
+      <ol className="pipeline__cards">
+        {steps.map((step, index) => {
+          const selected = step.id === selectedStepId;
+          return (
+            <li key={step.id}>
+              <button
+                type="button"
+                className={`pipeline-card${selected ? ' pipeline-card--selected' : ''}`}
+                onClick={() => onSelectStep(step.id)}
+                aria-pressed={selected}
+              >
+                <span className="pipeline-card__index">{index + 1}</span>
+                <span className="pipeline-card__name">{step.name}</span>
+                <span className="pipeline-card__desc">{step.description}</span>
+                <span className="pipeline-card__resources" aria-label="Resources involved">
+                  {step.resources.map((resource) => (
+                    <ResourceIcon key={resource} kind={resource} />
+                  ))}
+                </span>
+              </button>
+            </li>
+          );
+        })}
       </ol>
     </div>
   );

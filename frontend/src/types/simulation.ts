@@ -2,6 +2,16 @@ export type SimulationKind = 'cyto' | 'histo';
 
 export type ParametersDict = Record<string, unknown>;
 
+/** Matches backend Disruption schema / YAML entries. */
+export interface DisruptionConfig {
+  id: string;
+  resource: string;
+  duration_days: number;
+  effective_capacity: number;
+  start_day?: number | null;
+  start_datetime?: string | null;
+}
+
 export interface ArtifactUrls {
   data: Record<string, string>;
   tables: Record<string, string>;
