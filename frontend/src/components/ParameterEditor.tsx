@@ -1,8 +1,18 @@
-import { useEffect, useState } from "react";
-import type { ParametersDict, SimulationKind } from "../types/simulation";
+import { useEffect, useRef, useState } from "react";
+import type {
+  ParametersDict,
+  SimulationKind,
+  SimulationRunResult,
+} from "../types/simulation";
 import { DisruptionsPanel } from "./DisruptionsPanel";
 import { PipelineSteps } from "./PipelineSteps";
+import { ResultsPanel } from "./ResultsPanel";
+import { RunParameterSummary } from "./RunParameterSummary";
 import { getPipelineSteps, type PipelineStepId } from "./pipelineConfig";
+
+const TRIO_PCT_MIN = 22;
+const TRIO_PCT_MAX = 78;
+const TRIO_PCT_DEFAULT = 33;
 
 interface ParameterEditorProps {
   kind: SimulationKind;
@@ -12,6 +22,11 @@ interface ParameterEditorProps {
   onRun: () => void;
   isRunning: boolean;
   resetKey?: number;
+  showResults?: boolean;
+  result?: SimulationRunResult | null;
+  error?: string | null;
+  runParameters?: ParametersDict | null;
+  seed?: number | null;
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -220,14 +235,56 @@ export function ParameterEditor({
   onRun,
   isRunning,
   resetKey = 0,
+  showResults = false,
+  result = null,
+  error = null,
+  runParameters = null,
+  seed = null,
 }: ParameterEditorProps) {
   const [selectedStepId, setSelectedStepId] = useState<PipelineStepId | null>(
     null,
   );
+  const [trioPct, setTrioPct] = useState(TRIO_PCT_DEFAULT);
+  const [isResizingSplit, setIsResizingSplit] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setSelectedStepId(null);
   }, [kind, resetKey]);
+
+  useEffect(() => {
+    if (!showResults) {
+      setTrioPct(TRIO_PCT_DEFAULT);
+      setIsResizingSplit(false);
+    }
+  }, [showResults]);
+
+  useEffect(() => {
+    if (!isResizingSplit) return;
+
+    const onMove = (event: MouseEvent) => {
+      const panel = panelRef.current;
+      if (!panel) return;
+      const rect = panel.getBoundingClientRect();
+      if (rect.height <= 0) return;
+      const raw = ((event.clientY - rect.top) / rect.height) * 100;
+      setTrioPct(Math.min(TRIO_PCT_MAX, Math.max(TRIO_PCT_MIN, raw)));
+    };
+
+    const onUp = () => setIsResizingSplit(false);
+
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    document.body.style.cursor = "row-resize";
+    document.body.style.userSelect = "none";
+
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    };
+  }, [isResizingSplit]);
 
   if (loading || !parameters) {
     return (
@@ -239,88 +296,132 @@ export function ParameterEditor({
 
   const selectedStep =
     getPipelineSteps(kind).find((step) => step.id === selectedStepId) ?? null;
+  const summaryParameters = runParameters ?? parameters;
 
   return (
-    <div className="param-panel param-panel--trio">
-      <aside className="side-card simulation-panel">
-        <div className="side-card__header">
-          <h3>Simulation parameters</h3>
-          <p className="muted">
-            Global run settings applied to every scenario.
-          </p>
+    <div
+      ref={panelRef}
+      className={`param-panel${showResults ? " param-panel--with-results" : ""}${isResizingSplit ? " param-panel--resizing-split" : ""}`}
+      style={
+        showResults
+          ? ({ ["--trio-pct" as string]: `${trioPct}%` } as React.CSSProperties)
+          : undefined
+      }
+    >
+      {showResults ? (
+        <div className="param-panel__trio param-panel__trio--summary">
+          <RunParameterSummary
+            kind={kind}
+            parameters={summaryParameters}
+            seed={seed}
+          />
         </div>
-        <SimulationFields parameters={parameters} onChange={onChange} />
-      </aside>
-
-      <div className="param-panel__center">
-        <PipelineSteps
-          kind={kind}
-          selectedStepId={selectedStepId}
-          onSelectStep={(id) =>
-            setSelectedStepId((current) => (current === id ? null : id))
-          }
-        />
-
-        {selectedStep ? (
-          <div
-            className="step-editor"
-            role="region"
-            aria-label={`${selectedStep.name} parameters`}
-          >
-            <div className="step-editor__header">
-              <div>
-                <p className="step-editor__eyebrow">Editing step</p>
-                <h3>{selectedStep.name}</h3>
-                <p className="muted">{selectedStep.description}</p>
-              </div>
-              <button
-                type="button"
-                className="step-editor__close"
-                onClick={() => setSelectedStepId(null)}
-              >
-                Close
-              </button>
+      ) : (
+        <div className="param-panel__trio">
+          <aside className="side-card simulation-panel">
+            <div className="side-card__header">
+              <h3>Simulation parameters</h3>
+              <p className="muted">
+                Global run settings applied to every scenario.
+              </p>
             </div>
+            <SimulationFields parameters={parameters} onChange={onChange} />
+          </aside>
 
-            <div className="param-grid">
-              {kind === "cyto" ? (
-                <CytoStepFields
-                  stepId={selectedStep.id}
-                  parameters={parameters}
-                  onChange={onChange}
-                />
+          <div className="param-panel__center">
+            <div className="param-panel__pipeline">
+              <PipelineSteps
+                kind={kind}
+                selectedStepId={selectedStepId}
+                onSelectStep={(id) =>
+                  setSelectedStepId((current) => (current === id ? null : id))
+                }
+              />
+
+              {selectedStep ? (
+                <div
+                  className="step-editor"
+                  role="region"
+                  aria-label={`${selectedStep.name} parameters`}
+                >
+                  <div className="step-editor__header">
+                    <div>
+                      <p className="step-editor__eyebrow">Editing step</p>
+                      <h3>{selectedStep.name}</h3>
+                      <p className="muted">{selectedStep.description}</p>
+                    </div>
+                    <button
+                      type="button"
+                      className="step-editor__close"
+                      onClick={() => setSelectedStepId(null)}
+                    >
+                      Close
+                    </button>
+                  </div>
+
+                  <div className="param-grid">
+                    {kind === "cyto" ? (
+                      <CytoStepFields
+                        stepId={selectedStep.id}
+                        parameters={parameters}
+                        onChange={onChange}
+                      />
+                    ) : (
+                      <HistoStepFields
+                        stepId={selectedStep.id}
+                        parameters={parameters}
+                        onChange={onChange}
+                      />
+                    )}
+                  </div>
+                </div>
               ) : (
-                <HistoStepFields
-                  stepId={selectedStep.id}
-                  parameters={parameters}
-                  onChange={onChange}
-                />
+                <p className="pipeline__hint muted">
+                  Select a pipeline step above to edit its parameters.
+                </p>
               )}
+
+              <div className="pipeline__actions">
+                <button
+                  type="button"
+                  className="run-button"
+                  onClick={onRun}
+                  disabled={isRunning}
+                >
+                  {isRunning ? "Running…" : "Run simulation"}
+                </button>
+              </div>
             </div>
           </div>
-        ) : (
-          <p className="pipeline__hint muted">
-            Select a pipeline step above to edit its parameters.
-          </p>
-        )}
 
-        <div className="pipeline__actions">
-          <button
-            type="button"
-            className="run-button"
-            onClick={onRun}
-            disabled={isRunning}
-          >
-            {isRunning ? "Running…" : "Run simulation"}
-          </button>
+          <DisruptionsPanel
+            kind={kind}
+            parameters={parameters}
+            onChange={onChange}
+          />
         </div>
-      </div>
+      )}
 
-      <DisruptionsPanel
-        kind={kind}
-        parameters={parameters}
-        onChange={onChange}
-      />
+      {showResults ? (
+        <>
+          <div
+            className="results-resize-handle"
+            role="separator"
+            aria-orientation="horizontal"
+            aria-label="Resize results panel"
+            aria-valuenow={Math.round(100 - trioPct)}
+            aria-valuemin={100 - TRIO_PCT_MAX}
+            aria-valuemax={100 - TRIO_PCT_MIN}
+            onMouseDown={(event) => {
+              event.preventDefault();
+              setIsResizingSplit(true);
+            }}
+          />
+          <section className="param-panel__results" aria-label="Simulation results">
+            <ResultsPanel result={result} isRunning={isRunning} error={error} />
+          </section>
+        </>
+      ) : null}
     </div>
   );
 }

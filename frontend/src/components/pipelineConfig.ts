@@ -23,7 +23,7 @@ export interface PipelineStep {
 export const CYTO_PIPELINE_STEPS: PipelineStep[] = [
   {
     id: "accessioning",
-    name: "Accessioning",
+    name: "Arrival",
     description: "Samples arrive at the lab and slides are created",
     resources: ["intake"],
   },
@@ -56,7 +56,7 @@ export const CYTO_PIPELINE_STEPS: PipelineStep[] = [
 export const HISTO_PIPELINE_STEPS: PipelineStep[] = [
   {
     id: "accessioning",
-    name: "Accessioning",
+    name: "Arrival",
     description: "Biopsies arrive and cases are registered",
     resources: ["intake"],
   },

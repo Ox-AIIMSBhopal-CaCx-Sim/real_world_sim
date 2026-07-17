@@ -36,10 +36,22 @@ export interface RunHistoryEntry {
   seed: number | null;
   completed_at: string;
   result: SimulationRunResult;
+  parameters?: ParametersDict;
 }
 
 export interface SimulationRunRequest {
   kind: SimulationKind;
   parameters: ParametersDict;
   seed: number | null;
+  username: string;
+}
+
+export interface AuthRequest {
+  username: string;
+  password: string;
+}
+
+export interface AuthResponse {
+  username: string;
+  message: string;
 }

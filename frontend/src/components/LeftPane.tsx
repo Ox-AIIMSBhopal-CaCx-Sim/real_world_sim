@@ -8,7 +8,10 @@ interface LeftPaneProps {
   onSelectRun: (runId: string) => void;
   onNewSimulation: () => void;
   isRunning: boolean;
+  viewingResults: boolean;
   projectTitle: string;
+  username: string;
+  onLogout: () => void;
 }
 
 export function LeftPane({
@@ -19,14 +22,25 @@ export function LeftPane({
   onSelectRun,
   onNewSimulation,
   isRunning,
+  viewingResults,
   projectTitle,
+  username,
+  onLogout,
 }: LeftPaneProps) {
+  const lockModality = isRunning || viewingResults;
+
   return (
     <aside className="left-pane">
       <header className="left-pane__brand">
         <p className="left-pane__eyebrow">Pathology DES</p>
         <h1>Simulation Lab</h1>
         <p className="left-pane__subtitle">{projectTitle || 'Parameter-driven model runs'}</p>
+        <div className="left-pane__user">
+          <span className="left-pane__username">{username}</span>
+          <button type="button" className="text-button" onClick={onLogout} disabled={isRunning}>
+            Log out
+          </button>
+        </div>
       </header>
 
       <section className="left-pane__section">
@@ -36,7 +50,7 @@ export function LeftPane({
             type="button"
             className={kind === 'cyto' ? 'active' : ''}
             onClick={() => onKindChange('cyto')}
-            disabled={isRunning}
+            disabled={lockModality}
           >
             Cytopathology
           </button>
@@ -44,7 +58,7 @@ export function LeftPane({
             type="button"
             className={kind === 'histo' ? 'active' : ''}
             onClick={() => onKindChange('histo')}
-            disabled={isRunning}
+            disabled={lockModality}
           >
             Histopathology
           </button>
@@ -74,6 +88,7 @@ export function LeftPane({
                   type="button"
                   className={entry.run_id === activeRunId ? 'active' : ''}
                   onClick={() => onSelectRun(entry.run_id)}
+                  disabled={isRunning}
                 >
                   <span className="run-list__id">{entry.run_id}</span>
                   <span className="run-list__meta">

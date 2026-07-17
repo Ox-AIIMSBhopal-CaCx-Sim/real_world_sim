@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 from typing import Any
@@ -9,6 +10,7 @@ from typing import Any
 from app.schemas.parameters import SimulationKind
 from app.schemas.results import ArtifactUrls, SimulationRunResult
 from app.services.storage import ArtifactStore, get_artifact_store
+from app.services.users import user_exists, validate_username
 from models.cyto import run_cyto
 from models.histo import run_histo
 
@@ -28,14 +30,20 @@ class SimulationRunner:
         kind: SimulationKind,
         parameters: dict[str, Any],
         *,
+        username: str,
         seed: int | None = 42,
     ) -> SimulationRunResult:
-        self._output_root.mkdir(parents=True, exist_ok=True)
+        username = validate_username(username)
+        if not user_exists(username):
+            raise ValueError(f"Unknown username: {username}. Register or log in first.")
+
+        user_root = self._output_root / username
+        user_root.mkdir(parents=True, exist_ok=True)
 
         if kind == "cyto":
             result = run_cyto(
                 parameters,
-                output_root=self._output_root,
+                output_root=user_root,
                 seed=seed,
                 run_analysis=True,
                 quiet=True,
@@ -43,7 +51,7 @@ class SimulationRunner:
         elif kind == "histo":
             result = run_histo(
                 parameters,
-                output_root=self._output_root,
+                output_root=user_root,
                 seed=seed,
                 run_analysis=True,
                 quiet=True,
@@ -53,7 +61,7 @@ class SimulationRunner:
 
         run_id = str(result["run_id"])
         run_dir = Path(result["run_dir"])
-        artifact_urls = self._store.upload_run(run_id, run_dir)
+        artifact_urls = self._store.upload_run(run_id, run_dir, username=username)
 
         return SimulationRunResult(
             run_id=run_id,
@@ -65,15 +73,13 @@ class SimulationRunner:
             local_run_dir=str(run_dir.resolve()),
         )
 
-    def get_run(self, run_id: str) -> SimulationRunResult | None:
-        index = self._store.get_run_index(run_id)
+    def get_run(self, run_id: str, *, username: str) -> SimulationRunResult | None:
+        username = validate_username(username)
+        index = self._store.get_run_index(run_id, username=username)
         if index is None:
-            # local fallback
-            local = self._output_root / run_id / "artifact_index.json"
+            local = self._output_root / username / run_id / "artifact_index.json"
             if not local.is_file():
                 return None
-            import json
-
             index = json.loads(local.read_text(encoding="utf-8"))
 
         lab: SimulationKind = "histo" if run_id.endswith("_histo") else "cyto"

@@ -154,6 +154,7 @@ class SimulationRunRequest(BaseModel):
     kind: SimulationKind
     parameters: dict[str, Any]
     seed: int | None = 42
+    username: str = Field(min_length=3, max_length=32)
 
     @model_validator(mode="after")
     def validate_parameters_for_kind(self) -> "SimulationRunRequest":

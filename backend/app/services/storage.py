@@ -12,9 +12,15 @@ from google.cloud import storage
 
 
 class ArtifactStore(Protocol):
-    def upload_run(self, run_id: str, local_dir: Path) -> dict[str, dict[str, str]]: ...
+    def upload_run(
+        self,
+        run_id: str,
+        local_dir: Path,
+        *,
+        username: str,
+    ) -> dict[str, dict[str, str]]: ...
 
-    def get_run_index(self, run_id: str) -> dict[str, Any] | None: ...
+    def get_run_index(self, run_id: str, *, username: str) -> dict[str, Any] | None: ...
 
 
 def _public_object_url(
@@ -58,22 +64,34 @@ class GCSArtifactStore:
 
     def _ensure_bucket(self) -> storage.Bucket:
         bucket = self._client.bucket(self.bucket_name)
-        if not bucket.exists():
+        # Only auto-create against the local emulator; prod buckets are provisioned ahead of time.
+        if self.emulator_host and not bucket.exists():
             bucket = self._client.create_bucket(self.bucket_name)
         return bucket
 
-    def upload_run(self, run_id: str, local_dir: Path) -> dict[str, dict[str, str]]:
+    @staticmethod
+    def _prefix(username: str, run_id: str) -> str:
+        return f"{username}/{run_id}"
+
+    def upload_run(
+        self,
+        run_id: str,
+        local_dir: Path,
+        *,
+        username: str,
+    ) -> dict[str, dict[str, str]]:
         local_dir = Path(local_dir)
         if not local_dir.is_dir():
             raise FileNotFoundError(f"Run directory not found: {local_dir}")
 
+        prefix = self._prefix(username, run_id)
         urls: dict[str, dict[str, str]] = {"data": {}, "tables": {}, "plots": {}}
 
         for path in sorted(local_dir.rglob("*")):
             if not path.is_file():
                 continue
             rel = path.relative_to(local_dir).as_posix()
-            blob_name = f"{run_id}/{rel}"
+            blob_name = f"{prefix}/{rel}"
             blob = self._bucket.blob(blob_name)
             blob.upload_from_filename(str(path))
             url = _public_object_url(
@@ -85,9 +103,10 @@ class GCSArtifactStore:
 
         index = {
             "run_id": run_id,
+            "username": username,
             "artifacts": urls,
         }
-        index_blob = self._bucket.blob(f"{run_id}/artifact_index.json")
+        index_blob = self._bucket.blob(f"{prefix}/artifact_index.json")
         index_blob.upload_from_string(
             json.dumps(index, indent=2),
             content_type="application/json",
@@ -99,8 +118,8 @@ class GCSArtifactStore:
         )
         return urls
 
-    def get_run_index(self, run_id: str) -> dict[str, Any] | None:
-        blob = self._bucket.blob(f"{run_id}/artifact_index.json")
+    def get_run_index(self, run_id: str, *, username: str) -> dict[str, Any] | None:
+        blob = self._bucket.blob(f"{self._prefix(username, run_id)}/artifact_index.json")
         if not blob.exists():
             return None
         return json.loads(blob.download_as_text())

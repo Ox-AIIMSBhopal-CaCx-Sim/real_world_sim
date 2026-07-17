@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { LeftPane } from './components/LeftPane';
+import { LoginScreen } from './components/LoginScreen';
 import { ParameterEditor } from './components/ParameterEditor';
-import { ResultsPanel } from './components/ResultsPanel';
+import { useAuth } from './hooks/useAuth';
 import { useWorkspace } from './hooks/useWorkspace';
 import './App.css';
 
@@ -9,7 +10,13 @@ const LEFT_MIN = 300;
 const LEFT_MAX = 480;
 const LEFT_DEFAULT = 320;
 
-function App() {
+function WorkspaceApp({
+  username,
+  onLogout,
+}: {
+  username: string;
+  onLogout: () => void;
+}) {
   const {
     kind,
     setKind,
@@ -19,6 +26,7 @@ function App() {
     activeRunId,
     selectRun,
     result,
+    activeRunParameters,
     isRunning,
     error,
     loadingDefaults,
@@ -26,7 +34,8 @@ function App() {
     startNewSimulation,
     workspaceEpoch,
     projectTitle,
-  } = useWorkspace();
+    seed,
+  } = useWorkspace(username);
 
   const [leftWidth, setLeftWidth] = useState(LEFT_DEFAULT);
   const [isResizing, setIsResizing] = useState(false);
@@ -96,7 +105,10 @@ function App() {
         onSelectRun={handleSelectRun}
         onNewSimulation={handleNewSimulation}
         isRunning={isRunning}
+        viewingResults={showResults}
         projectTitle={projectTitle}
+        username={username}
+        onLogout={onLogout}
       />
 
       <div
@@ -110,8 +122,8 @@ function App() {
         onMouseDown={onResizeStart}
       />
 
-      <main className={`main-pane${showResults ? ' main-pane--with-results' : ''}`}>
-        <section className="main-pane__top">
+      <main className="main-pane">
+        <section className="main-pane__content">
           <ParameterEditor
             kind={kind}
             parameters={parameters}
@@ -120,16 +132,39 @@ function App() {
             onRun={handleRun}
             isRunning={isRunning}
             resetKey={workspaceEpoch}
+            showResults={showResults}
+            result={result}
+            error={error}
+            runParameters={activeRunParameters}
+            seed={seed}
           />
         </section>
-        {showResults ? (
-          <section className="main-pane__bottom">
-            <ResultsPanel result={result} isRunning={isRunning} error={error} />
-          </section>
-        ) : null}
       </main>
     </div>
   );
+}
+
+function App() {
+  const { username, login, register, logout, error, setError, busy } = useAuth();
+
+  if (!username) {
+    return (
+      <LoginScreen
+        onLogin={async (name, password) => {
+          setError(null);
+          await login(name, password);
+        }}
+        onRegister={async (name, password) => {
+          setError(null);
+          await register(name, password);
+        }}
+        error={error}
+        busy={busy}
+      />
+    );
+  }
+
+  return <WorkspaceApp username={username} onLogout={logout} />;
 }
 
 export default App;

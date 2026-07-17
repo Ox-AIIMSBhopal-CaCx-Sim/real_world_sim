@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { fetchDefaults, runSimulation } from '../api/client';
 import type {
   ParametersDict,
@@ -7,11 +7,13 @@ import type {
   SimulationRunResult,
 } from '../types/simulation';
 
-const HISTORY_KEY = 'des-sim-run-history';
+function historyKey(username: string) {
+  return `des-sim-run-history:${username}`;
+}
 
-function loadHistory(): RunHistoryEntry[] {
+function loadHistory(username: string): RunHistoryEntry[] {
   try {
-    const raw = localStorage.getItem(HISTORY_KEY);
+    const raw = localStorage.getItem(historyKey(username));
     if (!raw) return [];
     return JSON.parse(raw) as RunHistoryEntry[];
   } catch {
@@ -19,8 +21,8 @@ function loadHistory(): RunHistoryEntry[] {
   }
 }
 
-function saveHistory(entries: RunHistoryEntry[]) {
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(entries.slice(0, 30)));
+function saveHistory(username: string, entries: RunHistoryEntry[]) {
+  localStorage.setItem(historyKey(username), JSON.stringify(entries.slice(0, 30)));
 }
 
 function setNestedValue(obj: ParametersDict, path: string[], value: unknown): ParametersDict {
@@ -38,20 +40,34 @@ function setNestedValue(obj: ParametersDict, path: string[], value: unknown): Pa
   return next;
 }
 
-export function useWorkspace() {
+export function useWorkspace(username: string) {
   const [kind, setKind] = useState<SimulationKind>('cyto');
   const [parameters, setParameters] = useState<ParametersDict | null>(null);
   const [seed] = useState<number>(42);
-  const [history, setHistory] = useState<RunHistoryEntry[]>(() => loadHistory());
+  const [history, setHistory] = useState<RunHistoryEntry[]>(() => loadHistory(username));
   const [activeRunId, setActiveRunId] = useState<string | null>(null);
   const [result, setResult] = useState<SimulationRunResult | null>(null);
+  const [activeRunParameters, setActiveRunParameters] = useState<ParametersDict | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loadingDefaults, setLoadingDefaults] = useState(true);
-
   const [workspaceEpoch, setWorkspaceEpoch] = useState(0);
+  const skipKindReloadRef = useRef(false);
 
   useEffect(() => {
+    setHistory(loadHistory(username));
+    setActiveRunId(null);
+    setResult(null);
+    setActiveRunParameters(null);
+    setError(null);
+  }, [username]);
+
+  useEffect(() => {
+    if (skipKindReloadRef.current) {
+      skipKindReloadRef.current = false;
+      return;
+    }
+
     let cancelled = false;
     setLoadingDefaults(true);
     setError(null);
@@ -61,6 +77,7 @@ export function useWorkspace() {
           setParameters(defaults);
           setResult(null);
           setActiveRunId(null);
+          setActiveRunParameters(null);
           setWorkspaceEpoch((n) => n + 1);
         }
       })
@@ -81,10 +98,17 @@ export function useWorkspace() {
 
   const executeRun = useCallback(async () => {
     if (!parameters) return;
+    const snapshot = structuredClone(parameters);
     setIsRunning(true);
     setError(null);
+    setActiveRunParameters(snapshot);
     try {
-      const runResult = await runSimulation({ kind, parameters, seed });
+      const runResult = await runSimulation({
+        kind,
+        parameters: snapshot,
+        seed,
+        username,
+      });
       setResult(runResult);
       setActiveRunId(runResult.run_id);
       const entry: RunHistoryEntry = {
@@ -94,10 +118,11 @@ export function useWorkspace() {
         seed: runResult.seed,
         completed_at: new Date().toISOString(),
         result: runResult,
+        parameters: snapshot,
       };
       setHistory((prev) => {
         const next = [entry, ...prev.filter((e) => e.run_id !== entry.run_id)];
-        saveHistory(next);
+        saveHistory(username, next);
         return next;
       });
     } catch (err) {
@@ -105,17 +130,26 @@ export function useWorkspace() {
     } finally {
       setIsRunning(false);
     }
-  }, [kind, parameters, seed]);
+  }, [kind, parameters, seed, username]);
 
   const selectRun = useCallback(
     (runId: string) => {
       const entry = history.find((h) => h.run_id === runId);
       if (!entry) return;
+      if (entry.lab !== kind) {
+        skipKindReloadRef.current = true;
+        setKind(entry.lab);
+      }
       setActiveRunId(runId);
       setResult(entry.result);
-      setKind(entry.lab);
+      if (entry.parameters) {
+        setParameters(entry.parameters);
+        setActiveRunParameters(entry.parameters);
+      } else {
+        setActiveRunParameters(null);
+      }
     },
-    [history],
+    [history, kind],
   );
 
   const startNewSimulation = useCallback(async () => {
@@ -123,6 +157,7 @@ export function useWorkspace() {
     setError(null);
     setResult(null);
     setActiveRunId(null);
+    setActiveRunParameters(null);
     try {
       const defaults = await fetchDefaults(kind);
       setParameters(defaults);
@@ -148,6 +183,7 @@ export function useWorkspace() {
     activeRunId,
     selectRun,
     result,
+    activeRunParameters,
     isRunning,
     error,
     loadingDefaults,
@@ -155,5 +191,6 @@ export function useWorkspace() {
     startNewSimulation,
     workspaceEpoch,
     projectTitle,
+    seed,
   };
 }

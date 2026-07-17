@@ -2,10 +2,15 @@
 
 from __future__ import annotations
 
+import os
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
-from app.routes import parameters, simulations
+from app.routes import auth, parameters, simulations
 
 app = FastAPI(
     title="Real World Sim API",
@@ -21,6 +26,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(simulations.router, prefix="/api/simulations", tags=["simulations"])
 app.include_router(parameters.router, prefix="/api/parameters", tags=["parameters"])
 
@@ -28,3 +34,21 @@ app.include_router(parameters.router, prefix="/api/parameters", tags=["parameter
 @app.get("/api/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+_STATIC_DIR = Path(os.getenv("STATIC_DIR", "")).expanduser()
+if _STATIC_DIR.is_dir():
+    _assets = _STATIC_DIR / "assets"
+    if _assets.is_dir():
+        app.mount("/assets", StaticFiles(directory=_assets), name="assets")
+
+    @app.get("/")
+    def spa_index() -> FileResponse:
+        return FileResponse(_STATIC_DIR / "index.html")
+
+    @app.get("/{full_path:path}")
+    def spa_fallback(full_path: str) -> FileResponse:
+        candidate = _STATIC_DIR / full_path
+        if candidate.is_file():
+            return FileResponse(candidate)
+        return FileResponse(_STATIC_DIR / "index.html")

@@ -359,3 +359,4 @@ __marimo__/
 backend/runs/*
 !backend/runs/.gitkeep
 backend/sim_results/
+backend/users.json
