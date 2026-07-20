@@ -360,3 +360,6 @@ backend/runs/*
 !backend/runs/.gitkeep
 backend/sim_results/
 backend/users.json
+
+# Shell scripts
+*.sh
