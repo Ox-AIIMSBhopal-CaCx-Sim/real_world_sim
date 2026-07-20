@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import json
+import mimetypes
 import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any, Protocol
-from urllib.parse import quote
+from urllib.parse import quote, unquote
 
 from google.cloud import storage
 
@@ -22,19 +24,47 @@ class ArtifactStore(Protocol):
 
     def get_run_index(self, run_id: str, *, username: str) -> dict[str, Any] | None: ...
 
+    def download_artifact(
+        self,
+        *,
+        username: str,
+        run_id: str,
+        relative_path: str,
+    ) -> tuple[bytes, str]: ...
 
-def _public_object_url(
+
+def _api_artifact_url(*, username: str, run_id: str, rel: str) -> str:
+    """Same-origin API path so the browser never hits GCS directly (CORS / private bucket)."""
+    return (
+        f"/api/simulations/{quote(run_id, safe='')}/artifacts/"
+        f"{quote(rel, safe='/')}?username={quote(username)}"
+    )
+
+
+def rewrite_artifact_urls(
+    artifacts: dict[str, Any],
     *,
-    bucket: str,
-    blob_name: str,
-    emulator_host: str | None,
-) -> str:
-    """Build a browser-fetchable URL for an uploaded object."""
-    if emulator_host:
-        host = emulator_host.rstrip("/")
-        # fake-gcs-server public download path
-        return f"{host}/download/storage/v1/b/{bucket}/o/{quote(blob_name, safe='')}/?alt=media"
-    return f"https://storage.googleapis.com/{bucket}/{quote(blob_name, safe='/')}"
+    username: str,
+    run_id: str,
+) -> dict[str, dict[str, str]]:
+    """Normalize stored URLs (incl. legacy public GCS links) to API proxy paths."""
+    marker = f"/{username}/{run_id}/"
+    out: dict[str, dict[str, str]] = {"data": {}, "tables": {}, "plots": {}}
+    for kind in ("data", "tables", "plots"):
+        for key, url in (artifacts.get(kind) or {}).items():
+            if not isinstance(url, str):
+                continue
+            if url.startswith("/api/simulations/"):
+                out[kind][key] = url
+                continue
+            if marker in url:
+                rel = unquote(url.split(marker, 1)[1].split("?", 1)[0])
+                out[kind][key] = _api_artifact_url(
+                    username=username, run_id=run_id, rel=rel
+                )
+            else:
+                out[kind][key] = url
+    return out
 
 
 class GCSArtifactStore:
@@ -73,6 +103,13 @@ class GCSArtifactStore:
     def _prefix(username: str, run_id: str) -> str:
         return f"{username}/{run_id}"
 
+    @staticmethod
+    def _safe_relative_path(relative_path: str) -> str:
+        rel = Path(relative_path.replace("\\", "/"))
+        if rel.is_absolute() or ".." in rel.parts:
+            raise ValueError("Invalid artifact path")
+        return rel.as_posix()
+
     def upload_run(
         self,
         run_id: str,
@@ -85,21 +122,23 @@ class GCSArtifactStore:
             raise FileNotFoundError(f"Run directory not found: {local_dir}")
 
         prefix = self._prefix(username, run_id)
-        urls: dict[str, dict[str, str]] = {"data": {}, "tables": {}, "plots": {}}
+        files = [p for p in sorted(local_dir.rglob("*")) if p.is_file()]
 
-        for path in sorted(local_dir.rglob("*")):
-            if not path.is_file():
-                continue
+        def _upload_one(path: Path) -> tuple[str, str]:
             rel = path.relative_to(local_dir).as_posix()
             blob_name = f"{prefix}/{rel}"
             blob = self._bucket.blob(blob_name)
             blob.upload_from_filename(str(path))
-            url = _public_object_url(
-                bucket=self.bucket_name,
-                blob_name=blob_name,
-                emulator_host=self.emulator_host,
-            )
-            self._classify_and_store(urls, rel, url)
+            url = _api_artifact_url(username=username, run_id=run_id, rel=rel)
+            return rel, url
+
+        urls: dict[str, dict[str, str]] = {"data": {}, "tables": {}, "plots": {}}
+        workers = min(8, max(1, len(files)))
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            futures = [pool.submit(_upload_one, path) for path in files]
+            for fut in as_completed(futures):
+                rel, url = fut.result()
+                self._classify_and_store(urls, rel, url)
 
         index = {
             "run_id": run_id,
@@ -122,7 +161,27 @@ class GCSArtifactStore:
         blob = self._bucket.blob(f"{self._prefix(username, run_id)}/artifact_index.json")
         if not blob.exists():
             return None
-        return json.loads(blob.download_as_text())
+        index = json.loads(blob.download_as_text())
+        artifacts = index.get("artifacts") or {}
+        index["artifacts"] = rewrite_artifact_urls(
+            artifacts, username=username, run_id=run_id
+        )
+        return index
+
+    def download_artifact(
+        self,
+        *,
+        username: str,
+        run_id: str,
+        relative_path: str,
+    ) -> tuple[bytes, str]:
+        rel = self._safe_relative_path(relative_path)
+        blob = self._bucket.blob(f"{self._prefix(username, run_id)}/{rel}")
+        if not blob.exists():
+            raise FileNotFoundError(rel)
+        data = blob.download_as_bytes()
+        content_type = blob.content_type or mimetypes.guess_type(rel)[0] or "application/octet-stream"
+        return data, content_type
 
     @staticmethod
     def _classify_and_store(urls: dict[str, dict[str, str]], rel: str, url: str) -> None:

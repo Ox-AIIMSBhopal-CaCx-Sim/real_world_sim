@@ -3,13 +3,18 @@
 from __future__ import annotations
 
 import json
+import mimetypes
 import os
 from pathlib import Path
 from typing import Any
 
 from app.schemas.parameters import SimulationKind
 from app.schemas.results import ArtifactUrls, SimulationRunResult
-from app.services.storage import ArtifactStore, get_artifact_store
+from app.services.storage import (
+    ArtifactStore,
+    get_artifact_store,
+    rewrite_artifact_urls,
+)
 from app.services.users import user_exists, validate_username
 from models.cyto import run_cyto
 from models.histo import run_histo
@@ -81,6 +86,10 @@ class SimulationRunner:
             if not local.is_file():
                 return None
             index = json.loads(local.read_text(encoding="utf-8"))
+            artifacts = index.get("artifacts") or {}
+            index["artifacts"] = rewrite_artifact_urls(
+                artifacts, username=username, run_id=run_id
+            )
 
         lab: SimulationKind = "histo" if run_id.endswith("_histo") else "cyto"
         artifacts = index.get("artifacts") or {}
@@ -93,4 +102,35 @@ class SimulationRunner:
                 tables=artifacts.get("tables", {}),
                 plots=artifacts.get("plots", {}),
             ),
+        )
+
+    def read_artifact(
+        self,
+        run_id: str,
+        relative_path: str,
+        *,
+        username: str,
+    ) -> tuple[bytes, str]:
+        username = validate_username(username)
+        rel = Path(relative_path.replace("\\", "/"))
+        if rel.is_absolute() or ".." in rel.parts:
+            raise ValueError("Invalid artifact path")
+        rel_posix = rel.as_posix()
+
+        root = (self._output_root / username / run_id).resolve()
+        local = (root / rel).resolve()
+        try:
+            local.relative_to(root)
+        except ValueError as exc:
+            raise ValueError("Invalid artifact path") from exc
+
+        if local.is_file():
+            data = local.read_bytes()
+            ctype = mimetypes.guess_type(rel_posix)[0] or "application/octet-stream"
+            return data, ctype
+
+        return self._store.download_artifact(
+            username=username,
+            run_id=run_id,
+            relative_path=rel_posix,
         )

@@ -4,6 +4,7 @@ import type {
   SimulationKind,
   SimulationRunResult,
 } from "../types/simulation";
+import { isRunDrag, readRunDragId } from "../dnd";
 import { DisruptionsPanel } from "./DisruptionsPanel";
 import { PipelineSteps } from "./PipelineSteps";
 import { ResultsPanel } from "./ResultsPanel";
@@ -27,6 +28,11 @@ interface ParameterEditorProps {
   error?: string | null;
   runParameters?: ParametersDict | null;
   seed?: number | null;
+  compareResult?: SimulationRunResult | null;
+  compareParameters?: ParametersDict | null;
+  compareSeed?: number | null;
+  onClearCompare?: () => void;
+  onDropRun?: (runId: string) => void;
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -240,13 +246,22 @@ export function ParameterEditor({
   error = null,
   runParameters = null,
   seed = null,
+  compareResult = null,
+  compareParameters = null,
+  compareSeed = null,
+  onClearCompare,
+  onDropRun,
 }: ParameterEditorProps) {
   const [selectedStepId, setSelectedStepId] = useState<PipelineStepId | null>(
     null,
   );
   const [trioPct, setTrioPct] = useState(TRIO_PCT_DEFAULT);
   const [isResizingSplit, setIsResizingSplit] = useState(false);
+  const [dropActive, setDropActive] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
+  const dragDepthRef = useRef(0);
+
+  const comparing = Boolean(showResults && result && compareResult);
 
   useEffect(() => {
     setSelectedStepId(null);
@@ -286,6 +301,35 @@ export function ParameterEditor({
     };
   }, [isResizingSplit]);
 
+  const handleDragEnter = (event: React.DragEvent) => {
+    if (!onDropRun || !isRunDrag(event.dataTransfer)) return;
+    event.preventDefault();
+    dragDepthRef.current += 1;
+    setDropActive(true);
+  };
+
+  const handleDragLeave = (event: React.DragEvent) => {
+    if (!onDropRun) return;
+    event.preventDefault();
+    dragDepthRef.current = Math.max(0, dragDepthRef.current - 1);
+    if (dragDepthRef.current === 0) setDropActive(false);
+  };
+
+  const handleDragOver = (event: React.DragEvent) => {
+    if (!onDropRun || !isRunDrag(event.dataTransfer)) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "copy";
+  };
+
+  const handleDrop = (event: React.DragEvent) => {
+    if (!onDropRun) return;
+    event.preventDefault();
+    dragDepthRef.current = 0;
+    setDropActive(false);
+    const runId = readRunDragId(event.dataTransfer);
+    if (runId) onDropRun(runId);
+  };
+
   if (loading || !parameters) {
     return (
       <div className="param-panel">
@@ -301,19 +345,45 @@ export function ParameterEditor({
   return (
     <div
       ref={panelRef}
-      className={`param-panel${showResults ? " param-panel--with-results" : ""}${isResizingSplit ? " param-panel--resizing-split" : ""}`}
+      className={`param-panel${showResults ? " param-panel--with-results" : ""}${comparing ? " param-panel--comparing" : ""}${isResizingSplit ? " param-panel--resizing-split" : ""}${dropActive ? " param-panel--drop-target" : ""}`}
       style={
         showResults
           ? ({ ["--trio-pct" as string]: `${trioPct}%` } as React.CSSProperties)
           : undefined
       }
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
     >
+      {dropActive ? (
+        <div className="param-panel__drop-overlay" aria-hidden="true">
+          <p>
+            {result && result.run_id
+              ? "Drop to compare with the current run"
+              : "Drop a recent run to open results"}
+          </p>
+        </div>
+      ) : null}
+
       {showResults ? (
         <div className="param-panel__trio param-panel__trio--summary">
           <RunParameterSummary
             kind={kind}
             parameters={summaryParameters}
             seed={seed}
+            runId={result?.run_id}
+            compare={
+              comparing && compareResult
+                ? {
+                    runId: compareResult.run_id,
+                    kind: compareResult.lab,
+                    parameters: compareParameters,
+                    seed: compareSeed ?? compareResult.seed,
+                  }
+                : null
+            }
+            onClearCompare={comparing ? onClearCompare : undefined}
           />
         </div>
       ) : (
@@ -417,8 +487,34 @@ export function ParameterEditor({
               setIsResizingSplit(true);
             }}
           />
-          <section className="param-panel__results" aria-label="Simulation results">
-            <ResultsPanel result={result} isRunning={isRunning} error={error} />
+          <section
+            className={`param-panel__results${comparing ? " param-panel__results--compare" : ""}`}
+            aria-label={comparing ? "Compare simulation results" : "Simulation results"}
+          >
+            {comparing && compareResult ? (
+              <div className="compare-results">
+                <div className="compare-results__col">
+                  <ResultsPanel
+                    result={result}
+                    isRunning={false}
+                    error={null}
+                    compact
+                    heading="Run A"
+                  />
+                </div>
+                <div className="compare-results__col">
+                  <ResultsPanel
+                    result={compareResult}
+                    isRunning={false}
+                    error={null}
+                    compact
+                    heading="Run B"
+                  />
+                </div>
+              </div>
+            ) : (
+              <ResultsPanel result={result} isRunning={isRunning} error={error} />
+            )}
           </section>
         </>
       ) : null}

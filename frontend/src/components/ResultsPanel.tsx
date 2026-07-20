@@ -1,11 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import Papa from 'papaparse';
+import { resolveArtifactUrl } from '../api/client';
 import type { SimulationKind, SimulationRunResult } from '../types/simulation';
 
 interface ResultsPanelProps {
   result: SimulationRunResult | null;
   isRunning: boolean;
   error: string | null;
+  /** Narrower layout for side-by-side compare columns. */
+  compact?: boolean;
+  heading?: string;
 }
 
 /** Featured plot keys in display order, per modality. */
@@ -78,11 +82,12 @@ function PlotFigure({
   featured?: boolean;
 }) {
   const title = humanize(plotKey);
+  const resolved = resolveArtifactUrl(url);
   return (
     <figure className={`plot-card${featured ? ' plot-card--featured' : ''}`}>
       <figcaption>{title}</figcaption>
-      <a href={url} target="_blank" rel="noreferrer">
-        <img src={url} alt={title} />
+      <a href={resolved} target="_blank" rel="noreferrer">
+        <img src={resolved} alt={title} />
       </a>
     </figure>
   );
@@ -150,7 +155,7 @@ function useTatSummary(url: string | undefined): {
     setError(null);
     setRows([]);
 
-    fetch(url)
+    fetch(resolveArtifactUrl(url))
       .then((res) => {
         if (!res.ok) throw new Error('Failed to load turnaround summary');
         return res.text();
@@ -243,7 +248,7 @@ function CsvTable({ url, title }: { url: string; title: string }) {
     let cancelled = false;
     setLoadError(null);
     setRows([]);
-    fetch(url)
+    fetch(resolveArtifactUrl(url))
       .then((res) => {
         if (!res.ok) throw new Error(`Failed to load ${title}`);
         return res.text();
@@ -288,7 +293,7 @@ function CsvTable({ url, title }: { url: string; title: string }) {
     <div className="result-block">
       <div className="result-block__header">
         <h4>{title}</h4>
-        <a href={url} target="_blank" rel="noreferrer">
+        <a href={resolveArtifactUrl(url)} target="_blank" rel="noreferrer">
           Download
         </a>
       </div>
@@ -364,7 +369,7 @@ function RawDataViewer({
     setLoading(true);
     setLoadError(null);
 
-    fetch(url)
+    fetch(resolveArtifactUrl(url))
       .then((res) => {
         if (!res.ok) throw new Error(`Failed to load ${title}`);
         return res.text();
@@ -410,7 +415,7 @@ function RawDataViewer({
           </span>
           <span>{title}</span>
         </button>
-        <a href={url} target="_blank" rel="noreferrer" className="raw-data-item__download">
+        <a href={resolveArtifactUrl(url)} target="_blank" rel="noreferrer" className="raw-data-item__download">
           Download
         </a>
       </div>
@@ -507,7 +512,13 @@ function partitionPlots(
   return { featured, other };
 }
 
-export function ResultsPanel({ result, isRunning, error }: ResultsPanelProps) {
+export function ResultsPanel({
+  result,
+  isRunning,
+  error,
+  compact = false,
+  heading,
+}: ResultsPanelProps) {
   const [showMore, setShowMore] = useState(false);
 
   useEffect(() => {
@@ -526,9 +537,11 @@ export function ResultsPanel({ result, isRunning, error }: ResultsPanelProps) {
     error: tatError,
   } = useTatSummary(tatSummaryUrl);
 
+  const panelClass = `results-panel${compact ? ' results-panel--compact' : ''}`;
+
   if (isRunning) {
     return (
-      <div className="results-panel">
+      <div className={panelClass}>
         <p className="muted">Simulation running — this may take a minute…</p>
       </div>
     );
@@ -536,7 +549,7 @@ export function ResultsPanel({ result, isRunning, error }: ResultsPanelProps) {
 
   if (error) {
     return (
-      <div className="results-panel">
+      <div className={panelClass}>
         <p className="error-text">{error}</p>
       </div>
     );
@@ -544,7 +557,7 @@ export function ResultsPanel({ result, isRunning, error }: ResultsPanelProps) {
 
   if (!result) {
     return (
-      <div className="results-panel">
+      <div className={panelClass}>
         <p className="muted">
           Results appear here after a run. Tables and plots are loaded from analysis artifact URLs.
         </p>
@@ -562,9 +575,11 @@ export function ResultsPanel({ result, isRunning, error }: ResultsPanelProps) {
     other.length > 0 || tableEntries.length > 0 || dataEntries.length > 0;
 
   return (
-    <div className="results-panel">
+    <div className={panelClass}>
       <div className="results-panel__meta">
-        <h3>Results · {result.run_id}</h3>
+        <h3>
+          {heading ?? 'Results'} · {result.run_id}
+        </h3>
         <p className="muted">
           {result.lab} · status {result.status}
           {result.seed != null ? ` · seed ${result.seed}` : ''}

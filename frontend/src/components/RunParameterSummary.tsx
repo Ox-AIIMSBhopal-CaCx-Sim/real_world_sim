@@ -188,18 +188,16 @@ function buildHistoSections(parameters: ParametersDict): SummarySection[] {
   ];
 }
 
-interface RunParameterSummaryProps {
-  kind: SimulationKind;
-  parameters: ParametersDict;
-  seed?: number | null;
-}
-
-export function RunParameterSummary({ kind, parameters, seed }: RunParameterSummaryProps) {
+function buildSections(
+  kind: SimulationKind,
+  parameters: ParametersDict,
+  seed?: number | null,
+): SummarySection[] {
   const sim = asRecord(parameters.simulation);
   const caseComplexity = asRecord(parameters.case_complexity);
   const disruptions = readDisruptions(parameters.disruptions);
 
-  const sections: SummarySection[] = [
+  return [
     {
       title: 'Simulation',
       rows: compact([
@@ -225,6 +223,110 @@ export function RunParameterSummary({ kind, parameters, seed }: RunParameterSumm
             })),
     },
   ].filter((section) => section.rows.length > 0);
+}
+
+function SummarySections({
+  sections,
+  keyPrefix,
+}: {
+  sections: SummarySection[];
+  keyPrefix: string;
+}) {
+  return (
+    <>
+      {sections.map((section) => (
+        <section key={`${keyPrefix}-${section.title}`} className="run-summary__section">
+          <h4>{section.title}</h4>
+          <dl className="run-summary__list">
+            {section.rows.map((item) => (
+              <div key={`${keyPrefix}-${section.title}-${item.label}`} className="run-summary__row">
+                <dt>{item.label}</dt>
+                <dd>{item.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      ))}
+    </>
+  );
+}
+
+export interface CompareSummaryRun {
+  runId: string;
+  kind: SimulationKind;
+  parameters?: ParametersDict | null;
+  seed?: number | null;
+}
+
+interface RunParameterSummaryProps {
+  kind: SimulationKind;
+  parameters: ParametersDict;
+  seed?: number | null;
+  runId?: string | null;
+  compare?: CompareSummaryRun | null;
+  onClearCompare?: () => void;
+}
+
+export function RunParameterSummary({
+  kind,
+  parameters,
+  seed,
+  runId,
+  compare,
+  onClearCompare,
+}: RunParameterSummaryProps) {
+  const primarySections = buildSections(kind, parameters, seed);
+  const compareSections =
+    compare?.parameters != null
+      ? buildSections(compare.kind, compare.parameters, compare.seed)
+      : null;
+
+  if (compare) {
+    return (
+      <div className="run-summary run-summary--compare">
+        <div className="run-summary__compare-toolbar">
+          <h3>Run configurations</h3>
+          {onClearCompare ? (
+            <button type="button" className="text-button" onClick={onClearCompare}>
+              Exit comparison
+            </button>
+          ) : null}
+        </div>
+        <div className="run-summary__split">
+          <div className="run-summary__col">
+            <div className="run-summary__col-header">
+              <span className="run-summary__run-label">A</span>
+              <div>
+                <p className="run-summary__col-title">Run A</p>
+                <p className="run-summary__run-id">{runId ?? 'Current'}</p>
+              </div>
+            </div>
+            <div className="run-summary__grid">
+              <SummarySections sections={primarySections} keyPrefix="a" />
+            </div>
+          </div>
+          <div className="run-summary__col">
+            <div className="run-summary__col-header">
+              <span className="run-summary__run-label run-summary__run-label--b">B</span>
+              <div>
+                <p className="run-summary__col-title">Run B</p>
+                <p className="run-summary__run-id">{compare.runId}</p>
+              </div>
+            </div>
+            {compareSections ? (
+              <div className="run-summary__grid">
+                <SummarySections sections={compareSections} keyPrefix="b" />
+              </div>
+            ) : (
+              <p className="muted run-summary__missing">
+                No saved parameters for this run.
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="run-summary">
@@ -236,19 +338,7 @@ export function RunParameterSummary({ kind, parameters, seed }: RunParameterSumm
         </p>
       </div>
       <div className="run-summary__grid">
-        {sections.map((section) => (
-          <section key={section.title} className="run-summary__section">
-            <h4>{section.title}</h4>
-            <dl className="run-summary__list">
-              {section.rows.map((item) => (
-                <div key={`${section.title}-${item.label}`} className="run-summary__row">
-                  <dt>{item.label}</dt>
-                  <dd>{item.value}</dd>
-                </div>
-              ))}
-            </dl>
-          </section>
-        ))}
+        <SummarySections sections={primarySections} keyPrefix="a" />
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LeftPane } from './components/LeftPane';
 import { LoginScreen } from './components/LoginScreen';
 import { ParameterEditor } from './components/ParameterEditor';
@@ -23,8 +23,10 @@ function WorkspaceApp({
     parameters,
     updateParameter,
     history,
-    activeRunId,
-    selectRun,
+    openTabs,
+    activeTabId,
+    selectTab,
+    closeTab,
     result,
     activeRunParameters,
     isRunning,
@@ -32,6 +34,8 @@ function WorkspaceApp({
     loadingDefaults,
     executeRun,
     startNewSimulation,
+    copyParametersFromRun,
+    deleteRun,
     workspaceEpoch,
     projectTitle,
     seed,
@@ -40,25 +44,107 @@ function WorkspaceApp({
   const [leftWidth, setLeftWidth] = useState(LEFT_DEFAULT);
   const [isResizing, setIsResizing] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [compareRunId, setCompareRunId] = useState<string | null>(null);
   const dragStartX = useRef(0);
   const dragStartWidth = useRef(LEFT_DEFAULT);
 
+  const compareEntry = useMemo(() => {
+    if (!compareRunId) return null;
+    return history.find((entry) => entry.run_id === compareRunId) ?? null;
+  }, [compareRunId, history]);
+
+  const compareResult = compareEntry?.result ?? null;
+  const compareParameters = compareEntry?.parameters ?? null;
+  const compareSeed = compareEntry?.seed ?? null;
+
+  const clearCompare = useCallback(() => setCompareRunId(null), []);
+
   const handleRun = useCallback(() => {
+    clearCompare();
     setShowResults(true);
     void executeRun();
-  }, [executeRun]);
+  }, [clearCompare, executeRun]);
 
   const handleNewSimulation = useCallback(() => {
+    clearCompare();
     setShowResults(false);
     void startNewSimulation();
-  }, [startNewSimulation]);
+  }, [clearCompare, startNewSimulation]);
 
-  const handleSelectRun = useCallback(
-    (runId: string) => {
-      setShowResults(true);
-      selectRun(runId);
+  const handleSelectTab = useCallback(
+    (tabId: string) => {
+      const isDraft = tabId.startsWith('draft-');
+      const open = openTabs.find((t) => t.id === tabId);
+      clearCompare();
+      setShowResults(!(isDraft || open?.type === 'draft'));
+      selectTab(tabId);
     },
-    [selectRun],
+    [clearCompare, openTabs, selectTab],
+  );
+
+  const handleCloseTab = useCallback(
+    (tabId: string) => {
+      if (activeTabId === tabId) {
+        clearCompare();
+        setShowResults(false);
+      }
+      closeTab(tabId);
+    },
+    [activeTabId, clearCompare, closeTab],
+  );
+
+  const handleCopyParameters = useCallback(
+    (runId: string) => {
+      clearCompare();
+      setShowResults(false);
+      copyParametersFromRun(runId);
+    },
+    [clearCompare, copyParametersFromRun],
+  );
+
+  const handleDeleteRun = useCallback(
+    (runId: string) => {
+      if (compareRunId === runId) clearCompare();
+      if (activeTabId === runId) {
+        clearCompare();
+        setShowResults(false);
+      }
+      deleteRun(runId);
+    },
+    [activeTabId, clearCompare, compareRunId, deleteRun],
+  );
+
+  const handleDropRun = useCallback(
+    (runId: string) => {
+      const entry = history.find((h) => h.run_id === runId);
+      if (!entry) return;
+
+      // Already viewing this run alone — nothing to compare
+      if (result?.run_id === runId && !compareRunId) {
+        setShowResults(true);
+        return;
+      }
+
+      // Dropping the active run while comparing just clears the partner
+      if (result?.run_id === runId) {
+        clearCompare();
+        setShowResults(true);
+        return;
+      }
+
+      // Have a primary result → add / replace compare partner
+      if (result && result.run_id !== runId) {
+        setCompareRunId(runId);
+        setShowResults(true);
+        return;
+      }
+
+      // No primary yet — open the dropped run as primary
+      clearCompare();
+      setShowResults(true);
+      selectTab(runId);
+    },
+    [clearCompare, compareRunId, history, result, selectTab],
   );
 
   useEffect(() => {
@@ -101,9 +187,13 @@ function WorkspaceApp({
         kind={kind}
         onKindChange={setKind}
         history={history}
-        activeRunId={activeRunId}
-        onSelectRun={handleSelectRun}
+        openTabs={openTabs}
+        activeTabId={activeTabId}
+        onSelectTab={handleSelectTab}
+        onCloseTab={handleCloseTab}
         onNewSimulation={handleNewSimulation}
+        onCopyParametersFromRun={handleCopyParameters}
+        onDeleteRun={handleDeleteRun}
         isRunning={isRunning}
         viewingResults={showResults}
         projectTitle={projectTitle}
@@ -137,6 +227,11 @@ function WorkspaceApp({
             error={error}
             runParameters={activeRunParameters}
             seed={seed}
+            compareResult={compareResult}
+            compareParameters={compareParameters}
+            compareSeed={compareSeed}
+            onClearCompare={clearCompare}
+            onDropRun={handleDropRun}
           />
         </section>
       </main>

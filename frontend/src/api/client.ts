@@ -9,6 +9,14 @@ import type {
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8000';
 
+/** Resolve relative /api artifact paths against the API base (Cloud Run = same origin). */
+export function resolveArtifactUrl(url: string): string {
+  if (!url) return url;
+  if (/^https?:\/\//i.test(url)) return url;
+  const base = API_BASE.replace(/\/$/, '');
+  return `${base}${url.startsWith('/') ? url : `/${url}`}`;
+}
+
 async function handle<T>(res: Response): Promise<T> {
   if (!res.ok) {
     let detail = res.statusText;

@@ -14,6 +14,7 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import yaml
 
@@ -341,13 +342,24 @@ def calc_tat(df: pd.DataFrame) -> pd.DataFrame:
     df["tat"] = (
         (df[reporting_end_col] - df[arrival_col]).dt.total_seconds() / (24 * 3600)
     )
-    df = df.sort_values(arrival_col, kind="mergesort").reset_index(drop=True)
-    df["tat_moving_avg"] = (
-        df.set_index(arrival_col)["tat"]
-        .rolling("7D", min_periods=1)
-        .mean()
-        .to_numpy()
-    )
+    df = df.sort_values(
+        arrival_col, kind="mergesort", na_position="last"
+    ).reset_index(drop=True)
+
+    # Time-based rolling drops NaT-indexed rows, so assign by mask (avoids
+    # "Length of values does not match length of index").
+    moving_avg = np.full(len(df), np.nan, dtype=float)
+    valid = df[arrival_col].notna()
+    if bool(valid.any()):
+        rolled = (
+            df.loc[valid]
+            .set_index(arrival_col)["tat"]
+            .rolling("7D", min_periods=1)
+            .mean()
+            .to_numpy()
+        )
+        moving_avg[valid.to_numpy()] = rolled
+    df["tat_moving_avg"] = moving_avg
     return df
 
 

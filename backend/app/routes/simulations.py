@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import Response
 
 from app.schemas.parameters import SimulationRunRequest
 from app.schemas.results import SimulationRunResult
@@ -28,6 +29,32 @@ def run_simulation(request: SimulationRunRequest) -> SimulationRunResult:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:  # noqa: BLE001 — surface sim failures to the client
         raise HTTPException(status_code=500, detail=f"Simulation failed: {exc}") from exc
+
+
+@router.get("/{run_id}/artifacts/{artifact_path:path}")
+def get_artifact(
+    run_id: str,
+    artifact_path: str,
+    username: str = Query(..., min_length=3, max_length=32),
+) -> Response:
+    """Stream a run artifact via the API (avoids private-bucket CORS)."""
+    try:
+        username = validate_username(username)
+        data, content_type = _runner.read_artifact(
+            run_id, artifact_path, username=username
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"Artifact not found: {exc}") from exc
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=500, detail=f"Artifact fetch failed: {exc}") from exc
+
+    return Response(
+        content=data,
+        media_type=content_type,
+        headers={"Cache-Control": "private, max-age=3600"},
+    )
 
 
 @router.get("/{run_id}", response_model=SimulationRunResult)

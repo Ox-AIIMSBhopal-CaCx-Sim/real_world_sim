@@ -100,7 +100,8 @@
 }
 
 .segmented button,
-.run-list button {
+.run-list__card,
+.run-list__icon-btn {
   border: 0;
   background: transparent;
   cursor: pointer;
@@ -184,6 +185,49 @@
   min-width: 12rem;
 }
 
+.left-pane__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.copy-params {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.copy-params__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.copy-params__row {
+  display: flex;
+  gap: 0.4rem;
+  align-items: stretch;
+}
+
+.copy-params__row select {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.45rem 0.5rem;
+  background: #fff;
+  font-size: 0.8rem;
+}
+
+.copy-params__btn {
+  width: auto;
+  flex-shrink: 0;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.8rem;
+}
+
 .left-pane__history {
   flex: 1;
   min-height: 0;
@@ -198,17 +242,52 @@
   gap: 0.4rem;
 }
 
-.run-list button {
-  width: 100%;
+.run-list__item {
+  display: flex;
+  align-items: stretch;
+  gap: 0.25rem;
+}
+
+.run-list__card {
+  flex: 1;
+  min-width: 0;
   padding: 0.65rem 0.7rem;
   border-radius: 10px;
   border: 1px solid transparent;
 }
 
-.run-list button:hover,
-.run-list button.active {
+.run-list__card:hover,
+.run-list__card.active {
   background: var(--accent-soft);
   border-color: var(--accent-border);
+}
+
+.run-list__icon-btn {
+  flex-shrink: 0;
+  width: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0;
+}
+
+.run-list__icon-btn:hover:not(:disabled) {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.run-list__icon-btn--danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  color: var(--danger);
+}
+
+.run-list__icon-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .run-list__id {
@@ -249,6 +328,7 @@
 }
 
 .param-panel {
+  position: relative;
   flex: 1;
   min-height: 0;
   display: flex;
@@ -271,6 +351,79 @@
   width: 100%;
   max-width: none;
   margin: 0;
+}
+
+.results-panel--compact .plot-stack {
+  max-width: none;
+}
+
+.results-panel--compact .featured-tat-row {
+  grid-template-columns: 1fr;
+}
+
+.param-panel--drop-target {
+  outline: 2px dashed var(--accent);
+  outline-offset: -4px;
+}
+
+.param-panel__drop-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--accent-surface, #e8f0ec) 88%, transparent);
+  border-radius: 12px;
+}
+
+.param-panel__drop-overlay p {
+  margin: 0;
+  padding: 0.85rem 1.25rem;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.95rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.param-panel__results--compare {
+  overflow: hidden;
+}
+
+.compare-results {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0;
+  height: 100%;
+  min-height: 0;
+}
+
+.compare-results__col {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  padding: 0.15rem 0.85rem 0.75rem;
+}
+
+.compare-results__col + .compare-results__col {
+  border-left: 1px solid var(--line);
+}
+
+.left-pane__hint {
+  margin: 0 0 0.55rem;
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.run-list__card[draggable='true'] {
+  cursor: grab;
+}
+
+.run-list__card[draggable='true']:active {
+  cursor: grabbing;
 }
 
 .param-panel__trio {
@@ -393,6 +546,61 @@
   box-sizing: border-box;
 }
 
+.run-summary--compare {
+  display: flex;
+  flex-direction: column;
+  padding: 0.65rem 0 0.75rem;
+  overflow: hidden;
+}
+
+.run-summary__compare-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-shrink: 0;
+  padding: 0 1.1rem 0.55rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.run-summary__compare-toolbar h3 {
+  margin: 0;
+  font-family: "IBM Plex Serif", Georgia, serif;
+  font-size: 1.05rem;
+}
+
+.run-summary__split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0;
+  flex: 1;
+  min-height: 0;
+}
+
+.run-summary__col {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  padding: 0.65rem 0.95rem 0.35rem;
+}
+
+.run-summary__col + .run-summary__col {
+  border-left: 1px solid var(--line);
+}
+
+.run-summary__col-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin-bottom: 0.75rem;
+}
+
+.run-summary__col-title {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
 .run-summary__header {
   margin-bottom: 0.9rem;
 }
@@ -407,10 +615,50 @@
   margin: 0;
 }
 
+.run-summary__run-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  background: var(--accent-soft);
+  color: var(--accent);
+  flex-shrink: 0;
+  margin-top: 0.12rem;
+}
+
+.run-summary__run-label--b {
+  background: color-mix(in srgb, var(--accent) 18%, #fff);
+}
+
+.run-summary__run-id {
+  margin: 0.1rem 0 0;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--muted);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.run-summary__missing {
+  margin: 0.25rem 0 0;
+  font-size: 0.84rem;
+}
+
 .run-summary__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 0.85rem;
+}
+
+.run-summary__col .run-summary__grid {
+  grid-template-columns: 1fr;
 }
 
 .run-summary__section {
@@ -1152,6 +1400,19 @@ th {
   .left-pane {
     border-right: 0;
     border-bottom: 1px solid var(--line);
+  }
+
+  .compare-results {
+    grid-template-columns: 1fr;
+  }
+
+  .run-summary__split {
+    grid-template-columns: 1fr;
+  }
+
+  .run-summary__col + .run-summary__col {
+    border-left: 0;
+    border-top: 1px solid var(--line);
   }
 
   .param-panel__trio {
