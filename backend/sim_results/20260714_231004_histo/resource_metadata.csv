@@ -1,0 +1,11 @@
+utilisation_key,resource_name,task,capacity,resource_type,calendar_minutes,scheduled_available_minutes,analysis_start_min,analysis_end_min
+Histotechnicians,Histotechnicians,,11,scheduled,44640,13680.0,0,44640
+Senior Pathologists,Senior Pathologists,,5,scheduled,44640,5640.0,0,44640
+Junior Pathologists,Junior Pathologists,,6,task_scheduled,44640,17220.0,0,44640
+Junior Pathologists (grossing),Junior Pathologists,grossing,6,task_scheduled,44640,10980.0,0,44640
+Junior Pathologists (screening),Junior Pathologists,screening,6,task_scheduled,44640,6240.0,0,44640
+Grossing Station,Grossing Station,,2,equipment,44640,44640.0,0,44640
+Tissue Processor,Tissue Processor,,1,equipment,44640,44640.0,0,44640
+Embedding Station,Embedding Station,,1,equipment,44640,44640.0,0,44640
+Sectioning Station,Sectioning Station,,1,equipment,44640,44640.0,0,44640
+Staining Station,Staining Station,,1,equipment,44640,44640.0,0,44640

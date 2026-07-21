@@ -1,0 +1,32 @@
+{
+  "run_id": "20260719_145831_cyto",
+  "username": "Test",
+  "artifacts": {
+    "data": {
+      "parameters": "/api/simulations/20260719_145831_cyto/artifacts/parameters.csv?username=Test",
+      "resource_metadata": "/api/simulations/20260719_145831_cyto/artifacts/resource_metadata.csv?username=Test",
+      "patient_timestamps": "/api/simulations/20260719_145831_cyto/artifacts/patient_timestamps.csv?username=Test",
+      "run_manifest": "/api/simulations/20260719_145831_cyto/artifacts/run_manifest.yaml?username=Test",
+      "resource_busy_intervals": "/api/simulations/20260719_145831_cyto/artifacts/resource_busy_intervals.csv?username=Test",
+      "slide_timestamps": "/api/simulations/20260719_145831_cyto/artifacts/slide_timestamps.csv?username=Test",
+      "resource_productive_intervals": "/api/simulations/20260719_145831_cyto/artifacts/resource_productive_intervals.csv?username=Test"
+    },
+    "tables": {
+      "resource_utilisation": "/api/simulations/20260719_145831_cyto/artifacts/analysis/resource_utilisation.csv?username=Test",
+      "turnaround_time_patient_summary": "/api/simulations/20260719_145831_cyto/artifacts/analysis/turnaround_time_patient_summary.csv?username=Test",
+      "waiting_time_patient_summary": "/api/simulations/20260719_145831_cyto/artifacts/analysis/waiting_time_patient_summary.csv?username=Test",
+      "waiting_time_slide_summary": "/api/simulations/20260719_145831_cyto/artifacts/analysis/waiting_time_slide_summary.csv?username=Test"
+    },
+    "plots": {
+      "waiting_patient_reporting_non_pap_smear": "/api/simulations/20260719_145831_cyto/artifacts/analysis/waiting_patient_reporting_non_pap_smear.png?username=Test",
+      "turnaround_patient_pap_smear": "/api/simulations/20260719_145831_cyto/artifacts/analysis/turnaround_patient_pap_smear.png?username=Test",
+      "waiting_patient_screening_pap_smear": "/api/simulations/20260719_145831_cyto/artifacts/analysis/waiting_patient_screening_pap_smear.png?username=Test",
+      "waiting_patient_screening_non_pap_smear": "/api/simulations/20260719_145831_cyto/artifacts/analysis/waiting_patient_screening_non_pap_smear.png?username=Test",
+      "resource_utilisation": "/api/simulations/20260719_145831_cyto/artifacts/analysis/resource_utilisation.png?username=Test",
+      "turnaround_patient_non_pap_smear": "/api/simulations/20260719_145831_cyto/artifacts/analysis/turnaround_patient_non_pap_smear.png?username=Test",
+      "waiting_patient_reporting_pap_smear": "/api/simulations/20260719_145831_cyto/artifacts/analysis/waiting_patient_reporting_pap_smear.png?username=Test",
+      "waiting_slide_fixation": "/api/simulations/20260719_145831_cyto/artifacts/analysis/waiting_slide_fixation_all.png?username=Test",
+      "waiting_slide_staining": "/api/simulations/20260719_145831_cyto/artifacts/analysis/waiting_slide_staining_all.png?username=Test"
+    }
+  }
+}

@@ -1,0 +1,522 @@
+resource_name,utilisation_key,process_name,task,capacity,start_min,end_min,duration_min
+Cytotechnicians,Cytotechnicians,manual staining,,3,80.0,115.0,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,80.0,115.0,35.0
+Cytotechnicians,Cytotechnicians,manual staining,,3,153.10346024122438,188.10346024122438,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,153.10346024122438,188.10346024122438,35.0
+Cytotechnicians,Cytotechnicians,manual staining,,3,344.7732613080775,379.7732613080775,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,344.7732613080775,379.7732613080775,35.0
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,540.0,550.6509744013116,10.6509744013116
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,540.0,554.5329793581267,14.532979358126681
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,540.0,559.1890771447187,19.18907714471868
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,540.0,559.9762120267941,19.976212026794087
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,550.6509744013116,560.4993569524253,9.848382551113673
+Cytotechnicians,Cytotechnicians,manual staining,,3,529.714014861585,564.714014861585,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,529.714014861585,564.714014861585,35.0
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,540.0,565.1455365032215,25.14553650322148
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,564.714014861585,576.3459083102769,11.631893448691812
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,564.714014861585,592.3018658524584,27.587850990873335
+Cytotechnicians,Cytotechnicians,manual staining,,3,1520.0,1555.0,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,1520.0,1555.0,35.0
+Senior Pathologists,Senior Pathologists,Reporting,,3,1560.0,1562.0199159656297,2.019915965629707
+Senior Pathologists,Senior Pathologists,Reporting,,3,1560.0,1562.5173011265701,2.517301126570146
+Senior Pathologists,Senior Pathologists,Reporting,,3,1562.5173011265701,1564.8184640402749,2.3011629137047294
+Senior Pathologists,Senior Pathologists,Reporting,,3,1562.0199159656297,1565.417007441577,3.3970914759472635
+Senior Pathologists,Senior Pathologists,Reporting,,3,1560.0,1567.2003952980258,7.200395298025796
+Senior Pathologists,Senior Pathologists,Reporting,,3,1564.8184640402749,1577.9662652677875,13.147801227512673
+Cytotechnicians,Cytotechnicians,manual staining,,3,1616.5838607736807,1651.5838607736807,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,1616.5838607736807,1651.5838607736807,35.0
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,1740.0,1751.469663946171,11.469663946171067
+Senior Pathologists,Senior Pathologists,Reporting,,3,1751.469663946171,1755.5905822220425,4.120918275871418
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,1740.0,1757.117156507651,17.11715650765109
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,1740.0,1757.4988362027673,17.49883620276728
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,1751.469663946171,1759.6806766853185,8.211012739147463
+Senior Pathologists,Senior Pathologists,Reporting,,3,1757.117156507651,1760.8758387842927,3.7586822766415935
+Cytotechnicians,Cytotechnicians,manual staining,,3,1725.9556770868633,1760.9556770868633,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,1725.9556770868633,1760.9556770868633,35.0
+Senior Pathologists,Senior Pathologists,Reporting,,3,1759.6806766853185,1762.945562180868,3.264885495549379
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,1740.0,1764.766753561954,24.76675356195392
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,1740.0,1767.0345583418803,27.034558341880256
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,1757.117156507651,1767.6119750547714,10.494818547120303
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,1760.9556770868633,1771.0731041069494,10.117427020086097
+Senior Pathologists,Senior Pathologists,Reporting,,3,1757.4988362027673,1777.362231470729,19.863395267961778
+Senior Pathologists,Senior Pathologists,Reporting,,3,1777.362231470729,1781.4830478519657,4.1208163812366365
+Senior Pathologists,Senior Pathologists,Reporting,,3,1764.766753561954,1783.532456150986,18.765702589032117
+Senior Pathologists,Senior Pathologists,Reporting,,3,1767.0345583418803,1784.460621225574,17.426062883693703
+Senior Pathologists,Senior Pathologists,Reporting,,3,1781.4830478519657,1784.6362765865888,3.1532287346230987
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,1760.9556770868633,1789.7964305627322,28.84075347586895
+Cytotechnicians,Cytotechnicians,manual staining,,3,2960.0,2995.0,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,2960.0,2995.0,35.0
+Cytotechnicians,Cytotechnicians,manual staining,,3,4400.0,4435.0,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,4400.0,4435.0,35.0
+Cytotechnicians,Cytotechnicians,manual staining,,3,4810.282968218702,4845.282968218702,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,4810.282968218702,4845.282968218702,35.0
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,4860.0,4866.182601667076,6.182601667075687
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,4860.0,4874.531444514508,14.531444514507712
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,4860.0,4874.620946118769,14.620946118769098
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,4860.0,4880.416515553164,20.416515553163663
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,4860.0,4885.184977543988,25.18497754398777
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,4874.531444514508,4886.37277030227,11.841325787761889
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,4880.416515553164,4887.244462732613,6.827947179449438
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,4885.184977543988,4891.155389060786,5.970411516797867
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,4874.620946118769,4892.357679790325,17.736733671556067
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,4866.182601667076,4897.92251251984,31.739910852764297
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,4892.357679790325,4904.433276916354,12.075597126028697
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,4891.155389060786,4904.956508364343,13.801119303557243
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,4887.244462732613,4907.285670618121,20.0412078855079
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,4886.37277030227,4922.327793788139,35.95502348586979
+Cytotechnicians,Cytotechnicians,manual staining,,3,5840.0,5875.0,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,5840.0,5875.0,35.0
+Senior Pathologists,Senior Pathologists,Reporting,,3,5880.0,5882.743883419552,2.743883419551821
+Senior Pathologists,Senior Pathologists,Reporting,,3,5880.0,5883.166413829123,3.1664138291225754
+Senior Pathologists,Senior Pathologists,Reporting,,3,5880.0,5884.698220668864,4.698220668864451
+Senior Pathologists,Senior Pathologists,Reporting,,3,5884.698220668864,5888.071525598369,3.373304929504229
+Senior Pathologists,Senior Pathologists,Reporting,,3,5888.071525598369,5890.527326567355,2.4558009689862956
+Senior Pathologists,Senior Pathologists,Reporting,,3,5890.527326567355,5892.255803523358,1.7284769560028508
+Senior Pathologists,Senior Pathologists,Reporting,,3,5882.743883419552,5899.767195944283,17.02331252473141
+Senior Pathologists,Senior Pathologists,Reporting,,3,5883.166413829123,5903.394024745073,20.22761091595021
+Senior Pathologists,Senior Pathologists,Reporting,,3,5903.394024745073,5905.690709779813,2.2966850347402215
+Senior Pathologists,Senior Pathologists,Reporting,,3,5892.255803523358,5906.874589802225,14.618786278867447
+Senior Pathologists,Senior Pathologists,Reporting,,3,5905.690709779813,5909.284311696023,3.593601916209991
+Cytotechnicians,Cytotechnicians,manual staining,,3,5875.0,5910.0,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,5875.0,5910.0,35.0
+Senior Pathologists,Senior Pathologists,Reporting,,3,5906.874589802225,5915.953084664124,9.078494861898434
+Senior Pathologists,Senior Pathologists,Reporting,,3,5899.767195944283,5917.983481128194,18.216285183911168
+Senior Pathologists,Senior Pathologists,Reporting,,3,5909.284311696023,5922.351453361113,13.067141665090276
+Cytotechnicians,Cytotechnicians,manual staining,,3,6097.489306750588,6132.489306750588,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,6097.489306750588,6132.489306750588,35.0
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,6300.0,6306.022921293732,6.022921293731997
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,6300.0,6309.19251195098,9.192511950979679
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,6300.0,6317.234579255003,17.234579255003155
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,6306.022921293732,6317.868044116807,11.845122823075144
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,6309.19251195098,6321.860045199739,12.667533248759355
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,6300.0,6326.15764393251,26.157643932509927
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,6317.234579255003,6328.4538389709805,11.219259715977387
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,6317.868044116807,6329.648079897072,11.78003578026528
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,6300.0,6334.167850704793,34.16785070479273
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,6321.860045199739,6355.485621132955,33.62557593321617
+Cytotechnicians,Cytotechnicians,manual staining,,3,7280.0,7315.0,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,7280.0,7315.0,35.0
+Senior Pathologists,Senior Pathologists,Reporting,,3,7320.0,7323.885493635343,3.8854936353427547
+Senior Pathologists,Senior Pathologists,Reporting,,3,7320.0,7324.015447246357,4.015447246357326
+Senior Pathologists,Senior Pathologists,Reporting,,3,7320.0,7324.130022155265,4.130022155264669
+Senior Pathologists,Senior Pathologists,Reporting,,3,7323.885493635343,7326.8035765653885,2.9180829300457845
+Senior Pathologists,Senior Pathologists,Reporting,,3,7324.015447246357,7327.1103946298035,3.094947383446197
+Senior Pathologists,Senior Pathologists,Reporting,,3,7326.8035765653885,7329.31544653793,2.5118699725417173
+Senior Pathologists,Senior Pathologists,Reporting,,3,7327.1103946298035,7330.090805743931,2.9804111141274916
+Senior Pathologists,Senior Pathologists,Reporting,,3,7324.130022155265,7345.439587567858,21.309565412593656
+Senior Pathologists,Senior Pathologists,Reporting,,3,7329.31544653793,7346.968605973387,17.653159435456473
+Cytotechnicians,Cytotechnicians,manual staining,,3,7613.649297666703,7648.649297666703,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,7613.649297666703,7648.649297666703,35.0
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,7740.0,7745.173642929173,5.173642929173184
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,7740.0,7747.010769853944,7.010769853944112
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,7740.0,7753.061723952221,13.061723952220746
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,7745.173642929173,7755.503433376732,10.32979044755848
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,7740.0,7756.505757120151,16.50575712015143
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,7747.010769853944,7759.310602008118,12.2998321541736
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,7740.0,7762.973457191801,22.973457191800662
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,7753.061723952221,7765.07465475922,12.012930806999066
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,7755.503433376732,7765.131415780239,9.627982403507303
+Senior Pathologists,Senior Pathologists,Reporting,,3,8760.0,8762.5934464433,2.593446443299399
+Senior Pathologists,Senior Pathologists,Reporting,,3,8760.0,8762.855256900424,2.8552569004241377
+Senior Pathologists,Senior Pathologists,Reporting,,3,8760.0,8763.260849328943,3.2608493289426406
+Senior Pathologists,Senior Pathologists,Reporting,,3,8763.260849328943,8765.521229869659,2.2603805407161417
+Senior Pathologists,Senior Pathologists,Reporting,,3,8762.855256900424,8766.249768542159,3.394511641734425
+Senior Pathologists,Senior Pathologists,Reporting,,3,8762.5934464433,8767.135643672904,4.542197229604426
+Senior Pathologists,Senior Pathologists,Reporting,,3,8766.249768542159,8768.907106744879,2.657338202719984
+Senior Pathologists,Senior Pathologists,Reporting,,3,8767.135643672904,8770.863287760303,3.7276440873993124
+Senior Pathologists,Senior Pathologists,Reporting,,3,8765.521229869659,8780.858790731014,15.337560861355087
+Cytotechnicians,Cytotechnicians,manual staining,,3,8835.543944185098,8870.543944185098,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,8835.543944185098,8870.543944185098,35.0
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,9180.0,9191.505987056733,11.50598705673292
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,9180.0,9191.958153110492,11.958153110492276
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,9180.0,9191.992083765344,11.992083765344432
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,9180.0,9193.6731823792,13.673182379199716
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,9180.0,9194.137627321235,14.137627321235414
+Senior Pathologists,Senior Pathologists,Reporting,,3,10200.0,10202.134800200267,2.134800200266909
+Senior Pathologists,Senior Pathologists,Reporting,,3,10200.0,10202.661738971452,2.661738971451996
+Senior Pathologists,Senior Pathologists,Reporting,,3,10200.0,10202.932625204769,2.9326252047685557
+Senior Pathologists,Senior Pathologists,Reporting,,3,10202.134800200267,10204.476560112664,2.3417599123968103
+Senior Pathologists,Senior Pathologists,Reporting,,3,10202.661738971452,10205.856218257122,3.1944792856702406
+Cytotechnicians,Cytotechnicians,manual staining,,3,10208.100744191022,10243.100744191022,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,10208.100744191022,10243.100744191022,35.0
+Cytotechnicians,Cytotechnicians,manual staining,,3,10540.21651301521,10575.21651301521,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,10540.21651301521,10575.21651301521,35.0
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,10620.0,10628.951529182565,8.951529182564627
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,10620.0,10629.31306351429,9.313063514289752
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,10620.0,10630.63930065327,10.639300653270766
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,10620.0,10632.417306551975,12.417306551975344
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,10620.0,10635.283092246022,15.283092246021624
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,10628.951529182565,10636.71694858239,7.765419399825987
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,10629.31306351429,10640.457056968304,11.14399345401398
+Senior Pathologists,Senior Pathologists,Reporting,,3,11640.0,11641.422662304842,1.4226623048416513
+Senior Pathologists,Senior Pathologists,Reporting,,3,11640.0,11642.610869230512,2.6108692305115255
+Senior Pathologists,Senior Pathologists,Reporting,,3,11640.0,11643.991723753727,3.9917237537265464
+Senior Pathologists,Senior Pathologists,Reporting,,3,11641.422662304842,11645.389640617428,3.966978312586434
+Senior Pathologists,Senior Pathologists,Reporting,,3,11642.610869230512,11646.977187868019,4.366318637506993
+Senior Pathologists,Senior Pathologists,Reporting,,3,11643.991723753727,11647.813273916456,3.8215501627291815
+Senior Pathologists,Senior Pathologists,Reporting,,3,11645.389640617428,11649.309327491845,3.919686874416584
+Cytotechnicians,Cytotechnicians,manual staining,,3,11660.262060438821,11695.262060438821,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,11660.262060438821,11695.262060438821,35.0
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,11820.0,11832.353832456518,12.353832456517921
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,11820.0,11832.767825351331,12.76782535133134
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,11820.0,11833.331233114202,13.331233114202405
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,11820.0,11834.517508710485,14.517508710485345
+Senior Pathologists,Senior Pathologists,Reporting,,3,11832.353832456518,11835.638730867528,3.2848984110096353
+Senior Pathologists,Senior Pathologists,Reporting,,3,11832.767825351331,11836.492172351514,3.7243470001831156
+Senior Pathologists,Senior Pathologists,Reporting,,3,11833.331233114202,11837.012899058765,3.681665944563065
+Senior Pathologists,Senior Pathologists,Reporting,,3,11835.638730867528,11838.188565283286,2.549834415758596
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,11820.0,11838.51324995233,18.513249952329716
+Senior Pathologists,Senior Pathologists,Reporting,,3,11838.51324995233,11856.839632261173,18.326382308843677
+Cytotechnicians,Cytotechnicians,manual staining,,3,12043.924368593613,12078.924368593613,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,12043.924368593613,12078.924368593613,35.0
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,12078.924368593613,12089.176623448533,10.252254854920466
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,12078.924368593613,12092.115647811404,13.191279217791816
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,12078.924368593613,12092.134792585208,13.210423991595235
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,12078.924368593613,12094.380354721023,15.455986127410142
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,12078.924368593613,12095.8737175211,16.949348927488245
+Cytotechnicians,Cytotechnicians,manual staining,,3,13040.0,13075.0,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,13040.0,13075.0,35.0
+Senior Pathologists,Senior Pathologists,Reporting,,3,13080.0,13081.67485962043,1.6748596204306523
+Senior Pathologists,Senior Pathologists,Reporting,,3,13080.0,13082.302183288615,2.302183288615197
+Senior Pathologists,Senior Pathologists,Reporting,,3,13080.0,13083.017105631881,3.01710563188135
+Senior Pathologists,Senior Pathologists,Reporting,,3,13081.67485962043,13085.405542464667,3.730682844236071
+Senior Pathologists,Senior Pathologists,Reporting,,3,13082.302183288615,13095.923833094586,13.621649805971174
+Cytotechnicians,Cytotechnicians,manual staining,,3,14460.0,14495.0,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,14460.0,14495.0,35.0
+Cytotechnicians,Cytotechnicians,manual staining,,3,14495.0,14530.0,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,14495.0,14530.0,35.0
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,14940.0,14947.237046003764,7.23704600376368
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,14940.0,14947.424668531805,7.424668531804855
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,14940.0,14948.27974521118,8.279745211180852
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,14947.237046003764,14955.15263242978,7.9155864260155795
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,14940.0,14956.513796671989,16.51379667198853
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,14947.424668531805,14961.36077722412,13.93610869231452
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,14948.27974521118,14962.118639331644,13.83889412046301
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,14955.15263242978,14966.070397685517,10.917765255737322
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,14940.0,14966.33427935717,26.33427935717009
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,14956.513796671989,14967.631262629517,11.117465957528111
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,14962.118639331644,14968.785846156412,6.667206824768073
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,14961.36077722412,14971.892877667126,10.53210044300613
+Cytotechnicians,Cytotechnicians,manual staining,,3,15900.0,15935.0,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,15900.0,15935.0,35.0
+Senior Pathologists,Senior Pathologists,Reporting,,3,15960.0,15963.479795957815,3.4797959578154405
+Senior Pathologists,Senior Pathologists,Reporting,,3,15960.0,15964.13194237983,4.131942379830434
+Senior Pathologists,Senior Pathologists,Reporting,,3,15960.0,15964.716524122494,4.716524122493865
+Senior Pathologists,Senior Pathologists,Reporting,,3,15964.716524122494,15967.507331163737,2.79080704124317
+Senior Pathologists,Senior Pathologists,Reporting,,3,15964.13194237983,15968.280088892636,4.148146512805397
+Senior Pathologists,Senior Pathologists,Reporting,,3,15967.507331163737,15969.921122322925,2.4137911591878947
+Senior Pathologists,Senior Pathologists,Reporting,,3,15968.280088892636,15970.45798590269,2.1778970100549486
+Senior Pathologists,Senior Pathologists,Reporting,,3,15969.921122322925,15971.898699124342,1.9775768014169444
+Senior Pathologists,Senior Pathologists,Reporting,,3,15963.479795957815,15983.451094817008,19.971298859192757
+Cytotechnicians,Cytotechnicians,manual staining,,3,15961.197136163304,15996.197136163304,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,15961.197136163304,15996.197136163304,35.0
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,16380.0,16389.471901459263,9.471901459262881
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,16380.0,16389.85644168491,9.85644168491126
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,16380.0,16390.252359084254,10.25235908425384
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,16380.0,16391.636268879603,11.636268879603449
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,16380.0,16396.341574748076,16.3415747480758
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,16389.85644168491,16396.37998212426,6.523540439349745
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,16390.252359084254,16406.20919734421,15.956838259957294
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,16389.471901459263,16413.85608723583,24.384185776565573
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,16391.636268879603,16416.177472795374,24.541203915770893
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,16396.341574748076,16427.959728915135,31.6181541670594
+Cytotechnicians,Cytotechnicians,manual staining,,3,17340.0,17375.0,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,17340.0,17375.0,35.0
+Senior Pathologists,Senior Pathologists,Reporting,,3,17400.0,17403.884042827223,3.884042827223311
+Senior Pathologists,Senior Pathologists,Reporting,,3,17400.0,17404.20103323877,4.201033238769014
+Senior Pathologists,Senior Pathologists,Reporting,,3,17400.0,17404.28932922564,4.289329225641268
+Senior Pathologists,Senior Pathologists,Reporting,,3,17404.20103323877,17406.037608206378,1.8365749676086125
+Senior Pathologists,Senior Pathologists,Reporting,,3,17403.884042827223,17406.234302920544,2.350260093320685
+Senior Pathologists,Senior Pathologists,Reporting,,3,17404.28932922564,17406.63783873257,2.348509506929986
+Senior Pathologists,Senior Pathologists,Reporting,,3,17406.234302920544,17417.8442551964,11.609952275855903
+Senior Pathologists,Senior Pathologists,Reporting,,3,17406.037608206378,17419.90294260664,13.865334400263237
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,17820.0,17828.72622863901,8.726228639010515
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,17820.0,17829.245782832844,9.24578283284427
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,17820.0,17833.31280921937,13.312809219369228
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,17820.0,17834.751450369302,14.751450369301892
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,17820.0,17845.40923389333,25.409233893329656
+Cytotechnicians,Cytotechnicians,manual staining,,3,18800.0,18835.0,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,18800.0,18835.0,35.0
+Senior Pathologists,Senior Pathologists,Reporting,,3,18840.0,18841.509323671664,1.5093236716638785
+Senior Pathologists,Senior Pathologists,Reporting,,3,18840.0,18843.201351470914,3.2013514709142328
+Senior Pathologists,Senior Pathologists,Reporting,,3,18841.509323671664,18843.374550096676,1.8652264250122244
+Senior Pathologists,Senior Pathologists,Reporting,,3,18840.0,18844.11258841418,4.112588414180209
+Senior Pathologists,Senior Pathologists,Reporting,,3,18843.201351470914,18852.24399030719,9.042638836275728
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,19260.0,19268.549471367678,8.549471367678052
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,19260.0,19274.094174937356,14.094174937356001
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,19260.0,19274.86537985277,14.865379852770275
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,19260.0,19277.979638346707,17.97963834670736
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,19260.0,19278.07711288437,18.077112884369853
+Cytotechnicians,Cytotechnicians,manual staining,,3,20240.0,20275.0,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,20240.0,20275.0,35.0
+Senior Pathologists,Senior Pathologists,Reporting,,3,20280.0,20281.295143813128,1.2951438131276518
+Senior Pathologists,Senior Pathologists,Reporting,,3,20280.0,20282.04942933424,2.0494293342417222
+Senior Pathologists,Senior Pathologists,Reporting,,3,20280.0,20283.609398002238,3.6093980022378673
+Senior Pathologists,Senior Pathologists,Reporting,,3,20281.295143813128,20283.895025903978,2.59988209084986
+Cytotechnicians,Cytotechnicians,manual staining,,3,20549.284323275224,20584.284323275224,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,20549.284323275224,20584.284323275224,35.0
+Cytotechnicians,Cytotechnicians,manual staining,,3,20658.061034362658,20693.061034362658,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,20658.061034362658,20693.061034362658,35.0
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,20700.0,20705.972256410234,5.9722564102339675
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,20700.0,20710.910831338235,10.910831338234857
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,20700.0,20712.990754441314,12.990754441314493
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,20700.0,20713.145894223064,13.145894223063806
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,20700.0,20714.66130227484,14.661302274838818
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,20705.972256410234,20718.668432939856,12.69617652962188
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,20710.910831338235,20722.116757585256,11.205926247021125
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,20714.66130227484,20724.19550376325,9.534201488411782
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,20712.990754441314,20727.946939962727,14.956185521412408
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,20718.668432939856,20731.651273095773,12.982840155917074
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,20713.145894223064,20740.37284493753,27.22695071446651
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,20722.116757585256,20753.62642093863,31.5096633533758
+Senior Pathologists,Senior Pathologists,Reporting,,3,21720.0,21722.06777652256,2.067776522559143
+Senior Pathologists,Senior Pathologists,Reporting,,3,21720.0,21722.26157971901,2.261579719008296
+Senior Pathologists,Senior Pathologists,Reporting,,3,21720.0,21722.73685370531,2.7368537053116597
+Senior Pathologists,Senior Pathologists,Reporting,,3,21722.06777652256,21723.529320753954,1.4615442313952371
+Senior Pathologists,Senior Pathologists,Reporting,,3,21722.26157971901,21724.20357916289,1.9419994438831054
+Senior Pathologists,Senior Pathologists,Reporting,,3,21724.20357916289,21726.00622243174,1.8026432688493514
+Senior Pathologists,Senior Pathologists,Reporting,,3,21722.73685370531,21726.12332099418,3.3864672888666973
+Senior Pathologists,Senior Pathologists,Reporting,,3,21723.529320753954,21727.26370323479,3.7343824808340287
+Senior Pathologists,Senior Pathologists,Reporting,,3,21726.00622243174,21728.367699013943,2.361476582202158
+Senior Pathologists,Senior Pathologists,Reporting,,3,21726.12332099418,21738.32793170198,12.204610707802203
+Senior Pathologists,Senior Pathologists,Reporting,,3,21727.26370323479,21751.695946608965,24.432243374176323
+Cytotechnicians,Cytotechnicians,manual staining,,3,21777.60617413516,21812.60617413516,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,21777.60617413516,21812.60617413516,35.0
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,21900.0,21908.076647165537,8.076647165536997
+Senior Pathologists,Senior Pathologists,Reporting,,3,21908.076647165537,21910.207429727638,2.1307825621006486
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,21900.0,21910.79651661839,10.796516618389433
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,21900.0,21911.151536641584,11.151536641584244
+Senior Pathologists,Senior Pathologists,Reporting,,3,21911.151536641584,21913.235054913748,2.0835182721639285
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,21900.0,21913.35980200976,13.359802009759733
+Senior Pathologists,Senior Pathologists,Reporting,,3,21910.79651661839,21913.653787207528,2.857270589138352
+Senior Pathologists,Senior Pathologists,Reporting,,3,21913.35980200976,21915.588606524325,2.2288045145651267
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,21900.0,21916.611553787916,16.61155378791591
+Senior Pathologists,Senior Pathologists,Reporting,,3,21916.611553787916,21920.209572191965,3.5980184040490713
+Cytotechnicians,Cytotechnicians,manual staining,,3,23204.05803281521,23239.05803281521,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,23204.05803281521,23239.05803281521,35.0
+Cytotechnicians,Cytotechnicians,manual staining,,3,24540.0,24575.0,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,24540.0,24575.0,35.0
+Cytotechnicians,Cytotechnicians,manual staining,,3,24680.644867433268,24715.644867433268,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,24680.644867433268,24715.644867433268,35.0
+Cytotechnicians,Cytotechnicians,manual staining,,3,24827.02868353555,24862.02868353555,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,24827.02868353555,24862.02868353555,35.0
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,25020.0,25026.833957495193,6.833957495193317
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,25020.0,25028.645145721763,8.645145721762674
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,25020.0,25028.771000674406,8.771000674405514
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,25020.0,25031.99130265681,11.991302656810149
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,25020.0,25034.34911010976,14.349110109760659
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,25034.34911010976,25040.56694936998,6.21783926021817
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,25026.833957495193,25040.58989082946,13.755933334265137
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,25031.99130265681,25040.630145545805,8.638842888994986
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,25040.56694936998,25052.43279739661,11.865848026631284
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,25028.645145721763,25053.663276248746,25.01813052698344
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,25028.771000674406,25057.798217283605,29.027216609199968
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,25052.43279739661,25057.966206649155,5.533409252544516
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,25040.58989082946,25069.60687965361,29.016988824150758
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,25040.630145545805,25078.112823040487,37.48267749468141
+Senior Pathologists,Senior Pathologists,Reporting,,3,26040.0,26041.15780640862,1.1578064086206723
+Senior Pathologists,Senior Pathologists,Reporting,,3,26041.15780640862,26043.541470262127,2.3836638535067323
+Senior Pathologists,Senior Pathologists,Reporting,,3,26040.0,26043.658051108945,3.658051108945074
+Senior Pathologists,Senior Pathologists,Reporting,,3,26040.0,26044.089688415792,4.089688415791898
+Senior Pathologists,Senior Pathologists,Reporting,,3,26043.541470262127,26045.5243931861,1.982922923973092
+Senior Pathologists,Senior Pathologists,Reporting,,3,26043.658051108945,26045.985557004355,2.3275058954095584
+Senior Pathologists,Senior Pathologists,Reporting,,3,26044.089688415792,26046.644286064806,2.5545976490138855
+Senior Pathologists,Senior Pathologists,Reporting,,3,26045.985557004355,26049.07383825985,3.088281255495531
+Senior Pathologists,Senior Pathologists,Reporting,,3,26045.5243931861,26049.55704013189,4.032646945790475
+Senior Pathologists,Senior Pathologists,Reporting,,3,26049.55704013189,26052.080574084528,2.523533952637081
+Senior Pathologists,Senior Pathologists,Reporting,,3,26049.07383825985,26059.955051778183,10.881213518332515
+Senior Pathologists,Senior Pathologists,Reporting,,3,26046.644286064806,26060.110566972122,13.466280907316104
+Senior Pathologists,Senior Pathologists,Reporting,,3,26052.080574084528,26070.047355838895,17.96678175436682
+Senior Pathologists,Senior Pathologists,Reporting,,3,26059.955051778183,26073.95697559892,14.001923820738739
+Cytotechnicians,Cytotechnicians,manual staining,,3,26151.980240192195,26186.980240192195,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,26151.980240192195,26186.980240192195,35.0
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,26460.0,26470.974749592628,10.974749592627632
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,26460.0,26472.819080821897,12.819080821896932
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,26460.0,26474.313930427685,14.313930427684681
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,26460.0,26483.382072935314,23.382072935313772
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,26460.0,26492.169306374744,32.16930637474434
+Cytotechnicians,Cytotechnicians,manual staining,,3,27440.0,27475.0,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,27440.0,27475.0,35.0
+Senior Pathologists,Senior Pathologists,Reporting,,3,27480.0,27482.247287647748,2.2472876477477257
+Senior Pathologists,Senior Pathologists,Reporting,,3,27480.0,27482.418842182502,2.418842182501976
+Senior Pathologists,Senior Pathologists,Reporting,,3,27480.0,27483.89705627503,3.897056275029172
+Senior Pathologists,Senior Pathologists,Reporting,,3,27482.418842182502,27499.288642361054,16.869800178552396
+Senior Pathologists,Senior Pathologists,Reporting,,3,27482.247287647748,27501.65352833771,19.406240689961123
+Cytotechnicians,Cytotechnicians,manual staining,,3,27665.713794312654,27700.713794312654,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,27665.713794312654,27700.713794312654,35.0
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,27900.0,27909.379599243704,9.379599243704433
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,27900.0,27910.8334642384,10.833464238399756
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,27900.0,27914.559726840038,14.55972684003791
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,27900.0,27915.437297484496,15.437297484495502
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,27910.8334642384,27922.10029599901,11.26683176061124
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,27900.0,27923.842370291906,23.842370291906263
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,27914.559726840038,27925.2209209134,10.661194073363731
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,27915.437297484496,27925.93459239127,10.497294906774187
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,27909.379599243704,27926.089819452252,16.71022020854798
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,27922.10029599901,27930.870757205885,8.770461206873733
+Cytotechnicians,Cytotechnicians,manual staining,,3,28860.0,28895.0,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,28860.0,28895.0,35.0
+Senior Pathologists,Senior Pathologists,Reporting,,3,28920.0,28923.43990824442,3.439908244421531
+Senior Pathologists,Senior Pathologists,Reporting,,3,28920.0,28923.666878780783,3.6668787807830086
+Senior Pathologists,Senior Pathologists,Reporting,,3,28920.0,28923.709483946644,3.7094839466444682
+Senior Pathologists,Senior Pathologists,Reporting,,3,28923.43990824442,28926.243200498,2.8032922535785474
+Senior Pathologists,Senior Pathologists,Reporting,,3,28923.666878780783,28926.98823798106,3.321359200275765
+Senior Pathologists,Senior Pathologists,Reporting,,3,28926.243200498,28928.84774395553,2.6045434575316904
+Senior Pathologists,Senior Pathologists,Reporting,,3,28926.98823798106,28929.16332817375,2.1750901926898223
+Senior Pathologists,Senior Pathologists,Reporting,,3,28928.84774395553,28931.655808611486,2.8080646559537854
+Senior Pathologists,Senior Pathologists,Reporting,,3,28923.709483946644,28935.413853747246,11.704369800601853
+Cytotechnicians,Cytotechnicians,manual staining,,3,29079.50159014765,29114.50159014765,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,29079.50159014765,29114.50159014765,35.0
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,29340.0,29349.977024235362,9.977024235362478
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,29340.0,29350.183008357933,10.183008357933431
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,29340.0,29350.777244246437,10.777244246437476
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,29340.0,29353.262443420794,13.262443420793716
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,29350.183008357933,29361.913679941295,11.730671583361982
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,29349.977024235362,29364.61434785652,14.63732362115843
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,29340.0,29369.822959123027,29.82295912302652
+Senior Pathologists,Senior Pathologists,Reporting,,3,30360.0,30361.33187362122,1.3318736212204385
+Senior Pathologists,Senior Pathologists,Reporting,,3,30360.0,30362.825867382635,2.825867382634897
+Senior Pathologists,Senior Pathologists,Reporting,,3,30361.33187362122,30363.98844383665,2.656570215429383
+Senior Pathologists,Senior Pathologists,Reporting,,3,30360.0,30364.298469626356,4.298469626355654
+Senior Pathologists,Senior Pathologists,Reporting,,3,30362.825867382635,30365.479839175146,2.6539717925115838
+Senior Pathologists,Senior Pathologists,Reporting,,3,30363.98844383665,30366.063981733103,2.07553789645317
+Senior Pathologists,Senior Pathologists,Reporting,,3,30364.298469626356,30383.99260019699,19.694130570635025
+Cytotechnicians,Cytotechnicians,manual staining,,3,30382.168942028122,30417.168942028122,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,30382.168942028122,30417.168942028122,35.0
+Cytotechnicians,Cytotechnicians,manual staining,,3,30747.234660785012,30782.234660785012,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,30747.234660785012,30782.234660785012,35.0
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,30780.0,30788.347911277262,8.347911277262028
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,30780.0,30788.570091534722,8.57009153472245
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,30780.0,30792.386742101797,12.386742101796699
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,30780.0,30792.73686799132,12.736867991319741
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,30780.0,30793.374103109938,13.374103109938005
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,30788.570091534722,30799.593782037286,11.023690502563113
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,30792.73686799132,30802.805407684307,10.068539692987542
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,30792.386742101797,30803.703043459394,11.316301357597695
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,30788.347911277262,30804.02355108796,15.675639810699067
+Cytotechnicians,Cytotechnicians,manual staining,,3,31760.0,31795.0,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,31760.0,31795.0,35.0
+Senior Pathologists,Senior Pathologists,Reporting,,3,31800.0,31801.999004704972,1.9990047049723216
+Senior Pathologists,Senior Pathologists,Reporting,,3,31800.0,31803.2876309104,3.287630910399457
+Senior Pathologists,Senior Pathologists,Reporting,,3,31800.0,31803.379132037226,3.379132037225645
+Senior Pathologists,Senior Pathologists,Reporting,,3,31801.999004704972,31804.93928897177,2.940284266798699
+Senior Pathologists,Senior Pathologists,Reporting,,3,31803.379132037226,31807.73600949259,4.356877455364156
+Senior Pathologists,Senior Pathologists,Reporting,,3,31803.2876309104,31807.959884417964,4.6722535075641645
+Senior Pathologists,Senior Pathologists,Reporting,,3,31804.93928897177,31808.254262301976,3.314973330205248
+Senior Pathologists,Senior Pathologists,Reporting,,3,31807.73600949259,31809.837734943078,2.10172545048772
+Senior Pathologists,Senior Pathologists,Reporting,,3,31807.959884417964,31811.2607713522,3.3008869342374965
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,31980.0,31995.25610742927,15.256107429271651
+Senior Pathologists,Senior Pathologists,Reporting,,3,31995.25610742927,31998.42168226655,3.1655748372795642
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,31980.0,32003.08901938781,23.089019387811277
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,31980.0,32005.844961244456,25.8449612444565
+Senior Pathologists,Senior Pathologists,Reporting,,3,32003.08901938781,32015.151164000792,12.062144612980774
+Senior Pathologists,Senior Pathologists,Reporting,,3,32005.844961244456,32016.0292856022,10.184324357742298
+Cytotechnicians,Cytotechnicians,manual staining,,3,32092.12545093291,32127.12545093291,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,32092.12545093291,32127.12545093291,35.0
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,32220.0,32226.46178442729,6.461784427290695
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,32220.0,32229.14612795834,9.146127958338184
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,32220.0,32230.1307789246,10.130778924598417
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,32220.0,32231.564978758335,11.5649787583352
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,32220.0,32232.694851334974,12.694851334974373
+Senior Pathologists,Senior Pathologists,Reporting,,3,33240.0,33241.59014753246,1.5901475324571948
+Senior Pathologists,Senior Pathologists,Reporting,,3,33240.0,33242.401481159875,2.4014811598754022
+Senior Pathologists,Senior Pathologists,Reporting,,3,33240.0,33244.15629028526,4.156290285260184
+Senior Pathologists,Senior Pathologists,Reporting,,3,33242.401481159875,33245.51766994995,3.116188790074375
+Senior Pathologists,Senior Pathologists,Reporting,,3,33241.59014753246,33245.9624751852,4.372327652745298
+Cytotechnicians,Cytotechnicians,manual staining,,3,33270.14909853841,33305.14909853841,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,33270.14909853841,33305.14909853841,35.0
+Cytotechnicians,Cytotechnicians,manual staining,,3,34640.0,34675.0,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,34640.0,34675.0,35.0
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,35100.0,35108.265975195936,8.265975195936335
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,35100.0,35110.27426037989,10.27426037989062
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,35100.0,35110.907795949606,10.907795949606225
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,35100.0,35111.14290957257,11.142909572568897
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,35100.0,35113.59953618881,13.599536188812635
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,35110.27426037989,35131.154794150585,20.880533770694456
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,35108.265975195936,35132.897481000204,24.631505804267363
+Cytotechnicians,Cytotechnicians,manual staining,,3,36060.0,36095.0,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,36060.0,36095.0,35.0
+Senior Pathologists,Senior Pathologists,Reporting,,3,36120.0,36121.81585604826,1.8158560482625035
+Senior Pathologists,Senior Pathologists,Reporting,,3,36120.0,36122.78710627631,2.7871062763078953
+Senior Pathologists,Senior Pathologists,Reporting,,3,36120.0,36123.725518935345,3.7255189353454625
+Senior Pathologists,Senior Pathologists,Reporting,,3,36121.81585604826,36124.05416372864,2.238307680374419
+Senior Pathologists,Senior Pathologists,Reporting,,3,36123.725518935345,36137.24458574254,13.519066807195486
+Senior Pathologists,Senior Pathologists,Reporting,,3,36122.78710627631,36143.45524939009,20.668143113784026
+Cytotechnicians,Cytotechnicians,manual staining,,3,36145.00798285881,36180.00798285881,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,36145.00798285881,36180.00798285881,35.0
+Cytotechnicians,Cytotechnicians,manual staining,,3,36202.65130240858,36237.65130240858,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,36202.65130240858,36237.65130240858,35.0
+Cytotechnicians,Cytotechnicians,manual staining,,3,36237.65130240858,36272.65130240858,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,36237.65130240858,36272.65130240858,35.0
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,36540.0,36546.726167141744,6.726167141743645
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,36540.0,36547.29673858355,7.296738583550905
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,36540.0,36550.11946924217,10.119469242170453
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,36540.0,36551.11748591322,11.117485913222481
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,36546.726167141744,36557.97600966726,11.249842525518034
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,36551.11748591322,36560.64912224151,9.531636328290915
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,36547.29673858355,36563.333035120835,16.036296537284215
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,36550.11946924217,36565.82472342787,15.705254185697413
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,36557.97600966726,36569.73796624495,11.761956577691308
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,36563.333035120835,36570.989634561374,7.656599440539139
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,36540.0,36573.60697994419,33.60697994419024
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,36560.64912224151,36573.628750147545,12.979627906031965
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,36565.82472342787,36586.29101798774,20.466294559875678
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,36569.73796624495,36595.10140402436,25.363437779407832
+Cytotechnicians,Cytotechnicians,manual staining,,3,37520.0,37555.0,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,37520.0,37555.0,35.0
+Senior Pathologists,Senior Pathologists,Reporting,,3,37560.0,37561.576021385554,1.5760213855537586
+Senior Pathologists,Senior Pathologists,Reporting,,3,37560.0,37562.29850530216,2.2985053021620843
+Senior Pathologists,Senior Pathologists,Reporting,,3,37560.0,37562.937996962966,2.937996962966281
+Senior Pathologists,Senior Pathologists,Reporting,,3,37562.29850530216,37563.843391818744,1.5448865165817551
+Senior Pathologists,Senior Pathologists,Reporting,,3,37561.576021385554,37564.18058687184,2.6045654862828087
+Senior Pathologists,Senior Pathologists,Reporting,,3,37562.937996962966,37566.37301878133,3.4350218183608376
+Senior Pathologists,Senior Pathologists,Reporting,,3,37564.18058687184,37567.036327764836,2.8557408929991652
+Senior Pathologists,Senior Pathologists,Reporting,,3,37563.843391818744,37567.2194460855,3.3760542667587288
+Senior Pathologists,Senior Pathologists,Reporting,,3,37566.37301878133,37570.01004842995,3.637029648620228
+Senior Pathologists,Senior Pathologists,Reporting,,3,37567.036327764836,37570.10969026855,3.0733625037173624
+Senior Pathologists,Senior Pathologists,Reporting,,3,37570.01004842995,37572.04848231984,2.0384338898948045
+Senior Pathologists,Senior Pathologists,Reporting,,3,37567.2194460855,37575.37618200396,8.156735918455524
+Senior Pathologists,Senior Pathologists,Reporting,,3,37570.10969026855,37582.06340149017,11.953711221620324
+Senior Pathologists,Senior Pathologists,Reporting,,3,37572.04848231984,37586.20904727464,14.160564954800066
+Cytotechnicians,Cytotechnicians,manual staining,,3,37898.76947299466,37933.76947299466,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,37898.76947299466,37933.76947299466,35.0
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,37980.0,37986.07483207265,6.07483207264886
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,37980.0,37990.772505172834,10.772505172833917
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,37980.0,37990.95062755816,10.950627558158885
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,37980.0,37995.22036300914,15.220363009138964
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,37980.0,37995.63654062321,15.636540623207111
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,37990.772505172834,37997.726585202865,6.954080030031037
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,37986.07483207265,38016.6674690162,30.59263694355468
+Senior Pathologists,Senior Pathologists,Reporting,,3,39000.0,39002.660990893935,2.6609908939353772
+Senior Pathologists,Senior Pathologists,Reporting,,3,39000.0,39002.864607140196,2.8646071401963127
+Senior Pathologists,Senior Pathologists,Reporting,,3,39000.0,39004.096012025155,4.096012025154778
+Senior Pathologists,Senior Pathologists,Reporting,,3,39002.660990893935,39005.034496298795,2.3735054048593156
+Senior Pathologists,Senior Pathologists,Reporting,,3,39002.864607140196,39007.17658367084,4.311976530640095
+Senior Pathologists,Senior Pathologists,Reporting,,3,39004.096012025155,39007.50659213345,3.4105801082987455
+Senior Pathologists,Senior Pathologists,Reporting,,3,39005.034496298795,39014.062882617756,9.028386318961566
+Cytotechnicians,Cytotechnicians,manual staining,,3,40400.0,40435.0,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,40400.0,40435.0,35.0
+Cytotechnicians,Cytotechnicians,manual staining,,3,40757.709123701614,40792.709123701614,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,40757.709123701614,40792.709123701614,35.0
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,40860.0,40867.198242290666,7.198242290665803
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,40860.0,40868.90558093781,8.905580937811465
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,40860.0,40870.686026102005,10.68602610200469
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,40860.0,40875.629979947174,15.629979947174434
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,40860.0,40876.06906632289,16.06906632288883
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,40868.90558093781,40881.144762937474,12.239181999662833
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,40867.198242290666,40882.98701841421,15.788776123546995
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,40870.686026102005,40883.18423925671,12.498213154707628
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,40876.06906632289,40888.01633694198,11.947270619093615
+Junior Cytopathologists,Junior Cytopathologists,slide screening,,5,40875.629979947174,40896.68452466635,21.054544719176192
+Senior Pathologists,Senior Pathologists,Reporting,,3,41880.0,41882.662959321926,2.6629593219258823
+Senior Pathologists,Senior Pathologists,Reporting,,3,41880.0,41883.201389643385,3.2013896433854825
+Senior Pathologists,Senior Pathologists,Reporting,,3,41880.0,41883.20887809231,3.208878092307714
+Senior Pathologists,Senior Pathologists,Reporting,,3,41883.201389643385,41884.88944317145,1.6880535280652111
+Senior Pathologists,Senior Pathologists,Reporting,,3,41882.662959321926,41885.90957239875,3.246613076822541
+Senior Pathologists,Senior Pathologists,Reporting,,3,41883.20887809231,41886.79556194813,3.5866838558213203
+Senior Pathologists,Senior Pathologists,Reporting,,3,41885.90957239875,41888.98017675696,3.070604358210403
+Senior Pathologists,Senior Pathologists,Reporting,,3,41886.79556194813,41889.03670987148,2.2411479233487626
+Senior Pathologists,Senior Pathologists,Reporting,,3,41884.88944317145,41889.24576311545,4.3563199439959135
+Senior Pathologists,Senior Pathologists,Reporting,,3,41888.98017675696,41909.35454525131,20.374368494354712
+Cytotechnicians,Cytotechnicians,manual staining,,3,43280.0,43315.0,35.0
+Manual Staining Station,Manual Staining Station,manual staining,,1,43280.0,43315.0,35.0

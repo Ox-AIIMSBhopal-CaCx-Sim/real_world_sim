@@ -1,0 +1,31 @@
+{
+  "run_id": "20260714_230837_cyto",
+  "artifacts": {
+    "data": {
+      "parameters": "http://localhost:4443/download/storage/v1/b/sim-results/o/20260714_230837_cyto%2Fparameters.csv/?alt=media",
+      "patient_timestamps": "http://localhost:4443/download/storage/v1/b/sim-results/o/20260714_230837_cyto%2Fpatient_timestamps.csv/?alt=media",
+      "resource_busy_intervals": "http://localhost:4443/download/storage/v1/b/sim-results/o/20260714_230837_cyto%2Fresource_busy_intervals.csv/?alt=media",
+      "resource_metadata": "http://localhost:4443/download/storage/v1/b/sim-results/o/20260714_230837_cyto%2Fresource_metadata.csv/?alt=media",
+      "resource_productive_intervals": "http://localhost:4443/download/storage/v1/b/sim-results/o/20260714_230837_cyto%2Fresource_productive_intervals.csv/?alt=media",
+      "run_manifest": "http://localhost:4443/download/storage/v1/b/sim-results/o/20260714_230837_cyto%2Frun_manifest.yaml/?alt=media",
+      "slide_timestamps": "http://localhost:4443/download/storage/v1/b/sim-results/o/20260714_230837_cyto%2Fslide_timestamps.csv/?alt=media"
+    },
+    "tables": {
+      "resource_utilisation": "http://localhost:4443/download/storage/v1/b/sim-results/o/20260714_230837_cyto%2Fanalysis%2Fresource_utilisation.csv/?alt=media",
+      "turnaround_time_patient_summary": "http://localhost:4443/download/storage/v1/b/sim-results/o/20260714_230837_cyto%2Fanalysis%2Fturnaround_time_patient_summary.csv/?alt=media",
+      "waiting_time_patient_summary": "http://localhost:4443/download/storage/v1/b/sim-results/o/20260714_230837_cyto%2Fanalysis%2Fwaiting_time_patient_summary.csv/?alt=media",
+      "waiting_time_slide_summary": "http://localhost:4443/download/storage/v1/b/sim-results/o/20260714_230837_cyto%2Fanalysis%2Fwaiting_time_slide_summary.csv/?alt=media"
+    },
+    "plots": {
+      "resource_utilisation": "http://localhost:4443/download/storage/v1/b/sim-results/o/20260714_230837_cyto%2Fanalysis%2Fresource_utilisation.png/?alt=media",
+      "turnaround_patient_non_pap_smear": "http://localhost:4443/download/storage/v1/b/sim-results/o/20260714_230837_cyto%2Fanalysis%2Fturnaround_patient_non_pap_smear.png/?alt=media",
+      "turnaround_patient_pap_smear": "http://localhost:4443/download/storage/v1/b/sim-results/o/20260714_230837_cyto%2Fanalysis%2Fturnaround_patient_pap_smear.png/?alt=media",
+      "waiting_patient_reporting_non_pap_smear": "http://localhost:4443/download/storage/v1/b/sim-results/o/20260714_230837_cyto%2Fanalysis%2Fwaiting_patient_reporting_non_pap_smear.png/?alt=media",
+      "waiting_patient_reporting_pap_smear": "http://localhost:4443/download/storage/v1/b/sim-results/o/20260714_230837_cyto%2Fanalysis%2Fwaiting_patient_reporting_pap_smear.png/?alt=media",
+      "waiting_patient_screening_non_pap_smear": "http://localhost:4443/download/storage/v1/b/sim-results/o/20260714_230837_cyto%2Fanalysis%2Fwaiting_patient_screening_non_pap_smear.png/?alt=media",
+      "waiting_patient_screening_pap_smear": "http://localhost:4443/download/storage/v1/b/sim-results/o/20260714_230837_cyto%2Fanalysis%2Fwaiting_patient_screening_pap_smear.png/?alt=media",
+      "waiting_slide_fixation": "http://localhost:4443/download/storage/v1/b/sim-results/o/20260714_230837_cyto%2Fanalysis%2Fwaiting_slide_fixation_all.png/?alt=media",
+      "waiting_slide_staining": "http://localhost:4443/download/storage/v1/b/sim-results/o/20260714_230837_cyto%2Fanalysis%2Fwaiting_slide_staining_all.png/?alt=media"
+    }
+  }
+}

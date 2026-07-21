@@ -1,0 +1,17 @@
+group,process,stat,value
+non_pap_smear,turnaround,count,7790.0
+non_pap_smear,turnaround,mean,1.2325860255313081
+non_pap_smear,turnaround,std,0.5943785518330702
+non_pap_smear,turnaround,min,0.05138888888888889
+non_pap_smear,turnaround,25%,0.8743055555555556
+non_pap_smear,turnaround,50%,0.9944444444444445
+non_pap_smear,turnaround,75%,1.7755208333333332
+non_pap_smear,turnaround,max,4.949305555555555
+pap_smear,turnaround,count,2188.0
+pap_smear,turnaround,mean,1.1924664838513102
+pap_smear,turnaround,std,0.5668924863274718
+pap_smear,turnaround,min,0.058333333333333334
+pap_smear,turnaround,25%,0.8729166666666667
+pap_smear,turnaround,50%,1.0114583333333333
+pap_smear,turnaround,75%,1.7487847222222221
+pap_smear,turnaround,max,3.8152777777777778

@@ -1,0 +1,3 @@
+group,disruption_id,resource,disruption_start,disruption_end,baseline_window_days,baseline_tat_days,relative_tolerance,threshold_tat_days,hold_days,recovery_date,recovery_days_after_end,recovered
+non_pap_smear,equipment_breakdown,cyto_manual_staining_station,2026-05-31 08:00,2026-06-14 08:00,14,0.9612847222222223,0.1,1.0574131944444445,3,2026-07-16,31.666666666666668,True
+pap_smear,equipment_breakdown,cyto_manual_staining_station,2026-05-31 08:00,2026-06-14 08:00,14,0.9512152777777778,0.1,1.0463368055555557,3,2026-07-28,43.666666666666664,True
