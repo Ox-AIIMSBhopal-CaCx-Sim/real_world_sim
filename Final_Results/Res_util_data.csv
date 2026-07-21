@@ -1,0 +1,115 @@
+﻿utilisation_key,resource_name,task,capacity,resource_type,calendar_minutes,scheduled_available_minutes,analysis_start_min,analysis_end_min,denominator_source_key,duration_min,available_person_minutes,utilisation_pct
+Baseline - Increasing Demand - 5 pap per day,,,,,,,,,,,,
+Cytotechnicians,Cytotechnicians,,3,scheduled,480960,149040,44640,525600,Cytotechnicians,155562.4334,447120,34.79
+Junior Cytopathologists,Junior Cytopathologists,,5,scheduled,480960,40080,44640,525600,Junior Cytopathologists,157876.5972,200400,78.78
+Manual Staining Station,Manual Staining Station,,1,equipment,480960,149040,44640,525600,Cytotechnicians,108780,149040,72.99
+Senior Pathologists,Senior Pathologists,,3,scheduled,480960,74520,44640,525600,Senior Pathologists,56910.61662,223560,25.46
+1.5x Demand - 8 pap per day,,,,,,,,,,,,
+Cytotechnicians,Cytotechnicians,,3,scheduled,480960,149040,44640,525600,Cytotechnicians,173144.5024,447120,38.72
+Junior Cytopathologists,Junior Cytopathologists,,5,scheduled,480960,40080,44640,525600,Junior Cytopathologists,173130.5855,200400,86.39
+Manual Staining Station,Manual Staining Station,,1,equipment,480960,149040,44640,525600,Cytotechnicians,116060,149040,77.87
+Senior Pathologists,Senior Pathologists,,3,scheduled,480960,74520,44640,525600,Senior Pathologists,62382.71133,223560,27.9
+2x Demand - 10 pap per day,,,,,,,,,,,,
+Cytotechnicians,Cytotechnicians,,3,scheduled,480960,149040,44640,525600,Cytotechnicians,177998.1837,447120,39.81
+Junior Cytopathologists,Junior Cytopathologists,,5,scheduled,480960,40080,44640,525600,Junior Cytopathologists,179569.2117,200400,89.61
+Manual Staining Station,Manual Staining Station,,1,equipment,480960,149040,44640,525600,Cytotechnicians,117845,149040,79.07
+Senior Pathologists,Senior Pathologists,,3,scheduled,480960,74520,44640,525600,Senior Pathologists,65610.60642,223560,29.35
+2.5x Demand - 13 pap per day,,,,,,,,,,,,
+Cytotechnicians,Cytotechnicians,,3,scheduled,480960,149040,44640,525600,Cytotechnicians,197869.1236,447120,44.25
+Junior Cytopathologists,Junior Cytopathologists,,5,scheduled,480960,40080,44640,525600,Junior Cytopathologists,196917.4183,200400,98.26
+Manual Staining Station,Manual Staining Station,,1,equipment,480960,149040,44640,525600,Cytotechnicians,127295,149040,85.41
+Senior Pathologists,Senior Pathologists,,3,scheduled,480960,74520,44640,525600,Senior Pathologists,72276.85525,223560,32.33
+3x Demand 15 pap per day,,,,,,,,,,,,
+Cytotechnicians,Cytotechnicians,,3,scheduled,480960,149040,44640,525600,Cytotechnicians,222906.4299,447120,49.85
+Junior Cytopathologists,Junior Cytopathologists,,5,scheduled,480960,40080,44640,525600,Junior Cytopathologists,209377.3298,200400,104.48
+Manual Staining Station,Manual Staining Station,,1,equipment,480960,149040,44640,525600,Cytotechnicians,134155,149040,90.01
+Senior Pathologists,Senior Pathologists,,3,scheduled,480960,74520,44640,525600,Senior Pathologists,77377.19396,223560,34.61
+3.5x Demand - 18 pap per day,,,,,,,,,,,,
+Cytotechnicians,Cytotechnicians,,3,scheduled,480960,149040,44640,525600,Cytotechnicians,240455.2985,447120,53.78
+Junior Cytopathologists,Junior Cytopathologists,,5,scheduled,480960,40080,44640,525600,Junior Cytopathologists,228460.7412,200400,114
+Manual Staining Station,Manual Staining Station,,1,equipment,480960,149040,44640,525600,Cytotechnicians,141155,149040,94.71
+Senior Pathologists,Senior Pathologists,,3,scheduled,480960,74520,44640,525600,Senior Pathologists,83009.29657,223560,37.13
+4x Demand - 20 pap per day,,,,,,,,,,,,
+Cytotechnicians,Cytotechnicians,,3,scheduled,480960,149040,44640,525600,Cytotechnicians,259942.736,447120,58.14
+Junior Cytopathologists,Junior Cytopathologists,,5,scheduled,480960,40080,44640,525600,Junior Cytopathologists,233770.9801,200400,116.65
+Manual Staining Station,Manual Staining Station,,1,equipment,480960,149040,44640,525600,Cytotechnicians,146930,149040,98.58
+Senior Pathologists,Senior Pathologists,,3,scheduled,480960,74520,44640,525600,Senior Pathologists,85386.68414,223560,38.19
+,,,,,,,,,,,,
+Utilisation percentages for Increased Demand for Histopathology,,,,,,,,,,,,
+Baseline,,,,,,,,,,,,
+Embedding Station,Embedding Station,,1,equipment,480960,149040,44640,525600,Histotechnicians,27900,149040,18.72
+Grossing Station,Grossing Station,,2,equipment,480960,123660,44640,525600,Junior Pathologists (grossing),177290,247320,71.68
+Histotechnicians,Histotechnicians,,11,scheduled,480960,149040,44640,525600,Histotechnicians,1516185.369,1639440,92.48
+Junior Pathologists,Junior Pathologists,,6,task_scheduled,480960,192540,44640,525600,Junior Pathologists,,1155240,
+Junior Pathologists (grossing),Junior Pathologists,grossing,6,task_scheduled,480960,123660,44640,525600,Junior Pathologists (grossing),461775.3417,741960,62.24
+Junior Pathologists (screening),Junior Pathologists,screening,6,task_scheduled,480960,68880,44640,525600,Junior Pathologists (screening),385952.0304,413280,93.39
+Sectioning Station,Sectioning Station,,1,equipment,480960,149040,44640,525600,Histotechnicians,108690,149040,72.93
+Senior Pathologists,Senior Pathologists,,5,scheduled,480960,63240,44640,525600,Senior Pathologists,255250.8337,316200,80.72
+Staining Station,Staining Station,,1,equipment,480960,149040,44640,525600,Histotechnicians,76055,149040,51.03
+Tissue Processor,Tissue Processor,,1,equipment,480960,480960,44640,525600,Tissue Processor,410520,480960,85.35
+2x Demand - 3 biopsies per day,,,,,,,,,,,,
+Embedding Station,Embedding Station,,1,equipment,480960,149040,44640,525600,Histotechnicians,30150,149040,20.23
+Grossing Station,Grossing Station,,2,equipment,480960,123660,44640,525600,Junior Pathologists (grossing),194180,247320,78.51
+Histotechnicians,Histotechnicians,,11,scheduled,480960,149040,44640,525600,Histotechnicians,1622741.81,1639440,98.98
+Junior Pathologists,Junior Pathologists,,6,task_scheduled,480960,192540,44640,525600,Junior Pathologists,,1155240,
+Junior Pathologists (grossing),Junior Pathologists,grossing,6,task_scheduled,480960,123660,44640,525600,Junior Pathologists (grossing),511559.8001,741960,68.95
+Junior Pathologists (screening),Junior Pathologists,screening,6,task_scheduled,480960,68880,44640,525600,Junior Pathologists (screening),414828.496,413280,100.37
+Sectioning Station,Sectioning Station,,1,equipment,480960,149040,44640,525600,Histotechnicians,116640,149040,78.26
+Senior Pathologists,Senior Pathologists,,5,scheduled,480960,63240,44640,525600,Senior Pathologists,273766.1052,316200,86.58
+Staining Station,Staining Station,,1,equipment,480960,149040,44640,525600,Histotechnicians,81620,149040,54.76
+Tissue Processor,Tissue Processor,,1,equipment,480960,480960,44640,525600,Tissue Processor,443520,480960,92.22
+3x Demand - 5 Biopsies per day,,,,,,,,,,,,
+Embedding Station,Embedding Station,,1,equipment,480960,149040,44640,525600,Histotechnicians,30780,149040,20.65
+Grossing Station,Grossing Station,,2,equipment,480960,123660,44640,525600,Junior Pathologists (grossing),196220,247320,79.34
+Histotechnicians,Histotechnicians,,11,scheduled,480960,149040,44640,525600,Histotechnicians,1649709.86,1639440,100.63
+Junior Pathologists,Junior Pathologists,,6,task_scheduled,480960,192540,44640,525600,Junior Pathologists,,1155240,
+Junior Pathologists (grossing),Junior Pathologists,grossing,6,task_scheduled,480960,123660,44640,525600,Junior Pathologists (grossing),516613.6074,741960,69.63
+Junior Pathologists (screening),Junior Pathologists,screening,6,task_scheduled,480960,68880,44640,525600,Junior Pathologists (screening),421537.4158,413280,102
+Sectioning Station,Sectioning Station,,1,equipment,480960,149040,44640,525600,Histotechnicians,118772,149040,79.69
+Senior Pathologists,Senior Pathologists,,5,scheduled,480960,63240,44640,525600,Senior Pathologists,277734.4914,316200,87.84
+Staining Station,Staining Station,,1,equipment,480960,149040,44640,525600,Histotechnicians,82985,149040,55.68
+Tissue Processor,Tissue Processor,,1,equipment,480960,480960,44640,525600,Tissue Processor,452760,480960,94.14
+4x Demand - 7 Biopsies per day,,,,,,,,,,,,
+Embedding Station,Embedding Station,,1,equipment,480960,149040,44640,525600,Histotechnicians,32670,149040,21.92
+Grossing Station,Grossing Station,,2,equipment,480960,123660,44640,525600,Junior Pathologists (grossing),208000,247320,84.1
+Histotechnicians,Histotechnicians,,11,scheduled,480960,149040,44640,525600,Histotechnicians,1700224.072,1639440,103.71
+Junior Pathologists,Junior Pathologists,,6,task_scheduled,480960,192540,44640,525600,Junior Pathologists,,1155240,
+Junior Pathologists (grossing),Junior Pathologists,grossing,6,task_scheduled,480960,123660,44640,525600,Junior Pathologists (grossing),556399.1179,741960,74.99
+Junior Pathologists (screening),Junior Pathologists,screening,6,task_scheduled,480960,68880,44640,525600,Junior Pathologists (screening),439144.4595,413280,106.26
+Sectioning Station,Sectioning Station,,1,equipment,480960,149040,44640,525600,Histotechnicians,123840,149040,83.09
+Senior Pathologists,Senior Pathologists,,5,scheduled,480960,63240,44640,525600,Senior Pathologists,288647.7058,316200,91.29
+Staining Station,Staining Station,,1,equipment,480960,149040,44640,525600,Histotechnicians,86555,149040,58.08
+Tissue Processor,Tissue Processor,,1,equipment,480960,480960,44640,525600,Tissue Processor,479160,480960,99.63
+5x Demand - 9 Biopsies per day,,,,,,,,,,,,
+Embedding Station,Embedding Station,,1,equipment,480960,149040,44640,525600,Histotechnicians,34200,149040,22.95
+Grossing Station,Grossing Station,,2,equipment,480960,123660,44640,525600,Junior Pathologists (grossing),219520,247320,88.76
+Histotechnicians,Histotechnicians,,11,scheduled,480960,149040,44640,525600,Histotechnicians,1764843.737,1639440,107.65
+Junior Pathologists,Junior Pathologists,,6,task_scheduled,480960,192540,44640,525600,Junior Pathologists,,1155240,
+Junior Pathologists (grossing),Junior Pathologists,grossing,6,task_scheduled,480960,123660,44640,525600,Junior Pathologists (grossing),598612.1983,741960,80.68
+Junior Pathologists (screening),Junior Pathologists,screening,6,task_scheduled,480960,68880,44640,525600,Junior Pathologists (screening),466295.1813,413280,112.83
+Sectioning Station,Sectioning Station,,1,equipment,480960,149040,44640,525600,Histotechnicians,131400,149040,88.16
+Senior Pathologists,Senior Pathologists,,5,scheduled,480960,63240,44640,525600,Senior Pathologists,305429.4511,316200,96.59
+Staining Station,Staining Station,,1,equipment,480960,149040,44640,525600,Histotechnicians,91770,149040,61.57
+Tissue Processor,Tissue Processor,,1,equipment,480960,480960,44640,525600,Tissue Processor,502920,480960,104.57
+6x Demand - 11 Biopsies per day,,,,,,,,,,,,
+Embedding Station,Embedding Station,,1,equipment,480960,149040,44640,525600,Histotechnicians,35370,149040,23.73
+Grossing Station,Grossing Station,,2,equipment,480960,123660,44640,525600,Junior Pathologists (grossing),229020,247320,92.6
+Histotechnicians,Histotechnicians,,11,scheduled,480960,149040,44640,525600,Histotechnicians,1794788.48,1639440,109.48
+Junior Pathologists,Junior Pathologists,,6,task_scheduled,480960,192540,44640,525600,Junior Pathologists,,1155240,
+Junior Pathologists (grossing),Junior Pathologists,grossing,6,task_scheduled,480960,123660,44640,525600,Junior Pathologists (grossing),635119.4082,741960,85.6
+Junior Pathologists (screening),Junior Pathologists,screening,6,task_scheduled,480960,68880,44640,525600,Junior Pathologists (screening),473338.472,413280,114.53
+Sectioning Station,Sectioning Station,,1,equipment,480960,149040,44640,525600,Histotechnicians,134994,149040,90.58
+Senior Pathologists,Senior Pathologists,,5,scheduled,480960,63240,44640,525600,Senior Pathologists,313449.2282,316200,99.13
+Staining Station,Staining Station,,1,equipment,480960,149040,44640,525600,Histotechnicians,94360,149040,63.31
+Tissue Processor,Tissue Processor,,1,equipment,480960,480960,44640,525600,Tissue Processor,520080,480960,108.13
+7x Demand - 14 Biopsies per day,,,,,,,,,,,,
+Embedding Station,Embedding Station,,1,equipment,480960,149040,44640,525600,Histotechnicians,35370,149040,23.73
+Grossing Station,Grossing Station,,2,equipment,480960,123660,44640,525600,Junior Pathologists (grossing),229020,247320,92.6
+Histotechnicians,Histotechnicians,,11,scheduled,480960,149040,44640,525600,Histotechnicians,1794788.48,1639440,109.48
+Junior Pathologists,Junior Pathologists,,6,task_scheduled,480960,192540,44640,525600,Junior Pathologists,,1155240,
+Junior Pathologists (grossing),Junior Pathologists,grossing,6,task_scheduled,480960,123660,44640,525600,Junior Pathologists (grossing),635119.4082,741960,85.6
+Junior Pathologists (screening),Junior Pathologists,screening,6,task_scheduled,480960,68880,44640,525600,Junior Pathologists (screening),473338.472,413280,114.53
+Sectioning Station,Sectioning Station,,1,equipment,480960,149040,44640,525600,Histotechnicians,134994,149040,90.58
+Senior Pathologists,Senior Pathologists,,5,scheduled,480960,63240,44640,525600,Senior Pathologists,313449.2282,316200,99.13
+Staining Station,Staining Station,,1,equipment,480960,149040,44640,525600,Histotechnicians,94360,149040,63.31
+Tissue Processor,Tissue Processor,,1,equipment,480960,480960,44640,525600,Tissue Processor,520080,480960,108.13
