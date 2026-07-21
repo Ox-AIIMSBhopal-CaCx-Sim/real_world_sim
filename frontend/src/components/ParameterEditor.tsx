@@ -9,6 +9,7 @@ import { DisruptionsPanel } from "./DisruptionsPanel";
 import { PipelineSteps } from "./PipelineSteps";
 import { ResultsPanel } from "./ResultsPanel";
 import { RunParameterSummary } from "./RunParameterSummary";
+import { ScheduleEditor } from "./ScheduleEditor";
 import { getPipelineSteps, type PipelineStepId } from "./pipelineConfig";
 
 const TRIO_PCT_MIN = 22;
@@ -638,6 +639,14 @@ function HistoStepFields({
               onChange={(v) => onChange(["histo_grossing_station", "num_stations"], v)}
             />
           </section>
+          <ScheduleEditor
+            title="Grossing schedule"
+            description="When junior pathologists are available for grossing."
+            schedule={asRecord(junior.task_windows).grossing}
+            onChange={(next) =>
+              onChange(["junior_pathologist", "task_windows", "grossing"], next)
+            }
+          />
           <SizeTimeFields
             label="Process time"
             value={parameters.histo_grossing_time}
@@ -695,6 +704,14 @@ function HistoStepFields({
               onChange={(v) => onChange(["histo_embedding_station", "num_stations"], v)}
             />
           </section>
+          <ScheduleEditor
+            title="Histotechnician schedule"
+            description="Shared roster for embedding, sectioning, and staining."
+            schedule={techs.histotech_schedule}
+            onChange={(next) =>
+              onChange(["histo_technicians", "histotech_schedule"], next)
+            }
+          />
           <section>
             <h3>Process time</h3>
             <NumberField
@@ -727,6 +744,14 @@ function HistoStepFields({
               onChange={(v) => onChange(["histo_sectioning_station", "num_stations"], v)}
             />
           </section>
+          <ScheduleEditor
+            title="Histotechnician schedule"
+            description="Shared roster for embedding, sectioning, and staining."
+            schedule={techs.histotech_schedule}
+            onChange={(next) =>
+              onChange(["histo_technicians", "histotech_schedule"], next)
+            }
+          />
           <section>
             <h3>Process time</h3>
             <NumberField
@@ -764,6 +789,14 @@ function HistoStepFields({
               onChange={(v) => onChange(["histo_staining_station", "batch_size"], v)}
             />
           </section>
+          <ScheduleEditor
+            title="Histotechnician schedule"
+            description="Shared roster for embedding, sectioning, and staining."
+            schedule={techs.histotech_schedule}
+            onChange={(next) =>
+              onChange(["histo_technicians", "histotech_schedule"], next)
+            }
+          />
           <section>
             <h3>Process time</h3>
             <NumberField
@@ -793,6 +826,14 @@ function HistoStepFields({
               }
             />
           </section>
+          <ScheduleEditor
+            title="Screening schedule"
+            description="When junior pathologists are available for slide screening."
+            schedule={asRecord(junior.task_windows).screening}
+            onChange={(next) =>
+              onChange(["junior_pathologist", "task_windows", "screening"], next)
+            }
+          />
           <ComplexityTimeFields
             label="Process time"
             value={parameters.histo_slide_screening_time}
@@ -824,6 +865,14 @@ function HistoStepFields({
               }
             />
           </section>
+          <ScheduleEditor
+            title="Senior pathologist schedule"
+            description="When senior pathologists are available for reporting."
+            schedule={senior.senior_pathologist_schedule}
+            onChange={(next) =>
+              onChange(["senior_pathologists", "senior_pathologist_schedule"], next)
+            }
+          />
           <ComplexityTimeFields
             label="Process time"
             value={parameters.histo_reporting_time}
@@ -945,6 +994,14 @@ function CytoStepFields({
               }
             />
           </section>
+          <ScheduleEditor
+            title="Cytotechnician schedule"
+            description="When cytotechnicians are available for staining."
+            schedule={techs.cytotech_schedule}
+            onChange={(next) =>
+              onChange(["cyto_technicians", "cytotech_schedule"], next)
+            }
+          />
           <section>
             <h3>Process time</h3>
             <NumberField
@@ -982,6 +1039,14 @@ function CytoStepFields({
               }
             />
           </section>
+          <ScheduleEditor
+            title="Junior pathologist schedule"
+            description="When junior pathologists are available for screening."
+            schedule={junior.junior_pathologist_schedule}
+            onChange={(next) =>
+              onChange(["junior_pathologist", "junior_pathologist_schedule"], next)
+            }
+          />
           <ComplexityTimeFields
             label="Process time"
             value={parameters.cyto_slide_screening_time}
@@ -1013,6 +1078,14 @@ function CytoStepFields({
               }
             />
           </section>
+          <ScheduleEditor
+            title="Senior pathologist schedule"
+            description="When senior pathologists are available for reporting."
+            schedule={senior.senior_pathologist_schedule}
+            onChange={(next) =>
+              onChange(["senior_pathologists", "senior_pathologist_schedule"], next)
+            }
+          />
           <ComplexityTimeFields
             label="Process time"
             value={parameters.cyto_reporting_time}

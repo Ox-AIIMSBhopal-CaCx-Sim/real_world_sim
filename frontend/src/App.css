@@ -807,6 +807,116 @@
   border-color: var(--accent-border);
 }
 
+.schedule-editor {
+  margin-top: 0.35rem;
+}
+
+.schedule-editor__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.65rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.schedule-editor__header h3 {
+  margin: 0 0 0.25rem;
+}
+
+.schedule-editor__header .muted {
+  margin: 0;
+  font-size: 0.82rem;
+}
+
+.schedule-editor__add {
+  flex-shrink: 0;
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 0.4rem 0.7rem;
+  background: #fff;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.schedule-editor__add:hover {
+  background: var(--accent-surface);
+}
+
+.schedule-editor__empty {
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+.schedule-editor__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.schedule-editor__card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.75rem 0.85rem;
+  background: #fff;
+}
+
+.schedule-editor__card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.schedule-editor__card-top strong {
+  font-size: 0.88rem;
+}
+
+.schedule-editor__remove {
+  text-decoration: none;
+  color: var(--danger);
+}
+
+.schedule-editor__days {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.65rem;
+}
+
+.schedule-editor__day {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.28rem 0.55rem;
+  background: #fff;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.schedule-editor__day.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.schedule-editor__hours {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+}
+
+.schedule-editor__hour {
+  margin-bottom: 0;
+}
+
 .pipeline h3,
 .param-grid h3,
 .step-editor h3,

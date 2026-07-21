@@ -1,5 +1,6 @@
 import type { DisruptionConfig, ParametersDict, SimulationKind } from '../types/simulation';
 import { readDisruptions } from './disruptionPresets';
+import { formatScheduleDict } from './scheduleUtils';
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
@@ -93,6 +94,14 @@ function buildCytoSections(parameters: ParametersDict): SummarySection[] {
       ]),
     },
     {
+      title: 'Schedules',
+      rows: compact([
+        row('Cytotechnicians', formatScheduleDict(techs.cytotech_schedule)),
+        row('Junior pathologists', formatScheduleDict(junior.junior_pathologist_schedule)),
+        row('Senior pathologists', formatScheduleDict(senior.senior_pathologist_schedule)),
+      ]),
+    },
+    {
       title: 'Process times',
       rows: compact([
         row('Fixation', constantParam(parameters.cyto_fixation_time) != null ? `${constantParam(parameters.cyto_fixation_time)} min` : null),
@@ -144,6 +153,21 @@ function buildHistoSections(parameters: ParametersDict): SummarySection[] {
         row('Staining stations', staining.num_stations != null ? num(staining.num_stations) : null),
         row('Stain batch size', staining.batch_size != null ? num(staining.batch_size) : null),
         row('Repeat stain rate', senior.repeat_stain_rate != null ? num(senior.repeat_stain_rate) : null),
+      ]),
+    },
+    {
+      title: 'Schedules',
+      rows: compact([
+        row('Histotechnicians', formatScheduleDict(techs.histotech_schedule)),
+        row(
+          'Junior · grossing',
+          formatScheduleDict(asRecord(junior.task_windows).grossing),
+        ),
+        row(
+          'Junior · screening',
+          formatScheduleDict(asRecord(junior.task_windows).screening),
+        ),
+        row('Senior pathologists', formatScheduleDict(senior.senior_pathologist_schedule)),
       ]),
     },
     {
