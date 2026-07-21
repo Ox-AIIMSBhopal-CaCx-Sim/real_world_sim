@@ -115,6 +115,21 @@ function buildCytoSections(parameters: ParametersDict): SummarySection[] {
   ];
 }
 
+function sampleSizeRows(parameters: ParametersDict): SummaryRow[] {
+  const weights = asRecord(asRecord(parameters.biopsy_size).weights);
+  const sizes: Array<[string, string]> = [
+    ['small', 'Sample size (small)'],
+    ['medium', 'Sample size (medium)'],
+    ['large', 'Sample size (large)'],
+  ];
+  const values = sizes.map(([key]) => Math.max(0, num(weights[key], 0)));
+  const total = values.reduce((sum, v) => sum + v, 0);
+  if (total <= 0) return [];
+  return compact(
+    sizes.map(([, label], i) => row(label, `${((values[i] / total) * 100).toFixed(0)}%`)),
+  );
+}
+
 function buildHistoSections(parameters: ParametersDict): SummarySection[] {
   const cervical = asRecord(parameters.cervical_biopsies_per_day);
   const other = asRecord(parameters.other_biopsies_per_day);
@@ -137,6 +152,7 @@ function buildHistoSections(parameters: ParametersDict): SummarySection[] {
         row('Slides / patient (small)', slideBySize.small != null ? num(slideBySize.small) : null),
         row('Slides / patient (medium)', slideBySize.medium != null ? num(slideBySize.medium) : null),
         row('Slides / patient (large)', slideBySize.large != null ? num(slideBySize.large) : null),
+        ...sampleSizeRows(parameters),
       ]),
     },
     {

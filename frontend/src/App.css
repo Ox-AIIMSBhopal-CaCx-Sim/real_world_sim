@@ -807,6 +807,30 @@
   border-color: var(--accent-border);
 }
 
+.sample-size {
+  margin-top: 0.35rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--line);
+}
+
+.sample-size__header {
+  margin-bottom: 0.5rem;
+}
+
+.sample-size__title {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.sample-size__hint {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+}
+
+.sample-size__row .field {
+  margin-bottom: 0.55rem;
+}
+
 .schedule-editor {
   margin-top: 0.35rem;
 }

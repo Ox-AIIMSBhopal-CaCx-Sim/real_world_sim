@@ -396,7 +396,7 @@ export function ParameterEditor({
                 Global run settings applied to every scenario.
               </p>
             </div>
-            <SimulationFields parameters={parameters} onChange={onChange} />
+            <SimulationFields kind={kind} parameters={parameters} onChange={onChange} />
           </aside>
 
           <div className="param-panel__center">
@@ -524,9 +524,11 @@ export function ParameterEditor({
 }
 
 function SimulationFields({
+  kind,
   parameters,
   onChange,
 }: {
+  kind: SimulationKind;
   parameters: ParametersDict;
   onChange: (path: string[], value: unknown) => void;
 }) {
@@ -551,6 +553,53 @@ function SimulationFields({
         step={0.01}
         onChange={(v) => onChange(["case_complexity", "p_high"], v)}
       />
+      {kind === "histo" ? (
+        <SampleSizeWeights parameters={parameters} onChange={onChange} />
+      ) : null}
+    </div>
+  );
+}
+
+const BIOPSY_SIZES: { key: string; label: string }[] = [
+  { key: "small", label: "Small" },
+  { key: "medium", label: "Medium" },
+  { key: "large", label: "Large" },
+];
+
+function SampleSizeWeights({
+  parameters,
+  onChange,
+}: {
+  parameters: ParametersDict;
+  onChange: (path: string[], value: unknown) => void;
+}) {
+  const weights = asRecord(asRecord(parameters.biopsy_size).weights);
+  const values = BIOPSY_SIZES.map(({ key }) => Math.max(0, Number(weights[key] ?? 0)));
+  const total = values.reduce((sum, v) => sum + v, 0);
+
+  return (
+    <div className="sample-size">
+      <div className="sample-size__header">
+        <span className="sample-size__title">Sample size proportions</span>
+        <p className="muted sample-size__hint">
+          Relative weights for biopsy size; normalised across sizes.
+        </p>
+      </div>
+      {BIOPSY_SIZES.map(({ key, label }, i) => {
+        const pct = total > 0 ? (values[i] / total) * 100 : 0;
+        return (
+          <div key={key} className="sample-size__row">
+            <NumberField
+              label={`${label} (${pct.toFixed(0)}%)`}
+              value={values[i]}
+              step={0.01}
+              onChange={(v) =>
+                onChange(["biopsy_size", "weights", key], Math.max(0, v))
+              }
+            />
+          </div>
+        );
+      })}
     </div>
   );
 }
