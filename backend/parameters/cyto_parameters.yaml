@@ -76,10 +76,10 @@ cyto_technicians:
   num_cytotech: 3
   cytotech_schedule:
     Timeslot_1:
-      days: [0, 1, 2, 3, 4, 5] #Monday to Friday
+      days: [0, 1, 2, 3, 4] #Monday to Friday
       hours: [9, 17] # 9 am to 5 pm
     Timeslot_2:
-      days: [6]
+      days: [5]
       hours: [9, 13] # 9 am to 1 pm
 
 # Junior pathologist
@@ -87,7 +87,7 @@ junior_pathologist:
   num_junior_pathologist: 5
   junior_pathologist_schedule:
     Timeslot_1:
-      days: [0, 1, 2, 3, 4, 5] #Monday to Friday
+      days: [0, 1, 2, 3, 4] #Monday to Friday
       hours: [17, 19] # 5 pm to 7 pm
     Timeslot_2:
       days: [5] # Saturday
@@ -98,10 +98,10 @@ senior_pathologists:
   repeat_stain_rate: 0.05 # Per slide: senior pathologist sends slide back for restaining after screening
   senior_pathologist_schedule:
     Timeslot_1:
-      days: [0, 1, 2, 3, 4, 5] #Monday to Friday
+      days: [0, 1, 2, 3, 4] #Monday to Friday
       hours: [10, 14] # 10 am to 2 pm
     Timeslot_2:
-      days: [6]
+      days: [5]
       hours: [10, 12] # 10 am to 12 pm
 
 #Infrastructure

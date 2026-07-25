@@ -119,10 +119,10 @@ histo_technicians:
   num_cytotech: 11
   histotech_schedule:
     Timeslot_1:
-      days: [0, 1, 2, 3, 4, 5] #Monday to Friday
+      days: [0, 1, 2, 3, 4] #Monday to Friday
       hours: [9, 17] # 9 am to 5 pm
     Timeslot_2:
-      days: [6]
+      days: [5]
       hours: [9, 13] # 9 am to 1 pm
 
 # Junior pathologists: grossing until 17:00, slide screening from 17:00 onward.
